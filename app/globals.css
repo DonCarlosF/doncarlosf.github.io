@@ -185,6 +185,19 @@
   to { transform: translateX(-50%); }
 }
 
+/* Long-form article styling for Portable Text (blog body). */
+@layer components {
+  .prose-kbcf h2 { font-family: var(--ff-display); font-size: 1.6rem; font-weight: 600; margin-top: 1.6em; margin-bottom: 0.4em; }
+  .prose-kbcf h3 { font-family: var(--ff-display); font-size: 1.3rem; font-weight: 600; margin-top: 1.3em; margin-bottom: 0.3em; }
+  .prose-kbcf p { margin: 0; }
+  .prose-kbcf a { color: var(--c-primary); text-decoration: underline; text-underline-offset: 2px; }
+  .prose-kbcf ul, .prose-kbcf ol { padding-left: 1.4em; display: flex; flex-direction: column; gap: 0.4em; }
+  .prose-kbcf ul { list-style: disc; }
+  .prose-kbcf ol { list-style: decimal; }
+  .prose-kbcf blockquote { border-left: 3px solid var(--c-accent); padding-left: 1em; font-style: italic; color: var(--c-muted); }
+  .prose-kbcf strong { font-weight: 600; }
+}
+
 /* Respect user motion preferences (WCAG 2.3.3). */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
