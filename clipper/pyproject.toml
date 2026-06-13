@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kbcf-clipper"
+version = "0.1.0"
+description = "Turn a KBCF sermon VOD into 4 vertical, captioned, branded short-form clips for human review."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary — KBCF internal tooling" }
+dependencies = [
+  # --- core (always required) ---
+  "pydantic>=2.6",        # typed, validated clip/transcript schema
+  "pyyaml>=6.0",          # config.yaml loader
+  "typer>=0.12",          # type-hint driven CLI with subcommands
+  "rich>=13.0",           # readable console/progress output (bundled with typer)
+  "jinja2>=3.1",          # review-gallery index.html templating
+  "requests>=2.31",       # BoxCast REST API client
+  "anthropic>=0.40",      # Claude moment scoring (text-only)
+  "yt-dlp>=2024.0",       # BoxCast/HLS + Facebook fallback download
+  "pillow>=10.0",         # logo dominant-color sampling + thumbnail handling
+]
+
+[project.optional-dependencies]
+# Heavy / platform-specific deps. Installed only when you want the full pipeline.
+transcribe = [
+  "whisperx>=3.1",        # word-level timestamps + diarization (preferred)
+  "faster-whisper>=1.0",  # lighter fallback ASR backend
+]
+reframe = [
+  "mediapipe>=0.10",      # face detection for active-speaker vertical crop
+  "opencv-python>=4.9",   # frame I/O + crop-box math
+  "numpy>=1.26",
+]
+dev = [
+  "pytest>=8.0",
+]
+
+[project.scripts]
+kbcf-clipper = "clipper.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

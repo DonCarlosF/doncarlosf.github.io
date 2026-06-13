@@ -1,0 +1,44 @@
+church:
+  name: "Kingdom Builders Christian Fellowship"
+  short_name: "KBCF"
+  website: "https://kingdombuilderscf.org"
+  cta: "Join us Sunday 9AM in Oakland — kingdombuilderscf.org"
+
+source:
+  # DEFAULT INGEST: the KBCF livestream page, which embeds the church's BoxCast channel.
+  default: "https://kingdombuilderscf.org/livestream/"
+  boxcast_channel_id: "wsiikymmlhksnkgmc24r"      # KBCF's BoxCast channel
+  boxcast_channel_url: "https://boxcast.tv/channel/wsiikymmlhksnkgmc24r"
+  select: "latest_completed"                       # auto-pick most recent finished broadcast
+  # Overridable per run via CLI: --broadcast <url> or --file <local.mp4>
+  # Optional: only consider broadcasts whose name contains this string (e.g. "Sunday Service").
+  # null => consider every completed broadcast on the channel.
+  name_filter: null
+
+branding:
+  # LOGO: the church's Facebook profile photo (facebook.com/kingdombuilderscf).
+  # Facebook blocks automated/hot-link access and its image URLs expire, so DO NOT fetch it at runtime.
+  # Expect the file to already exist here; if missing, write a clear note in DECISIONS.md and proceed
+  # with a transparent text wordmark "KBCF" as a placeholder.
+  logo_path: "assets/kbcf-logo.png"
+  logo_position: "top-left"
+  # If brand colors/font aren't set, sample the logo's dominant colors for caption emphasis
+  # and use a bold legible sans (Inter or Montserrat) for captions. Expose both here to override.
+  caption_font: "Montserrat-Bold"
+  emphasis_color: null        # null => derive from logo
+  primary_color: null         # null => derive from logo
+
+clips:
+  count_per_sermon: 4         # exactly four
+  min_seconds: 30
+  max_seconds: 90
+  score_threshold: 10         # out of 15 on the 3 C's; if fewer than 4 clear it, take the top 4 anyway
+  aspect_ratios: ["9:16"]     # add "1:1"/"16:9" only if I ask
+  hook_reemphasis: true       # repeat hook text ~15-18s in for silent scrollers
+
+output:
+  dir: "output/{broadcast_date}"
+  review_gallery: true        # build index.html with Approve/Reject per clip
+
+api:
+  model: "claude-sonnet-4-6"  # for moment scoring; key from ANTHROPIC_API_KEY env, never hardcoded

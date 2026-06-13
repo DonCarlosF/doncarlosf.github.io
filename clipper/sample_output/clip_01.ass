@@ -1,0 +1,135 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 2
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,Alignment,MarginL,MarginR,MarginV,Encoding
+Style: Caption,Montserrat,72,&H00FFFFFF,&H000000FF,&H00000000,&H64000000,-1,0,0,0,100,100,0,0,1,4.0,2.0,2,120,120,470,1
+Style: Hook,Montserrat,64,&H004EC1F2,&H000000FF,&H00000000,&H64000000,-1,0,0,0,100,100,0,0,1,5.0,2.0,8,120,120,1180,1
+
+[Events]
+Format: Layer,Start,End,Style,Name,MarginL,MarginR,MarginV,Effect,Text
+Dialogue: 0,0:00:00.00,0:00:00.49,Caption,,0,0,0,,{\c&H004EC1F2}so,{\c&H00FFFFFF} can I
+Dialogue: 0,0:00:00.00,0:00:03.00,Hook,,0,0,0,,Can I talk to somebody who's been holding on by a thread…
+Dialogue: 0,0:00:00.00,0:01:01.95,Caption,,0,0,0,,{\an7}{\c&H004EC1F2}{\fs56}{\b1}KBCF
+Dialogue: 0,0:00:00.49,0:00:00.98,Caption,,0,0,0,,so, {\c&H004EC1F2}can{\c&H00FFFFFF} I
+Dialogue: 0,0:00:00.98,0:00:01.47,Caption,,0,0,0,,so, can {\c&H004EC1F2}I{\c&H00FFFFFF}
+Dialogue: 0,0:00:01.47,0:00:01.96,Caption,,0,0,0,,{\c&H004EC1F2}talk{\c&H00FFFFFF} to somebody
+Dialogue: 0,0:00:01.96,0:00:02.45,Caption,,0,0,0,,talk {\c&H004EC1F2}to{\c&H00FFFFFF} somebody
+Dialogue: 0,0:00:02.45,0:00:02.94,Caption,,0,0,0,,talk to {\c&H004EC1F2}somebody{\c&H00FFFFFF}
+Dialogue: 0,0:00:02.94,0:00:03.43,Caption,,0,0,0,,{\c&H004EC1F2}who's{\c&H00FFFFFF} been holding
+Dialogue: 0,0:00:03.43,0:00:03.92,Caption,,0,0,0,,who's {\c&H004EC1F2}been{\c&H00FFFFFF} holding
+Dialogue: 0,0:00:03.92,0:00:04.41,Caption,,0,0,0,,who's been {\c&H004EC1F2}holding{\c&H00FFFFFF}
+Dialogue: 0,0:00:04.41,0:00:04.90,Caption,,0,0,0,,{\c&H004EC1F2}on{\c&H00FFFFFF} by a
+Dialogue: 0,0:00:04.90,0:00:05.39,Caption,,0,0,0,,on {\c&H004EC1F2}by{\c&H00FFFFFF} a
+Dialogue: 0,0:00:05.39,0:00:05.88,Caption,,0,0,0,,on by {\c&H004EC1F2}a{\c&H00FFFFFF}
+Dialogue: 0,0:00:05.88,0:00:06.37,Caption,,0,0,0,,{\c&H004EC1F2}thread{\c&H00FFFFFF} this week?
+Dialogue: 0,0:00:06.37,0:00:06.86,Caption,,0,0,0,,thread {\c&H004EC1F2}this{\c&H00FFFFFF} week?
+Dialogue: 0,0:00:06.86,0:00:07.95,Caption,,0,0,0,,thread this {\c&H004EC1F2}week?{\c&H00FFFFFF}
+Dialogue: 0,0:00:07.95,0:00:08.44,Caption,,0,0,0,,{\c&H004EC1F2}You{\c&H00FFFFFF} smiled at
+Dialogue: 0,0:00:08.44,0:00:08.93,Caption,,0,0,0,,You {\c&H004EC1F2}smiled{\c&H00FFFFFF} at
+Dialogue: 0,0:00:08.93,0:00:09.42,Caption,,0,0,0,,You smiled {\c&H004EC1F2}at{\c&H00FFFFFF}
+Dialogue: 0,0:00:09.42,0:00:09.91,Caption,,0,0,0,,{\c&H004EC1F2}work,{\c&H00FFFFFF} you posted
+Dialogue: 0,0:00:09.91,0:00:10.40,Caption,,0,0,0,,work, {\c&H004EC1F2}you{\c&H00FFFFFF} posted
+Dialogue: 0,0:00:10.40,0:00:10.89,Caption,,0,0,0,,work, you {\c&H004EC1F2}posted{\c&H00FFFFFF}
+Dialogue: 0,0:00:10.89,0:00:11.38,Caption,,0,0,0,,{\c&H004EC1F2}the{\c&H00FFFFFF} picture, you
+Dialogue: 0,0:00:11.38,0:00:11.87,Caption,,0,0,0,,the {\c&H004EC1F2}picture,{\c&H00FFFFFF} you
+Dialogue: 0,0:00:11.87,0:00:12.36,Caption,,0,0,0,,the picture, {\c&H004EC1F2}you{\c&H00FFFFFF}
+Dialogue: 0,0:00:12.36,0:00:12.85,Caption,,0,0,0,,{\c&H004EC1F2}said{\c&H00FFFFFF} you were
+Dialogue: 0,0:00:12.85,0:00:13.34,Caption,,0,0,0,,said {\c&H004EC1F2}you{\c&H00FFFFFF} were
+Dialogue: 0,0:00:13.34,0:00:13.83,Caption,,0,0,0,,said you {\c&H004EC1F2}were{\c&H00FFFFFF}
+Dialogue: 0,0:00:13.83,0:00:14.92,Caption,,0,0,0,,{\c&H004EC1F2}fine.{\c&H00FFFFFF} But on
+Dialogue: 0,0:00:14.92,0:00:15.41,Caption,,0,0,0,,fine. {\c&H004EC1F2}But{\c&H00FFFFFF} on
+Dialogue: 0,0:00:15.00,0:00:18.00,Hook,,0,0,0,,Can I talk to somebody who's been holding on by a thread…
+Dialogue: 0,0:00:15.41,0:00:15.90,Caption,,0,0,0,,fine. But {\c&H004EC1F2}on{\c&H00FFFFFF}
+Dialogue: 0,0:00:15.90,0:00:16.39,Caption,,0,0,0,,{\c&H004EC1F2}the{\c&H00FFFFFF} inside, behind
+Dialogue: 0,0:00:16.39,0:00:16.88,Caption,,0,0,0,,the {\c&H004EC1F2}inside,{\c&H00FFFFFF} behind
+Dialogue: 0,0:00:16.88,0:00:17.37,Caption,,0,0,0,,the inside, {\c&H004EC1F2}behind{\c&H00FFFFFF}
+Dialogue: 0,0:00:17.37,0:00:17.86,Caption,,0,0,0,,{\c&H004EC1F2}the{\c&H00FFFFFF} door nobody
+Dialogue: 0,0:00:17.86,0:00:18.35,Caption,,0,0,0,,the {\c&H004EC1F2}door{\c&H00FFFFFF} nobody
+Dialogue: 0,0:00:18.35,0:00:18.84,Caption,,0,0,0,,the door {\c&H004EC1F2}nobody{\c&H00FFFFFF}
+Dialogue: 0,0:00:18.84,0:00:19.33,Caption,,0,0,0,,{\c&H004EC1F2}sees,{\c&H00FFFFFF} you were
+Dialogue: 0,0:00:19.33,0:00:19.82,Caption,,0,0,0,,sees, {\c&H004EC1F2}you{\c&H00FFFFFF} were
+Dialogue: 0,0:00:19.82,0:00:20.31,Caption,,0,0,0,,sees, you {\c&H004EC1F2}were{\c&H00FFFFFF}
+Dialogue: 0,0:00:20.31,0:00:20.80,Caption,,0,0,0,,{\c&H004EC1F2}quietly{\c&H00FFFFFF} breaking. Here's
+Dialogue: 0,0:00:20.80,0:00:21.89,Caption,,0,0,0,,quietly {\c&H004EC1F2}breaking.{\c&H00FFFFFF} Here's
+Dialogue: 0,0:00:21.89,0:00:22.38,Caption,,0,0,0,,quietly breaking. {\c&H004EC1F2}Here's{\c&H00FFFFFF}
+Dialogue: 0,0:00:22.38,0:00:22.87,Caption,,0,0,0,,{\c&H004EC1F2}what{\c&H00FFFFFF} nobody tells
+Dialogue: 0,0:00:22.87,0:00:23.36,Caption,,0,0,0,,what {\c&H004EC1F2}nobody{\c&H00FFFFFF} tells
+Dialogue: 0,0:00:23.36,0:00:23.85,Caption,,0,0,0,,what nobody {\c&H004EC1F2}tells{\c&H00FFFFFF}
+Dialogue: 0,0:00:23.85,0:00:24.34,Caption,,0,0,0,,{\c&H004EC1F2}you{\c&H00FFFFFF} about the
+Dialogue: 0,0:00:24.34,0:00:24.83,Caption,,0,0,0,,you {\c&H004EC1F2}about{\c&H00FFFFFF} the
+Dialogue: 0,0:00:24.83,0:00:25.32,Caption,,0,0,0,,you about {\c&H004EC1F2}the{\c&H00FFFFFF}
+Dialogue: 0,0:00:25.32,0:00:25.81,Caption,,0,0,0,,{\c&H004EC1F2}storm:{\c&H00FFFFFF} the storm
+Dialogue: 0,0:00:25.81,0:00:26.30,Caption,,0,0,0,,storm: {\c&H004EC1F2}the{\c&H00FFFFFF} storm
+Dialogue: 0,0:00:26.30,0:00:26.79,Caption,,0,0,0,,storm: the {\c&H004EC1F2}storm{\c&H00FFFFFF}
+Dialogue: 0,0:00:26.79,0:00:27.28,Caption,,0,0,0,,{\c&H004EC1F2}is{\c&H00FFFFFF} not your
+Dialogue: 0,0:00:27.28,0:00:27.77,Caption,,0,0,0,,is {\c&H004EC1F2}not{\c&H00FFFFFF} your
+Dialogue: 0,0:00:27.77,0:00:28.26,Caption,,0,0,0,,is not {\c&H004EC1F2}your{\c&H00FFFFFF}
+Dialogue: 0,0:00:28.26,0:00:29.35,Caption,,0,0,0,,{\c&H004EC1F2}enemy.{\c&H00FFFFFF} The storm
+Dialogue: 0,0:00:29.35,0:00:29.84,Caption,,0,0,0,,enemy. {\c&H004EC1F2}The{\c&H00FFFFFF} storm
+Dialogue: 0,0:00:29.84,0:00:30.33,Caption,,0,0,0,,enemy. The {\c&H004EC1F2}storm{\c&H00FFFFFF}
+Dialogue: 0,0:00:30.33,0:00:30.82,Caption,,0,0,0,,{\c&H004EC1F2}is{\c&H00FFFFFF} the very
+Dialogue: 0,0:00:30.82,0:00:31.31,Caption,,0,0,0,,is {\c&H004EC1F2}the{\c&H00FFFFFF} very
+Dialogue: 0,0:00:31.31,0:00:31.80,Caption,,0,0,0,,is the {\c&H004EC1F2}very{\c&H00FFFFFF}
+Dialogue: 0,0:00:31.80,0:00:32.29,Caption,,0,0,0,,{\c&H004EC1F2}thing{\c&H00FFFFFF} God is
+Dialogue: 0,0:00:32.29,0:00:32.78,Caption,,0,0,0,,thing {\c&H004EC1F2}God{\c&H00FFFFFF} is
+Dialogue: 0,0:00:32.78,0:00:33.27,Caption,,0,0,0,,thing God {\c&H004EC1F2}is{\c&H00FFFFFF}
+Dialogue: 0,0:00:33.27,0:00:33.76,Caption,,0,0,0,,{\c&H004EC1F2}using{\c&H00FFFFFF} to wake
+Dialogue: 0,0:00:33.76,0:00:34.25,Caption,,0,0,0,,using {\c&H004EC1F2}to{\c&H00FFFFFF} wake
+Dialogue: 0,0:00:34.25,0:00:34.74,Caption,,0,0,0,,using to {\c&H004EC1F2}wake{\c&H00FFFFFF}
+Dialogue: 0,0:00:34.74,0:00:35.23,Caption,,0,0,0,,{\c&H004EC1F2}something{\c&H00FFFFFF} up on
+Dialogue: 0,0:00:35.23,0:00:35.72,Caption,,0,0,0,,something {\c&H004EC1F2}up{\c&H00FFFFFF} on
+Dialogue: 0,0:00:35.72,0:00:36.21,Caption,,0,0,0,,something up {\c&H004EC1F2}on{\c&H00FFFFFF}
+Dialogue: 0,0:00:36.21,0:00:36.70,Caption,,0,0,0,,{\c&H004EC1F2}the{\c&H00FFFFFF} inside of
+Dialogue: 0,0:00:36.70,0:00:37.19,Caption,,0,0,0,,the {\c&H004EC1F2}inside{\c&H00FFFFFF} of
+Dialogue: 0,0:00:37.19,0:00:37.68,Caption,,0,0,0,,the inside {\c&H004EC1F2}of{\c&H00FFFFFF}
+Dialogue: 0,0:00:37.68,0:00:38.77,Caption,,0,0,0,,{\c&H004EC1F2}you.{\c&H00FFFFFF} Because a
+Dialogue: 0,0:00:38.77,0:00:39.26,Caption,,0,0,0,,you. {\c&H004EC1F2}Because{\c&H00FFFFFF} a
+Dialogue: 0,0:00:39.26,0:00:39.75,Caption,,0,0,0,,you. Because {\c&H004EC1F2}a{\c&H00FFFFFF}
+Dialogue: 0,0:00:39.75,0:00:40.24,Caption,,0,0,0,,{\c&H004EC1F2}faith{\c&H00FFFFFF} that has
+Dialogue: 0,0:00:40.24,0:00:40.73,Caption,,0,0,0,,faith {\c&H004EC1F2}that{\c&H00FFFFFF} has
+Dialogue: 0,0:00:40.73,0:00:41.22,Caption,,0,0,0,,faith that {\c&H004EC1F2}has{\c&H00FFFFFF}
+Dialogue: 0,0:00:41.22,0:00:41.71,Caption,,0,0,0,,{\c&H004EC1F2}never{\c&H00FFFFFF} been tested
+Dialogue: 0,0:00:41.71,0:00:42.20,Caption,,0,0,0,,never {\c&H004EC1F2}been{\c&H00FFFFFF} tested
+Dialogue: 0,0:00:42.20,0:00:42.69,Caption,,0,0,0,,never been {\c&H004EC1F2}tested{\c&H00FFFFFF}
+Dialogue: 0,0:00:42.69,0:00:43.18,Caption,,0,0,0,,{\c&H004EC1F2}is{\c&H00FFFFFF} a faith
+Dialogue: 0,0:00:43.18,0:00:43.67,Caption,,0,0,0,,is {\c&H004EC1F2}a{\c&H00FFFFFF} faith
+Dialogue: 0,0:00:43.67,0:00:44.16,Caption,,0,0,0,,is a {\c&H004EC1F2}faith{\c&H00FFFFFF}
+Dialogue: 0,0:00:44.16,0:00:44.65,Caption,,0,0,0,,{\c&H004EC1F2}that{\c&H00FFFFFF} cannot be
+Dialogue: 0,0:00:44.65,0:00:45.14,Caption,,0,0,0,,that {\c&H004EC1F2}cannot{\c&H00FFFFFF} be
+Dialogue: 0,0:00:45.14,0:00:45.63,Caption,,0,0,0,,that cannot {\c&H004EC1F2}be{\c&H00FFFFFF}
+Dialogue: 0,0:00:45.63,0:00:46.72,Caption,,0,0,0,,{\c&H004EC1F2}trusted.{\c&H00FFFFFF} And some
+Dialogue: 0,0:00:46.72,0:00:47.21,Caption,,0,0,0,,trusted. {\c&H004EC1F2}And{\c&H00FFFFFF} some
+Dialogue: 0,0:00:47.21,0:00:47.70,Caption,,0,0,0,,trusted. And {\c&H004EC1F2}some{\c&H00FFFFFF}
+Dialogue: 0,0:00:47.70,0:00:48.19,Caption,,0,0,0,,{\c&H004EC1F2}of{\c&H00FFFFFF} you are
+Dialogue: 0,0:00:48.19,0:00:48.68,Caption,,0,0,0,,of {\c&H004EC1F2}you{\c&H00FFFFFF} are
+Dialogue: 0,0:00:48.68,0:00:49.17,Caption,,0,0,0,,of you {\c&H004EC1F2}are{\c&H00FFFFFF}
+Dialogue: 0,0:00:49.17,0:00:49.66,Caption,,0,0,0,,{\c&H004EC1F2}about{\c&H00FFFFFF} to find
+Dialogue: 0,0:00:49.66,0:00:50.15,Caption,,0,0,0,,about {\c&H004EC1F2}to{\c&H00FFFFFF} find
+Dialogue: 0,0:00:50.15,0:00:50.64,Caption,,0,0,0,,about to {\c&H004EC1F2}find{\c&H00FFFFFF}
+Dialogue: 0,0:00:50.64,0:00:51.13,Caption,,0,0,0,,{\c&H004EC1F2}out{\c&H00FFFFFF} exactly what
+Dialogue: 0,0:00:51.13,0:00:51.62,Caption,,0,0,0,,out {\c&H004EC1F2}exactly{\c&H00FFFFFF} what
+Dialogue: 0,0:00:51.62,0:00:52.11,Caption,,0,0,0,,out exactly {\c&H004EC1F2}what{\c&H00FFFFFF}
+Dialogue: 0,0:00:52.11,0:00:52.60,Caption,,0,0,0,,{\c&H004EC1F2}you{\c&H00FFFFFF} are made
+Dialogue: 0,0:00:52.60,0:00:53.09,Caption,,0,0,0,,you {\c&H004EC1F2}are{\c&H00FFFFFF} made
+Dialogue: 0,0:00:53.09,0:00:53.58,Caption,,0,0,0,,you are {\c&H004EC1F2}made{\c&H00FFFFFF}
+Dialogue: 0,0:00:53.58,0:00:54.67,Caption,,0,0,0,,{\c&H004EC1F2}of.{\c&H00FFFFFF} Turn with
+Dialogue: 0,0:00:54.67,0:00:55.16,Caption,,0,0,0,,of. {\c&H004EC1F2}Turn{\c&H00FFFFFF} with
+Dialogue: 0,0:00:55.16,0:00:55.65,Caption,,0,0,0,,of. Turn {\c&H004EC1F2}with{\c&H00FFFFFF}
+Dialogue: 0,0:00:55.65,0:00:56.14,Caption,,0,0,0,,{\c&H004EC1F2}me{\c&H00FFFFFF} to Mark
+Dialogue: 0,0:00:56.14,0:00:56.63,Caption,,0,0,0,,me {\c&H004EC1F2}to{\c&H00FFFFFF} Mark
+Dialogue: 0,0:00:56.63,0:00:57.12,Caption,,0,0,0,,me to {\c&H004EC1F2}Mark{\c&H00FFFFFF}
+Dialogue: 0,0:00:57.12,0:00:57.61,Caption,,0,0,0,,{\c&H004EC1F2}chapter{\c&H00FFFFFF} 4, verse
+Dialogue: 0,0:00:57.61,0:00:58.10,Caption,,0,0,0,,chapter {\c&H004EC1F2}4,{\c&H00FFFFFF} verse
+Dialogue: 0,0:00:58.10,0:00:58.59,Caption,,0,0,0,,chapter 4, {\c&H004EC1F2}verse{\c&H00FFFFFF}
+Dialogue: 0,0:00:58.59,0:00:59.08,Caption,,0,0,0,,{\c&H004EC1F2}38,{\c&H00FFFFFF} and watch
+Dialogue: 0,0:00:59.08,0:00:59.57,Caption,,0,0,0,,38, {\c&H004EC1F2}and{\c&H00FFFFFF} watch
+Dialogue: 0,0:00:59.57,0:01:00.06,Caption,,0,0,0,,38, and {\c&H004EC1F2}watch{\c&H00FFFFFF}
+Dialogue: 0,0:01:00.06,0:01:00.55,Caption,,0,0,0,,{\c&H004EC1F2}the{\c&H00FFFFFF} scene very
+Dialogue: 0,0:01:00.55,0:01:01.04,Caption,,0,0,0,,the {\c&H004EC1F2}scene{\c&H00FFFFFF} very
+Dialogue: 0,0:01:01.04,0:01:01.53,Caption,,0,0,0,,the scene {\c&H004EC1F2}very{\c&H00FFFFFF}
+Dialogue: 0,0:01:01.53,0:01:01.95,Caption,,0,0,0,,{\c&H004EC1F2}closely.{\c&H00FFFFFF}

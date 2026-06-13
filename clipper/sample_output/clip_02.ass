@@ -1,0 +1,141 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 2
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,Alignment,MarginL,MarginR,MarginV,Encoding
+Style: Caption,Montserrat,72,&H00FFFFFF,&H000000FF,&H00000000,&H64000000,-1,0,0,0,100,100,0,0,1,4.0,2.0,2,120,120,470,1
+Style: Hook,Montserrat,64,&H004EC1F2,&H000000FF,&H00000000,&H64000000,-1,0,0,0,100,100,0,0,1,5.0,2.0,8,120,120,1180,1
+
+[Events]
+Format: Layer,Start,End,Style,Name,MarginL,MarginR,MarginV,Effect,Text
+Dialogue: 0,0:00:00.00,0:00:00.49,Caption,,0,0,0,,{\c&H004EC1F2}That{\c&H00FFFFFF} same voice,
+Dialogue: 0,0:00:00.00,0:00:03.00,Hook,,0,0,0,,That same voice, that same authority, that same power is…
+Dialogue: 0,0:00:00.00,0:01:04.89,Caption,,0,0,0,,{\an7}{\c&H004EC1F2}{\fs56}{\b1}KBCF
+Dialogue: 0,0:00:00.49,0:00:00.98,Caption,,0,0,0,,That {\c&H004EC1F2}same{\c&H00FFFFFF} voice,
+Dialogue: 0,0:00:00.98,0:00:01.47,Caption,,0,0,0,,That same {\c&H004EC1F2}voice,{\c&H00FFFFFF}
+Dialogue: 0,0:00:01.47,0:00:01.96,Caption,,0,0,0,,{\c&H004EC1F2}that{\c&H00FFFFFF} same authority,
+Dialogue: 0,0:00:01.96,0:00:02.45,Caption,,0,0,0,,that {\c&H004EC1F2}same{\c&H00FFFFFF} authority,
+Dialogue: 0,0:00:02.45,0:00:02.94,Caption,,0,0,0,,that same {\c&H004EC1F2}authority,{\c&H00FFFFFF}
+Dialogue: 0,0:00:02.94,0:00:03.43,Caption,,0,0,0,,{\c&H004EC1F2}that{\c&H00FFFFFF} same power
+Dialogue: 0,0:00:03.43,0:00:03.92,Caption,,0,0,0,,that {\c&H004EC1F2}same{\c&H00FFFFFF} power
+Dialogue: 0,0:00:03.92,0:00:04.41,Caption,,0,0,0,,that same {\c&H004EC1F2}power{\c&H00FFFFFF}
+Dialogue: 0,0:00:04.41,0:00:04.90,Caption,,0,0,0,,{\c&H004EC1F2}is{\c&H00FFFFFF} living down
+Dialogue: 0,0:00:04.90,0:00:05.39,Caption,,0,0,0,,is {\c&H004EC1F2}living{\c&H00FFFFFF} down
+Dialogue: 0,0:00:05.39,0:00:05.88,Caption,,0,0,0,,is living {\c&H004EC1F2}down{\c&H00FFFFFF}
+Dialogue: 0,0:00:05.88,0:00:06.37,Caption,,0,0,0,,{\c&H004EC1F2}on{\c&H00FFFFFF} the inside
+Dialogue: 0,0:00:06.37,0:00:06.86,Caption,,0,0,0,,on {\c&H004EC1F2}the{\c&H00FFFFFF} inside
+Dialogue: 0,0:00:06.86,0:00:07.35,Caption,,0,0,0,,on the {\c&H004EC1F2}inside{\c&H00FFFFFF}
+Dialogue: 0,0:00:07.35,0:00:07.84,Caption,,0,0,0,,{\c&H004EC1F2}of{\c&H00FFFFFF} you. You
+Dialogue: 0,0:00:07.84,0:00:08.93,Caption,,0,0,0,,of {\c&H004EC1F2}you.{\c&H00FFFFFF} You
+Dialogue: 0,0:00:08.93,0:00:09.42,Caption,,0,0,0,,of you. {\c&H004EC1F2}You{\c&H00FFFFFF}
+Dialogue: 0,0:00:09.42,0:00:09.91,Caption,,0,0,0,,{\c&H004EC1F2}have{\c&H00FFFFFF} been talking
+Dialogue: 0,0:00:09.91,0:00:10.40,Caption,,0,0,0,,have {\c&H004EC1F2}been{\c&H00FFFFFF} talking
+Dialogue: 0,0:00:10.40,0:00:10.89,Caption,,0,0,0,,have been {\c&H004EC1F2}talking{\c&H00FFFFFF}
+Dialogue: 0,0:00:10.89,0:00:11.38,Caption,,0,0,0,,{\c&H004EC1F2}about{\c&H00FFFFFF} the storm,
+Dialogue: 0,0:00:11.38,0:00:11.87,Caption,,0,0,0,,about {\c&H004EC1F2}the{\c&H00FFFFFF} storm,
+Dialogue: 0,0:00:11.87,0:00:12.36,Caption,,0,0,0,,about the {\c&H004EC1F2}storm,{\c&H00FFFFFF}
+Dialogue: 0,0:00:12.36,0:00:12.85,Caption,,0,0,0,,{\c&H004EC1F2}but{\c&H00FFFFFF} God says
+Dialogue: 0,0:00:12.85,0:00:13.34,Caption,,0,0,0,,but {\c&H004EC1F2}God{\c&H00FFFFFF} says
+Dialogue: 0,0:00:13.34,0:00:13.83,Caption,,0,0,0,,but God {\c&H004EC1F2}says{\c&H00FFFFFF}
+Dialogue: 0,0:00:13.83,0:00:14.32,Caption,,0,0,0,,{\c&H004EC1F2}it{\c&H00FFFFFF} is time
+Dialogue: 0,0:00:14.32,0:00:14.81,Caption,,0,0,0,,it {\c&H004EC1F2}is{\c&H00FFFFFF} time
+Dialogue: 0,0:00:14.81,0:00:15.30,Caption,,0,0,0,,it is {\c&H004EC1F2}time{\c&H00FFFFFF}
+Dialogue: 0,0:00:15.00,0:00:18.00,Hook,,0,0,0,,That same voice, that same authority, that same power is…
+Dialogue: 0,0:00:15.30,0:00:15.79,Caption,,0,0,0,,{\c&H004EC1F2}to{\c&H00FFFFFF} talk to
+Dialogue: 0,0:00:15.79,0:00:16.28,Caption,,0,0,0,,to {\c&H004EC1F2}talk{\c&H00FFFFFF} to
+Dialogue: 0,0:00:16.28,0:00:16.77,Caption,,0,0,0,,to talk {\c&H004EC1F2}to{\c&H00FFFFFF}
+Dialogue: 0,0:00:16.77,0:00:17.26,Caption,,0,0,0,,{\c&H004EC1F2}the{\c&H00FFFFFF} storm. Hallelujah,
+Dialogue: 0,0:00:17.26,0:00:18.35,Caption,,0,0,0,,the {\c&H004EC1F2}storm.{\c&H00FFFFFF} Hallelujah,
+Dialogue: 0,0:00:18.35,0:00:18.84,Caption,,0,0,0,,the storm. {\c&H004EC1F2}Hallelujah,{\c&H00FFFFFF}
+Dialogue: 0,0:00:18.84,0:00:19.33,Caption,,0,0,0,,{\c&H004EC1F2}somebody{\c&H00FFFFFF} in this
+Dialogue: 0,0:00:19.33,0:00:19.82,Caption,,0,0,0,,somebody {\c&H004EC1F2}in{\c&H00FFFFFF} this
+Dialogue: 0,0:00:19.82,0:00:20.31,Caption,,0,0,0,,somebody in {\c&H004EC1F2}this{\c&H00FFFFFF}
+Dialogue: 0,0:00:20.31,0:00:20.80,Caption,,0,0,0,,{\c&H004EC1F2}room{\c&H00FFFFFF} ought to
+Dialogue: 0,0:00:20.80,0:00:21.29,Caption,,0,0,0,,room {\c&H004EC1F2}ought{\c&H00FFFFFF} to
+Dialogue: 0,0:00:21.29,0:00:21.78,Caption,,0,0,0,,room ought {\c&H004EC1F2}to{\c&H00FFFFFF}
+Dialogue: 0,0:00:21.78,0:00:22.27,Caption,,0,0,0,,{\c&H004EC1F2}give{\c&H00FFFFFF} God a
+Dialogue: 0,0:00:22.27,0:00:22.76,Caption,,0,0,0,,give {\c&H004EC1F2}God{\c&H00FFFFFF} a
+Dialogue: 0,0:00:22.76,0:00:23.25,Caption,,0,0,0,,give God {\c&H004EC1F2}a{\c&H00FFFFFF}
+Dialogue: 0,0:00:23.25,0:00:23.74,Caption,,0,0,0,,{\c&H004EC1F2}real{\c&H00FFFFFF} praise right
+Dialogue: 0,0:00:23.74,0:00:24.23,Caption,,0,0,0,,real {\c&H004EC1F2}praise{\c&H00FFFFFF} right
+Dialogue: 0,0:00:24.23,0:00:24.72,Caption,,0,0,0,,real praise {\c&H004EC1F2}right{\c&H00FFFFFF}
+Dialogue: 0,0:00:24.72,0:00:25.21,Caption,,0,0,0,,{\c&H004EC1F2}about{\c&H00FFFFFF} now. Because
+Dialogue: 0,0:00:25.21,0:00:26.30,Caption,,0,0,0,,about {\c&H004EC1F2}now.{\c&H00FFFFFF} Because
+Dialogue: 0,0:00:26.30,0:00:26.79,Caption,,0,0,0,,about now. {\c&H004EC1F2}Because{\c&H00FFFFFF}
+Dialogue: 0,0:00:26.79,0:00:27.28,Caption,,0,0,0,,{\c&H004EC1F2}the{\c&H00FFFFFF} breakthrough you
+Dialogue: 0,0:00:27.28,0:00:27.77,Caption,,0,0,0,,the {\c&H004EC1F2}breakthrough{\c&H00FFFFFF} you
+Dialogue: 0,0:00:27.77,0:00:28.26,Caption,,0,0,0,,the breakthrough {\c&H004EC1F2}you{\c&H00FFFFFF}
+Dialogue: 0,0:00:28.26,0:00:28.75,Caption,,0,0,0,,{\c&H004EC1F2}have{\c&H00FFFFFF} been begging
+Dialogue: 0,0:00:28.75,0:00:29.24,Caption,,0,0,0,,have {\c&H004EC1F2}been{\c&H00FFFFFF} begging
+Dialogue: 0,0:00:29.24,0:00:29.73,Caption,,0,0,0,,have been {\c&H004EC1F2}begging{\c&H00FFFFFF}
+Dialogue: 0,0:00:29.73,0:00:30.22,Caption,,0,0,0,,{\c&H004EC1F2}for{\c&H00FFFFFF} is the
+Dialogue: 0,0:00:30.22,0:00:30.71,Caption,,0,0,0,,for {\c&H004EC1F2}is{\c&H00FFFFFF} the
+Dialogue: 0,0:00:30.71,0:00:31.20,Caption,,0,0,0,,for is {\c&H004EC1F2}the{\c&H00FFFFFF}
+Dialogue: 0,0:00:31.20,0:00:31.69,Caption,,0,0,0,,{\c&H004EC1F2}breakthrough{\c&H00FFFFFF} you already
+Dialogue: 0,0:00:31.69,0:00:32.18,Caption,,0,0,0,,breakthrough {\c&H004EC1F2}you{\c&H00FFFFFF} already
+Dialogue: 0,0:00:32.18,0:00:32.67,Caption,,0,0,0,,breakthrough you {\c&H004EC1F2}already{\c&H00FFFFFF}
+Dialogue: 0,0:00:32.67,0:00:33.76,Caption,,0,0,0,,{\c&H004EC1F2}carry.{\c&H00FFFFFF} Grace did
+Dialogue: 0,0:00:33.76,0:00:34.25,Caption,,0,0,0,,carry. {\c&H004EC1F2}Grace{\c&H00FFFFFF} did
+Dialogue: 0,0:00:34.25,0:00:34.74,Caption,,0,0,0,,carry. Grace {\c&H004EC1F2}did{\c&H00FFFFFF}
+Dialogue: 0,0:00:34.74,0:00:35.23,Caption,,0,0,0,,{\c&H004EC1F2}not{\c&H00FFFFFF} bring you
+Dialogue: 0,0:00:35.23,0:00:35.72,Caption,,0,0,0,,not {\c&H004EC1F2}bring{\c&H00FFFFFF} you
+Dialogue: 0,0:00:35.72,0:00:36.21,Caption,,0,0,0,,not bring {\c&H004EC1F2}you{\c&H00FFFFFF}
+Dialogue: 0,0:00:36.21,0:00:36.70,Caption,,0,0,0,,{\c&H004EC1F2}this{\c&H00FFFFFF} far just
+Dialogue: 0,0:00:36.70,0:00:37.19,Caption,,0,0,0,,this {\c&H004EC1F2}far{\c&H00FFFFFF} just
+Dialogue: 0,0:00:37.19,0:00:37.68,Caption,,0,0,0,,this far {\c&H004EC1F2}just{\c&H00FFFFFF}
+Dialogue: 0,0:00:37.68,0:00:38.17,Caption,,0,0,0,,{\c&H004EC1F2}to{\c&H00FFFFFF} abandon you
+Dialogue: 0,0:00:38.17,0:00:38.66,Caption,,0,0,0,,to {\c&H004EC1F2}abandon{\c&H00FFFFFF} you
+Dialogue: 0,0:00:38.66,0:00:39.15,Caption,,0,0,0,,to abandon {\c&H004EC1F2}you{\c&H00FFFFFF}
+Dialogue: 0,0:00:39.15,0:00:39.64,Caption,,0,0,0,,{\c&H004EC1F2}at{\c&H00FFFFFF} the edge
+Dialogue: 0,0:00:39.64,0:00:40.13,Caption,,0,0,0,,at {\c&H004EC1F2}the{\c&H00FFFFFF} edge
+Dialogue: 0,0:00:40.13,0:00:40.62,Caption,,0,0,0,,at the {\c&H004EC1F2}edge{\c&H00FFFFFF}
+Dialogue: 0,0:00:40.62,0:00:41.11,Caption,,0,0,0,,{\c&H004EC1F2}of{\c&H00FFFFFF} your miracle.
+Dialogue: 0,0:00:41.11,0:00:41.60,Caption,,0,0,0,,of {\c&H004EC1F2}your{\c&H00FFFFFF} miracle.
+Dialogue: 0,0:00:41.60,0:00:42.69,Caption,,0,0,0,,of your {\c&H004EC1F2}miracle.{\c&H00FFFFFF}
+Dialogue: 0,0:00:42.69,0:00:43.18,Caption,,0,0,0,,{\c&H004EC1F2}So{\c&H00FFFFFF} here is
+Dialogue: 0,0:00:43.18,0:00:43.67,Caption,,0,0,0,,So {\c&H004EC1F2}here{\c&H00FFFFFF} is
+Dialogue: 0,0:00:43.67,0:00:44.16,Caption,,0,0,0,,So here {\c&H004EC1F2}is{\c&H00FFFFFF}
+Dialogue: 0,0:00:44.16,0:00:44.65,Caption,,0,0,0,,{\c&H004EC1F2}your{\c&H00FFFFFF} assignment, church,
+Dialogue: 0,0:00:44.65,0:00:45.14,Caption,,0,0,0,,your {\c&H004EC1F2}assignment,{\c&H00FFFFFF} church,
+Dialogue: 0,0:00:45.14,0:00:45.63,Caption,,0,0,0,,your assignment, {\c&H004EC1F2}church,{\c&H00FFFFFF}
+Dialogue: 0,0:00:45.63,0:00:46.12,Caption,,0,0,0,,{\c&H004EC1F2}before{\c&H00FFFFFF} you leave
+Dialogue: 0,0:00:46.12,0:00:46.61,Caption,,0,0,0,,before {\c&H004EC1F2}you{\c&H00FFFFFF} leave
+Dialogue: 0,0:00:46.61,0:00:47.10,Caption,,0,0,0,,before you {\c&H004EC1F2}leave{\c&H00FFFFFF}
+Dialogue: 0,0:00:47.10,0:00:47.59,Caption,,0,0,0,,{\c&H004EC1F2}this{\c&H00FFFFFF} place today.
+Dialogue: 0,0:00:47.59,0:00:48.08,Caption,,0,0,0,,this {\c&H004EC1F2}place{\c&H00FFFFFF} today.
+Dialogue: 0,0:00:48.08,0:00:49.17,Caption,,0,0,0,,this place {\c&H004EC1F2}today.{\c&H00FFFFFF}
+Dialogue: 0,0:00:49.17,0:00:49.66,Caption,,0,0,0,,{\c&H004EC1F2}Stop{\c&H00FFFFFF} negotiating with
+Dialogue: 0,0:00:49.66,0:00:50.15,Caption,,0,0,0,,Stop {\c&H004EC1F2}negotiating{\c&H00FFFFFF} with
+Dialogue: 0,0:00:50.15,0:00:50.64,Caption,,0,0,0,,Stop negotiating {\c&H004EC1F2}with{\c&H00FFFFFF}
+Dialogue: 0,0:00:50.64,0:00:51.13,Caption,,0,0,0,,{\c&H004EC1F2}the{\c&H00FFFFFF} storm, and
+Dialogue: 0,0:00:51.13,0:00:51.62,Caption,,0,0,0,,the {\c&H004EC1F2}storm,{\c&H00FFFFFF} and
+Dialogue: 0,0:00:51.62,0:00:52.11,Caption,,0,0,0,,the storm, {\c&H004EC1F2}and{\c&H00FFFFFF}
+Dialogue: 0,0:00:52.11,0:00:52.60,Caption,,0,0,0,,{\c&H004EC1F2}stop{\c&H00FFFFFF} rehearsing the
+Dialogue: 0,0:00:52.60,0:00:53.09,Caption,,0,0,0,,stop {\c&H004EC1F2}rehearsing{\c&H00FFFFFF} the
+Dialogue: 0,0:00:53.09,0:00:53.58,Caption,,0,0,0,,stop rehearsing {\c&H004EC1F2}the{\c&H00FFFFFF}
+Dialogue: 0,0:00:53.58,0:00:54.07,Caption,,0,0,0,,{\c&H004EC1F2}fear{\c&H00FFFFFF} over and
+Dialogue: 0,0:00:54.07,0:00:54.56,Caption,,0,0,0,,fear {\c&H004EC1F2}over{\c&H00FFFFFF} and
+Dialogue: 0,0:00:54.56,0:00:55.05,Caption,,0,0,0,,fear over {\c&H004EC1F2}and{\c&H00FFFFFF}
+Dialogue: 0,0:00:55.05,0:00:55.54,Caption,,0,0,0,,{\c&H004EC1F2}over{\c&H00FFFFFF} again. Open
+Dialogue: 0,0:00:55.54,0:00:56.63,Caption,,0,0,0,,over {\c&H004EC1F2}again.{\c&H00FFFFFF} Open
+Dialogue: 0,0:00:56.63,0:00:57.12,Caption,,0,0,0,,over again. {\c&H004EC1F2}Open{\c&H00FFFFFF}
+Dialogue: 0,0:00:57.12,0:00:57.61,Caption,,0,0,0,,{\c&H004EC1F2}your{\c&H00FFFFFF} mouth and
+Dialogue: 0,0:00:57.61,0:00:58.10,Caption,,0,0,0,,your {\c&H004EC1F2}mouth{\c&H00FFFFFF} and
+Dialogue: 0,0:00:58.10,0:00:58.59,Caption,,0,0,0,,your mouth {\c&H004EC1F2}and{\c&H00FFFFFF}
+Dialogue: 0,0:00:58.59,0:00:59.08,Caption,,0,0,0,,{\c&H004EC1F2}speak{\c&H00FFFFFF} to it
+Dialogue: 0,0:00:59.08,0:00:59.57,Caption,,0,0,0,,speak {\c&H004EC1F2}to{\c&H00FFFFFF} it
+Dialogue: 0,0:00:59.57,0:01:00.06,Caption,,0,0,0,,speak to {\c&H004EC1F2}it{\c&H00FFFFFF}
+Dialogue: 0,0:01:00.06,0:01:00.55,Caption,,0,0,0,,{\c&H004EC1F2}the{\c&H00FFFFFF} way Jesus
+Dialogue: 0,0:01:00.55,0:01:01.04,Caption,,0,0,0,,the {\c&H004EC1F2}way{\c&H00FFFFFF} Jesus
+Dialogue: 0,0:01:01.04,0:01:01.53,Caption,,0,0,0,,the way {\c&H004EC1F2}Jesus{\c&H00FFFFFF}
+Dialogue: 0,0:01:01.53,0:01:02.02,Caption,,0,0,0,,{\c&H004EC1F2}did,{\c&H00FFFFFF} with the
+Dialogue: 0,0:01:02.02,0:01:02.51,Caption,,0,0,0,,did, {\c&H004EC1F2}with{\c&H00FFFFFF} the
+Dialogue: 0,0:01:02.51,0:01:03.00,Caption,,0,0,0,,did, with {\c&H004EC1F2}the{\c&H00FFFFFF}
+Dialogue: 0,0:01:03.00,0:01:03.49,Caption,,0,0,0,,{\c&H004EC1F2}authority{\c&H00FFFFFF} you've been
+Dialogue: 0,0:01:03.49,0:01:03.98,Caption,,0,0,0,,authority {\c&H004EC1F2}you've{\c&H00FFFFFF} been
+Dialogue: 0,0:01:03.98,0:01:04.47,Caption,,0,0,0,,authority you've {\c&H004EC1F2}been{\c&H00FFFFFF}
+Dialogue: 0,0:01:04.47,0:01:04.89,Caption,,0,0,0,,{\c&H004EC1F2}given.{\c&H00FFFFFF}

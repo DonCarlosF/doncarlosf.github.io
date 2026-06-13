@@ -1,0 +1,35 @@
+{
+  "index": 3,
+  "hook_text": "Jesus is asleep in the back of the boat while the disciples are panicking for their lives.",
+  "caption": "Jesus is asleep in the back of the boat while the disciples are panicking for their lives. Join us Sunday 9AM in Oakland \u2014 kingdombuilderscf.org",
+  "hashtags": [
+    "kbcf",
+    "oakland",
+    "sermonclip",
+    "faith",
+    "hook"
+  ],
+  "scripture_refs": [],
+  "moment_type": "hook",
+  "scores": {
+    "cliffhanger": 5,
+    "common": 4,
+    "care": 1,
+    "total_3c": 10
+  },
+  "virality_score": 53.3,
+  "rationale": "Heuristic pick: emotional/scriptural density and direct address.",
+  "source": {
+    "start": 63.11,
+    "end": 128.0,
+    "duration": 64.89
+  },
+  "aspect_ratio": "9:16",
+  "low_confidence_transcription": false,
+  "files": {
+    "video": null,
+    "thumbnail": null,
+    "captions": "clip_03.ass"
+  },
+  "generated_at": "2026-06-13T23:49:58Z"
+}

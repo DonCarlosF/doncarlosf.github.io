@@ -1,0 +1,35 @@
+{
+  "index": 2,
+  "hook_text": "That same voice, that same authority, that same power is living down on the inside of you.",
+  "caption": "That same voice, that same authority, that same power is living down on the inside of you. Join us Sunday 9AM in Oakland \u2014 kingdombuilderscf.org",
+  "hashtags": [
+    "kbcf",
+    "oakland",
+    "sermonclip",
+    "faith",
+    "emotional"
+  ],
+  "scripture_refs": [],
+  "moment_type": "emotional",
+  "scores": {
+    "cliffhanger": 2,
+    "common": 5,
+    "care": 5,
+    "total_3c": 12
+  },
+  "virality_score": 64.0,
+  "rationale": "Heuristic pick: emotional/scriptural density and direct address.",
+  "source": {
+    "start": 128.67,
+    "end": 193.56,
+    "duration": 64.89
+  },
+  "aspect_ratio": "9:16",
+  "low_confidence_transcription": false,
+  "files": {
+    "video": null,
+    "thumbnail": null,
+    "captions": "clip_02.ass"
+  },
+  "generated_at": "2026-06-13T23:49:58Z"
+}

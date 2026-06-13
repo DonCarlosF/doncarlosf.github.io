@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KBCF clips — transcript</title>
+<style>
+  :root { --bg:#0f1115; --card:#191c24; --ink:#f2f4f8; --muted:#9aa3b2;
+          --gold:#F2C14E; --green:#2ecc71; --red:#e74c3c; --line:#262b36; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:16px/1.5 -apple-system,Segoe UI,Roboto,Inter,sans-serif;
+         background:var(--bg); color:var(--ink); }
+  header { padding:24px 28px; border-bottom:1px solid var(--line);
+           display:flex; flex-wrap:wrap; gap:8px 20px; align-items:baseline; }
+  header h1 { font-size:20px; margin:0; }
+  header .meta { color:var(--muted); font-size:14px; }
+  header .spacer { flex:1; }
+  button { font:inherit; cursor:pointer; border:0; border-radius:8px; padding:8px 14px; }
+  .ghost { background:transparent; color:var(--muted); border:1px solid var(--line); }
+  .grid { display:grid; gap:20px; padding:24px 28px;
+          grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px;
+          overflow:hidden; display:flex; flex-direction:column; }
+  .card.approved { outline:2px solid var(--green); }
+  .card.rejected { outline:2px solid var(--red); opacity:.6; }
+  video { width:100%; aspect-ratio:9/16; background:#000; display:block; }
+  .body { padding:14px 16px; display:flex; flex-direction:column; gap:10px; }
+  .hook { font-weight:700; font-size:17px; }
+  .caption { color:var(--muted); font-size:14px; }
+  .row { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .pill { font-size:12px; padding:3px 9px; border-radius:999px; background:#222735; color:var(--muted); }
+  .pill.type { background:#2b2233; color:var(--gold); }
+  .score { font-variant-numeric:tabular-nums; }
+  .vir { font-weight:700; color:var(--gold); }
+  .flag { color:var(--red); font-size:12px; }
+  .tags { color:#7ea2ff; font-size:13px; }
+  .scrip { color:var(--gold); font-size:13px; }
+  .actions { display:flex; gap:8px; margin-top:4px; }
+  .approve { background:var(--green); color:#06231a; flex:1; }
+  .reject { background:var(--red); color:#2a0d0a; flex:1; }
+  .src { color:var(--muted); font-size:12px; }
+  details summary { cursor:pointer; color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>KBCF — sermon clips</h1>
+  <span class="meta">
+    sample_transcript · transcript · via file
+    
+  </span>
+  <span class="spacer"></span>
+  <span class="meta" id="tally"></span>
+  <button class="ghost" onclick="exportDecisions()">Export decisions.json</button>
+</header>
+
+<main class="grid">
+
+  <article class="card" id="card-1" data-index="1">
+    
+    <div class="body">
+      <div class="row">
+        <span class="pill type">hook</span>
+        <span class="pill score">3C 13/15</span>
+        <span class="pill">C5 · Co5 · Ca3</span>
+        <span class="spacer"></span>
+        <span class="vir">⚡ 69.3</span>
+      </div>
+      <div class="hook">Can I talk to somebody who's been holding on by a thread this week?</div>
+      <div class="caption">Can I talk to somebody who's been holding on by a thread this week. Join us Sunday 9AM in Oakland — kingdombuilderscf.org</div>
+      
+      <div class="tags">#kbcf #oakland #sermonclip #faith #hook</div>
+      
+      <div class="src">⏱ 0.5s–62.4s · 62s · 9:16</div>
+      <details><summary>Why this clip</summary><p class="caption">Heuristic pick: emotional/scriptural density and direct address.</p></details>
+      <div class="actions">
+        <button class="approve" onclick="decide(1,'approve')">Approve</button>
+        <button class="reject" onclick="decide(1,'reject')">Reject</button>
+      </div>
+    </div>
+  </article>
+
+  <article class="card" id="card-2" data-index="2">
+    
+    <div class="body">
+      <div class="row">
+        <span class="pill type">emotional</span>
+        <span class="pill score">3C 12/15</span>
+        <span class="pill">C2 · Co5 · Ca5</span>
+        <span class="spacer"></span>
+        <span class="vir">⚡ 64.0</span>
+      </div>
+      <div class="hook">That same voice, that same authority, that same power is living down on the inside of you.</div>
+      <div class="caption">That same voice, that same authority, that same power is living down on the inside of you. Join us Sunday 9AM in Oakland — kingdombuilderscf.org</div>
+      
+      <div class="tags">#kbcf #oakland #sermonclip #faith #emotional</div>
+      
+      <div class="src">⏱ 128.7s–193.6s · 65s · 9:16</div>
+      <details><summary>Why this clip</summary><p class="caption">Heuristic pick: emotional/scriptural density and direct address.</p></details>
+      <div class="actions">
+        <button class="approve" onclick="decide(2,'approve')">Approve</button>
+        <button class="reject" onclick="decide(2,'reject')">Reject</button>
+      </div>
+    </div>
+  </article>
+
+  <article class="card" id="card-3" data-index="3">
+    
+    <div class="body">
+      <div class="row">
+        <span class="pill type">hook</span>
+        <span class="pill score">3C 10/15</span>
+        <span class="pill">C5 · Co4 · Ca1</span>
+        <span class="spacer"></span>
+        <span class="vir">⚡ 53.3</span>
+      </div>
+      <div class="hook">Jesus is asleep in the back of the boat while the disciples are panicking for their lives.</div>
+      <div class="caption">Jesus is asleep in the back of the boat while the disciples are panicking for their lives. Join us Sunday 9AM in Oakland — kingdombuilderscf.org</div>
+      
+      <div class="tags">#kbcf #oakland #sermonclip #faith #hook</div>
+      
+      <div class="src">⏱ 63.1s–128.0s · 65s · 9:16</div>
+      <details><summary>Why this clip</summary><p class="caption">Heuristic pick: emotional/scriptural density and direct address.</p></details>
+      <div class="actions">
+        <button class="approve" onclick="decide(3,'approve')">Approve</button>
+        <button class="reject" onclick="decide(3,'reject')">Reject</button>
+      </div>
+    </div>
+  </article>
+
+  <article class="card" id="card-4" data-index="4">
+    
+    <div class="body">
+      <div class="row">
+        <span class="pill type">quote</span>
+        <span class="pill score">3C 8/15</span>
+        <span class="pill">C2 · Co3 · Ca3</span>
+        <span class="spacer"></span>
+        <span class="vir">⚡ 42.7</span>
+      </div>
+      <div class="hook">Say to that situation, peace, be still, and then watch how fast heaven backs you up.</div>
+      <div class="caption">Say to that situation, peace, be still, and then watch how fast heaven backs you up. Join us Sunday 9AM in Oakland — kingdombuilderscf.org</div>
+      
+      <div class="tags">#kbcf #oakland #sermonclip #faith #quote</div>
+      
+      <div class="src">⏱ 194.2s–228.3s · 34s · 9:16</div>
+      <details><summary>Why this clip</summary><p class="caption">Heuristic pick: emotional/scriptural density and direct address.</p></details>
+      <div class="actions">
+        <button class="approve" onclick="decide(4,'approve')">Approve</button>
+        <button class="reject" onclick="decide(4,'reject')">Reject</button>
+      </div>
+    </div>
+  </article>
+
+</main>
+
+<script>
+  const KEY = "kbcf-decisions-transcript";
+  const decisions = JSON.parse(localStorage.getItem(KEY) || "{}");
+  function render() {
+    let a=0,r=0;
+    document.querySelectorAll(".card").forEach(card => {
+      const i = card.dataset.index, d = decisions[i];
+      card.classList.toggle("approved", d==="approve");
+      card.classList.toggle("rejected", d==="reject");
+      if (d==="approve") a++; if (d==="reject") r++;
+    });
+    document.getElementById("tally").textContent =
+      `${a} approved · ${r} rejected · 4 total`;
+  }
+  function decide(i, v) {
+    decisions[i] = (decisions[i]===v) ? undefined : v;
+    if (decisions[i]===undefined) delete decisions[i];
+    localStorage.setItem(KEY, JSON.stringify(decisions));
+    render();
+  }
+  function exportDecisions() {
+    const blob = new Blob([JSON.stringify(decisions, null, 2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "decisions.json"; a.click();
+  }
+  render();
+</script>
+</body>
+</html>

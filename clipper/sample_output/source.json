@@ -1,0 +1,12 @@
+{
+  "ingest_path": "file",
+  "local_path": "fixtures/sample_transcript.json",
+  "broadcast_id": null,
+  "title": "sample_transcript",
+  "source_url": null,
+  "broadcast_date": "transcript",
+  "duration": null,
+  "width": null,
+  "height": null,
+  "fps": null
+}

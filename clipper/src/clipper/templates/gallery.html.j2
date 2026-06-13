@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{{ church.short_name }} clips — {{ broadcast.date }}</title>
+<style>
+  :root { --bg:#0f1115; --card:#191c24; --ink:#f2f4f8; --muted:#9aa3b2;
+          --gold:#F2C14E; --green:#2ecc71; --red:#e74c3c; --line:#262b36; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:16px/1.5 -apple-system,Segoe UI,Roboto,Inter,sans-serif;
+         background:var(--bg); color:var(--ink); }
+  header { padding:24px 28px; border-bottom:1px solid var(--line);
+           display:flex; flex-wrap:wrap; gap:8px 20px; align-items:baseline; }
+  header h1 { font-size:20px; margin:0; }
+  header .meta { color:var(--muted); font-size:14px; }
+  header .spacer { flex:1; }
+  button { font:inherit; cursor:pointer; border:0; border-radius:8px; padding:8px 14px; }
+  .ghost { background:transparent; color:var(--muted); border:1px solid var(--line); }
+  .grid { display:grid; gap:20px; padding:24px 28px;
+          grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px;
+          overflow:hidden; display:flex; flex-direction:column; }
+  .card.approved { outline:2px solid var(--green); }
+  .card.rejected { outline:2px solid var(--red); opacity:.6; }
+  video { width:100%; aspect-ratio:9/16; background:#000; display:block; }
+  .body { padding:14px 16px; display:flex; flex-direction:column; gap:10px; }
+  .hook { font-weight:700; font-size:17px; }
+  .caption { color:var(--muted); font-size:14px; }
+  .row { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .pill { font-size:12px; padding:3px 9px; border-radius:999px; background:#222735; color:var(--muted); }
+  .pill.type { background:#2b2233; color:var(--gold); }
+  .score { font-variant-numeric:tabular-nums; }
+  .vir { font-weight:700; color:var(--gold); }
+  .flag { color:var(--red); font-size:12px; }
+  .tags { color:#7ea2ff; font-size:13px; }
+  .scrip { color:var(--gold); font-size:13px; }
+  .actions { display:flex; gap:8px; margin-top:4px; }
+  .approve { background:var(--green); color:#06231a; flex:1; }
+  .reject { background:var(--red); color:#2a0d0a; flex:1; }
+  .src { color:var(--muted); font-size:12px; }
+  details summary { cursor:pointer; color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>{{ church.short_name }} — sermon clips</h1>
+  <span class="meta">
+    {{ broadcast.title or "Broadcast" }} · {{ broadcast.date }} · via {{ broadcast.ingest_path }}
+    {% if broadcast.url %}· <a style="color:var(--gold)" href="{{ broadcast.url }}">source</a>{% endif %}
+  </span>
+  <span class="spacer"></span>
+  <span class="meta" id="tally"></span>
+  <button class="ghost" onclick="exportDecisions()">Export decisions.json</button>
+</header>
+
+<main class="grid">
+{% for c in clips %}
+  <article class="card" id="card-{{ c.index }}" data-index="{{ c.index }}">
+    {% if c.files.video %}<video controls preload="metadata"
+        {% if c.files.thumbnail %}poster="{{ c.files.thumbnail }}"{% endif %}
+        src="{{ c.files.video }}"></video>{% endif %}
+    <div class="body">
+      <div class="row">
+        <span class="pill type">{{ c.moment_type }}</span>
+        <span class="pill score">3C {{ c.scores.total_3c }}/15</span>
+        <span class="pill">C{{ c.scores.cliffhanger }} · Co{{ c.scores.common }} · Ca{{ c.scores.care }}</span>
+        <span class="spacer"></span>
+        <span class="vir">⚡ {{ c.virality_score }}</span>
+      </div>
+      <div class="hook">{{ c.hook_text }}</div>
+      <div class="caption">{{ c.caption }}</div>
+      {% if c.scripture_refs %}<div class="scrip">📖 {{ c.scripture_refs|join(", ") }}</div>{% endif %}
+      {% if c.hashtags %}<div class="tags">#{{ c.hashtags|join(" #") }}</div>{% endif %}
+      {% if c.low_confidence_transcription %}<div class="flag">⚠︎ low-confidence transcription — review wording</div>{% endif %}
+      <div class="src">⏱ {{ "%.1f"|format(c.source.start) }}s–{{ "%.1f"|format(c.source.end) }}s · {{ "%.0f"|format(c.source.duration) }}s · {{ c.aspect_ratio }}</div>
+      <details><summary>Why this clip</summary><p class="caption">{{ c.rationale }}</p></details>
+      <div class="actions">
+        <button class="approve" onclick="decide({{ c.index }},'approve')">Approve</button>
+        <button class="reject" onclick="decide({{ c.index }},'reject')">Reject</button>
+      </div>
+    </div>
+  </article>
+{% endfor %}
+</main>
+
+<script>
+  const KEY = "kbcf-decisions-{{ broadcast.date }}";
+  const decisions = JSON.parse(localStorage.getItem(KEY) || "{}");
+  function render() {
+    let a=0,r=0;
+    document.querySelectorAll(".card").forEach(card => {
+      const i = card.dataset.index, d = decisions[i];
+      card.classList.toggle("approved", d==="approve");
+      card.classList.toggle("rejected", d==="reject");
+      if (d==="approve") a++; if (d==="reject") r++;
+    });
+    document.getElementById("tally").textContent =
+      `${a} approved · ${r} rejected · {{ clips|length }} total`;
+  }
+  function decide(i, v) {
+    decisions[i] = (decisions[i]===v) ? undefined : v;
+    if (decisions[i]===undefined) delete decisions[i];
+    localStorage.setItem(KEY, JSON.stringify(decisions));
+    render();
+  }
+  function exportDecisions() {
+    const blob = new Blob([JSON.stringify(decisions, null, 2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "decisions.json"; a.click();
+  }
+  render();
+</script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 2
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,Alignment,MarginL,MarginR,MarginV,Encoding
+Style: Caption,Montserrat,72,&H00FFFFFF,&H000000FF,&H00000000,&H64000000,-1,0,0,0,100,100,0,0,1,4.0,2.0,2,120,120,470,1
+Style: Hook,Montserrat,64,&H004EC1F2,&H000000FF,&H00000000,&H64000000,-1,0,0,0,100,100,0,0,1,5.0,2.0,8,120,120,1180,1
+
+[Events]
+Format: Layer,Start,End,Style,Name,MarginL,MarginR,MarginV,Effect,Text
+Dialogue: 0,0:00:00.00,0:00:00.49,Caption,,0,0,0,,{\c&H004EC1F2}Jesus{\c&H00FFFFFF} is asleep
+Dialogue: 0,0:00:00.00,0:00:03.00,Hook,,0,0,0,,Jesus is asleep in the back of the boat while the disciples…
+Dialogue: 0,0:00:00.00,0:01:04.89,Caption,,0,0,0,,{\an7}{\c&H004EC1F2}{\fs56}{\b1}KBCF
+Dialogue: 0,0:00:00.49,0:00:00.98,Caption,,0,0,0,,Jesus {\c&H004EC1F2}is{\c&H00FFFFFF} asleep
+Dialogue: 0,0:00:00.98,0:00:01.47,Caption,,0,0,0,,Jesus is {\c&H004EC1F2}asleep{\c&H00FFFFFF}
+Dialogue: 0,0:00:01.47,0:00:01.96,Caption,,0,0,0,,{\c&H004EC1F2}in{\c&H00FFFFFF} the back
+Dialogue: 0,0:00:01.96,0:00:02.45,Caption,,0,0,0,,in {\c&H004EC1F2}the{\c&H00FFFFFF} back
+Dialogue: 0,0:00:02.45,0:00:02.94,Caption,,0,0,0,,in the {\c&H004EC1F2}back{\c&H00FFFFFF}
+Dialogue: 0,0:00:02.94,0:00:03.43,Caption,,0,0,0,,{\c&H004EC1F2}of{\c&H00FFFFFF} the boat
+Dialogue: 0,0:00:03.43,0:00:03.92,Caption,,0,0,0,,of {\c&H004EC1F2}the{\c&H00FFFFFF} boat
+Dialogue: 0,0:00:03.92,0:00:04.41,Caption,,0,0,0,,of the {\c&H004EC1F2}boat{\c&H00FFFFFF}
+Dialogue: 0,0:00:04.41,0:00:04.90,Caption,,0,0,0,,{\c&H004EC1F2}while{\c&H00FFFFFF} the disciples
+Dialogue: 0,0:00:04.90,0:00:05.39,Caption,,0,0,0,,while {\c&H004EC1F2}the{\c&H00FFFFFF} disciples
+Dialogue: 0,0:00:05.39,0:00:05.88,Caption,,0,0,0,,while the {\c&H004EC1F2}disciples{\c&H00FFFFFF}
+Dialogue: 0,0:00:05.88,0:00:06.37,Caption,,0,0,0,,{\c&H004EC1F2}are{\c&H00FFFFFF} panicking for
+Dialogue: 0,0:00:06.37,0:00:06.86,Caption,,0,0,0,,are {\c&H004EC1F2}panicking{\c&H00FFFFFF} for
+Dialogue: 0,0:00:06.86,0:00:07.35,Caption,,0,0,0,,are panicking {\c&H004EC1F2}for{\c&H00FFFFFF}
+Dialogue: 0,0:00:07.35,0:00:07.84,Caption,,0,0,0,,{\c&H004EC1F2}their{\c&H00FFFFFF} lives. And
+Dialogue: 0,0:00:07.84,0:00:08.93,Caption,,0,0,0,,their {\c&H004EC1F2}lives.{\c&H00FFFFFF} And
+Dialogue: 0,0:00:08.93,0:00:09.42,Caption,,0,0,0,,their lives. {\c&H004EC1F2}And{\c&H00FFFFFF}
+Dialogue: 0,0:00:09.42,0:00:09.91,Caption,,0,0,0,,{\c&H004EC1F2}they{\c&H00FFFFFF} ask him
+Dialogue: 0,0:00:09.91,0:00:10.40,Caption,,0,0,0,,they {\c&H004EC1F2}ask{\c&H00FFFFFF} him
+Dialogue: 0,0:00:10.40,0:00:10.89,Caption,,0,0,0,,they ask {\c&H004EC1F2}him{\c&H00FFFFFF}
+Dialogue: 0,0:00:10.89,0:00:11.38,Caption,,0,0,0,,{\c&H004EC1F2}the{\c&H00FFFFFF} question every
+Dialogue: 0,0:00:11.38,0:00:11.87,Caption,,0,0,0,,the {\c&H004EC1F2}question{\c&H00FFFFFF} every
+Dialogue: 0,0:00:11.87,0:00:12.36,Caption,,0,0,0,,the question {\c&H004EC1F2}every{\c&H00FFFFFF}
+Dialogue: 0,0:00:12.36,0:00:12.85,Caption,,0,0,0,,{\c&H004EC1F2}one{\c&H00FFFFFF} of us
+Dialogue: 0,0:00:12.85,0:00:13.34,Caption,,0,0,0,,one {\c&H004EC1F2}of{\c&H00FFFFFF} us
+Dialogue: 0,0:00:13.34,0:00:13.83,Caption,,0,0,0,,one of {\c&H004EC1F2}us{\c&H00FFFFFF}
+Dialogue: 0,0:00:13.83,0:00:14.32,Caption,,0,0,0,,{\c&H004EC1F2}has{\c&H00FFFFFF} asked God
+Dialogue: 0,0:00:14.32,0:00:14.81,Caption,,0,0,0,,has {\c&H004EC1F2}asked{\c&H00FFFFFF} God
+Dialogue: 0,0:00:14.81,0:00:15.30,Caption,,0,0,0,,has asked {\c&H004EC1F2}God{\c&H00FFFFFF}
+Dialogue: 0,0:00:15.00,0:00:18.00,Hook,,0,0,0,,Jesus is asleep in the back of the boat while the disciples…
+Dialogue: 0,0:00:15.30,0:00:15.79,Caption,,0,0,0,,{\c&H004EC1F2}at{\c&H00FFFFFF} midnight. Do
+Dialogue: 0,0:00:15.79,0:00:16.88,Caption,,0,0,0,,at {\c&H004EC1F2}midnight.{\c&H00FFFFFF} Do
+Dialogue: 0,0:00:16.88,0:00:17.37,Caption,,0,0,0,,at midnight. {\c&H004EC1F2}Do{\c&H00FFFFFF}
+Dialogue: 0,0:00:17.37,0:00:17.86,Caption,,0,0,0,,{\c&H004EC1F2}you{\c&H00FFFFFF} not care,
+Dialogue: 0,0:00:17.86,0:00:18.35,Caption,,0,0,0,,you {\c&H004EC1F2}not{\c&H00FFFFFF} care,
+Dialogue: 0,0:00:18.35,0:00:18.84,Caption,,0,0,0,,you not {\c&H004EC1F2}care,{\c&H00FFFFFF}
+Dialogue: 0,0:00:18.84,0:00:19.33,Caption,,0,0,0,,{\c&H004EC1F2}Lord,{\c&H00FFFFFF} do you
+Dialogue: 0,0:00:19.33,0:00:19.82,Caption,,0,0,0,,Lord, {\c&H004EC1F2}do{\c&H00FFFFFF} you
+Dialogue: 0,0:00:19.82,0:00:20.31,Caption,,0,0,0,,Lord, do {\c&H004EC1F2}you{\c&H00FFFFFF}
+Dialogue: 0,0:00:20.31,0:00:20.80,Caption,,0,0,0,,{\c&H004EC1F2}not{\c&H00FFFFFF} care that
+Dialogue: 0,0:00:20.80,0:00:21.29,Caption,,0,0,0,,not {\c&H004EC1F2}care{\c&H00FFFFFF} that
+Dialogue: 0,0:00:21.29,0:00:21.78,Caption,,0,0,0,,not care {\c&H004EC1F2}that{\c&H00FFFFFF}
+Dialogue: 0,0:00:21.78,0:00:22.27,Caption,,0,0,0,,{\c&H004EC1F2}we{\c&H00FFFFFF} are perishing
+Dialogue: 0,0:00:22.27,0:00:22.76,Caption,,0,0,0,,we {\c&H004EC1F2}are{\c&H00FFFFFF} perishing
+Dialogue: 0,0:00:22.76,0:00:23.25,Caption,,0,0,0,,we are {\c&H004EC1F2}perishing{\c&H00FFFFFF}
+Dialogue: 0,0:00:23.25,0:00:23.74,Caption,,0,0,0,,{\c&H004EC1F2}out{\c&H00FFFFFF} here? But
+Dialogue: 0,0:00:23.74,0:00:24.83,Caption,,0,0,0,,out {\c&H004EC1F2}here?{\c&H00FFFFFF} But
+Dialogue: 0,0:00:24.83,0:00:25.32,Caption,,0,0,0,,out here? {\c&H004EC1F2}But{\c&H00FFFFFF}
+Dialogue: 0,0:00:25.32,0:00:25.81,Caption,,0,0,0,,{\c&H004EC1F2}watch{\c&H00FFFFFF} this, watch
+Dialogue: 0,0:00:25.81,0:00:26.30,Caption,,0,0,0,,watch {\c&H004EC1F2}this,{\c&H00FFFFFF} watch
+Dialogue: 0,0:00:26.30,0:00:26.79,Caption,,0,0,0,,watch this, {\c&H004EC1F2}watch{\c&H00FFFFFF}
+Dialogue: 0,0:00:26.79,0:00:27.28,Caption,,0,0,0,,{\c&H004EC1F2}this:{\c&H00FFFFFF} the peace
+Dialogue: 0,0:00:27.28,0:00:27.77,Caption,,0,0,0,,this: {\c&H004EC1F2}the{\c&H00FFFFFF} peace
+Dialogue: 0,0:00:27.77,0:00:28.26,Caption,,0,0,0,,this: the {\c&H004EC1F2}peace{\c&H00FFFFFF}
+Dialogue: 0,0:00:28.26,0:00:28.75,Caption,,0,0,0,,{\c&H004EC1F2}was{\c&H00FFFFFF} already in
+Dialogue: 0,0:00:28.75,0:00:29.24,Caption,,0,0,0,,was {\c&H004EC1F2}already{\c&H00FFFFFF} in
+Dialogue: 0,0:00:29.24,0:00:29.73,Caption,,0,0,0,,was already {\c&H004EC1F2}in{\c&H00FFFFFF}
+Dialogue: 0,0:00:29.73,0:00:30.22,Caption,,0,0,0,,{\c&H004EC1F2}the{\c&H00FFFFFF} boat the
+Dialogue: 0,0:00:30.22,0:00:30.71,Caption,,0,0,0,,the {\c&H004EC1F2}boat{\c&H00FFFFFF} the
+Dialogue: 0,0:00:30.71,0:00:31.20,Caption,,0,0,0,,the boat {\c&H004EC1F2}the{\c&H00FFFFFF}
+Dialogue: 0,0:00:31.20,0:00:31.69,Caption,,0,0,0,,{\c&H004EC1F2}whole{\c&H00FFFFFF} time. They
+Dialogue: 0,0:00:31.69,0:00:32.78,Caption,,0,0,0,,whole {\c&H004EC1F2}time.{\c&H00FFFFFF} They
+Dialogue: 0,0:00:32.78,0:00:33.27,Caption,,0,0,0,,whole time. {\c&H004EC1F2}They{\c&H00FFFFFF}
+Dialogue: 0,0:00:33.27,0:00:33.76,Caption,,0,0,0,,{\c&H004EC1F2}were{\c&H00FFFFFF} screaming for
+Dialogue: 0,0:00:33.76,0:00:34.25,Caption,,0,0,0,,were {\c&H004EC1F2}screaming{\c&H00FFFFFF} for
+Dialogue: 0,0:00:34.25,0:00:34.74,Caption,,0,0,0,,were screaming {\c&H004EC1F2}for{\c&H00FFFFFF}
+Dialogue: 0,0:00:34.74,0:00:35.23,Caption,,0,0,0,,{\c&H004EC1F2}a{\c&H00FFFFFF} rescue while
+Dialogue: 0,0:00:35.23,0:00:35.72,Caption,,0,0,0,,a {\c&H004EC1F2}rescue{\c&H00FFFFFF} while
+Dialogue: 0,0:00:35.72,0:00:36.21,Caption,,0,0,0,,a rescue {\c&H004EC1F2}while{\c&H00FFFFFF}
+Dialogue: 0,0:00:36.21,0:00:36.70,Caption,,0,0,0,,{\c&H004EC1F2}their{\c&H00FFFFFF} rescue was
+Dialogue: 0,0:00:36.70,0:00:37.19,Caption,,0,0,0,,their {\c&H004EC1F2}rescue{\c&H00FFFFFF} was
+Dialogue: 0,0:00:37.19,0:00:37.68,Caption,,0,0,0,,their rescue {\c&H004EC1F2}was{\c&H00FFFFFF}
+Dialogue: 0,0:00:37.68,0:00:38.17,Caption,,0,0,0,,{\c&H004EC1F2}sleeping{\c&H00FFFFFF} right beside
+Dialogue: 0,0:00:38.17,0:00:38.66,Caption,,0,0,0,,sleeping {\c&H004EC1F2}right{\c&H00FFFFFF} beside
+Dialogue: 0,0:00:38.66,0:00:39.15,Caption,,0,0,0,,sleeping right {\c&H004EC1F2}beside{\c&H00FFFFFF}
+Dialogue: 0,0:00:39.15,0:00:40.24,Caption,,0,0,0,,{\c&H004EC1F2}them.{\c&H00FFFFFF} Sometimes you
+Dialogue: 0,0:00:40.24,0:00:40.73,Caption,,0,0,0,,them. {\c&H004EC1F2}Sometimes{\c&H00FFFFFF} you
+Dialogue: 0,0:00:40.73,0:00:41.22,Caption,,0,0,0,,them. Sometimes {\c&H004EC1F2}you{\c&H00FFFFFF}
+Dialogue: 0,0:00:41.22,0:00:41.71,Caption,,0,0,0,,{\c&H004EC1F2}are{\c&H00FFFFFF} crying out
+Dialogue: 0,0:00:41.71,0:00:42.20,Caption,,0,0,0,,are {\c&H004EC1F2}crying{\c&H00FFFFFF} out
+Dialogue: 0,0:00:42.20,0:00:42.69,Caption,,0,0,0,,are crying {\c&H004EC1F2}out{\c&H00FFFFFF}
+Dialogue: 0,0:00:42.69,0:00:43.18,Caption,,0,0,0,,{\c&H004EC1F2}for{\c&H00FFFFFF} a peace
+Dialogue: 0,0:00:43.18,0:00:43.67,Caption,,0,0,0,,for {\c&H004EC1F2}a{\c&H00FFFFFF} peace
+Dialogue: 0,0:00:43.67,0:00:44.16,Caption,,0,0,0,,for a {\c&H004EC1F2}peace{\c&H00FFFFFF}
+Dialogue: 0,0:00:44.16,0:00:44.65,Caption,,0,0,0,,{\c&H004EC1F2}that{\c&H00FFFFFF} is already
+Dialogue: 0,0:00:44.65,0:00:45.14,Caption,,0,0,0,,that {\c&H004EC1F2}is{\c&H00FFFFFF} already
+Dialogue: 0,0:00:45.14,0:00:45.63,Caption,,0,0,0,,that is {\c&H004EC1F2}already{\c&H00FFFFFF}
+Dialogue: 0,0:00:45.63,0:00:46.12,Caption,,0,0,0,,{\c&H004EC1F2}sleeping{\c&H00FFFFFF} on the
+Dialogue: 0,0:00:46.12,0:00:46.61,Caption,,0,0,0,,sleeping {\c&H004EC1F2}on{\c&H00FFFFFF} the
+Dialogue: 0,0:00:46.61,0:00:47.10,Caption,,0,0,0,,sleeping on {\c&H004EC1F2}the{\c&H00FFFFFF}
+Dialogue: 0,0:00:47.10,0:00:47.59,Caption,,0,0,0,,{\c&H004EC1F2}inside{\c&H00FFFFFF} of you.
+Dialogue: 0,0:00:47.59,0:00:48.08,Caption,,0,0,0,,inside {\c&H004EC1F2}of{\c&H00FFFFFF} you.
+Dialogue: 0,0:00:48.08,0:00:49.17,Caption,,0,0,0,,inside of {\c&H004EC1F2}you.{\c&H00FFFFFF}
+Dialogue: 0,0:00:49.17,0:00:49.66,Caption,,0,0,0,,{\c&H004EC1F2}When{\c&H00FFFFFF} Jesus finally
+Dialogue: 0,0:00:49.66,0:00:50.15,Caption,,0,0,0,,When {\c&H004EC1F2}Jesus{\c&H00FFFFFF} finally
+Dialogue: 0,0:00:50.15,0:00:50.64,Caption,,0,0,0,,When Jesus {\c&H004EC1F2}finally{\c&H00FFFFFF}
+Dialogue: 0,0:00:50.64,0:00:51.13,Caption,,0,0,0,,{\c&H004EC1F2}stood{\c&H00FFFFFF} up and
+Dialogue: 0,0:00:51.13,0:00:51.62,Caption,,0,0,0,,stood {\c&H004EC1F2}up{\c&H00FFFFFF} and
+Dialogue: 0,0:00:51.62,0:00:52.11,Caption,,0,0,0,,stood up {\c&H004EC1F2}and{\c&H00FFFFFF}
+Dialogue: 0,0:00:52.11,0:00:52.60,Caption,,0,0,0,,{\c&H004EC1F2}said{\c&H00FFFFFF} peace, be
+Dialogue: 0,0:00:52.60,0:00:53.09,Caption,,0,0,0,,said {\c&H004EC1F2}peace,{\c&H00FFFFFF} be
+Dialogue: 0,0:00:53.09,0:00:53.58,Caption,,0,0,0,,said peace, {\c&H004EC1F2}be{\c&H00FFFFFF}
+Dialogue: 0,0:00:53.58,0:00:54.07,Caption,,0,0,0,,{\c&H004EC1F2}still,{\c&H00FFFFFF} the wind
+Dialogue: 0,0:00:54.07,0:00:54.56,Caption,,0,0,0,,still, {\c&H004EC1F2}the{\c&H00FFFFFF} wind
+Dialogue: 0,0:00:54.56,0:00:55.05,Caption,,0,0,0,,still, the {\c&H004EC1F2}wind{\c&H00FFFFFF}
+Dialogue: 0,0:00:55.05,0:00:55.54,Caption,,0,0,0,,{\c&H004EC1F2}did{\c&H00FFFFFF} not argue
+Dialogue: 0,0:00:55.54,0:00:56.03,Caption,,0,0,0,,did {\c&H004EC1F2}not{\c&H00FFFFFF} argue
+Dialogue: 0,0:00:56.03,0:00:56.52,Caption,,0,0,0,,did not {\c&H004EC1F2}argue{\c&H00FFFFFF}
+Dialogue: 0,0:00:56.52,0:00:57.01,Caption,,0,0,0,,{\c&H004EC1F2}with{\c&H00FFFFFF} him. The
+Dialogue: 0,0:00:57.01,0:00:58.10,Caption,,0,0,0,,with {\c&H004EC1F2}him.{\c&H00FFFFFF} The
+Dialogue: 0,0:00:58.10,0:00:58.59,Caption,,0,0,0,,with him. {\c&H004EC1F2}The{\c&H00FFFFFF}
+Dialogue: 0,0:00:58.59,0:00:59.08,Caption,,0,0,0,,{\c&H004EC1F2}wind{\c&H00FFFFFF} that was
+Dialogue: 0,0:00:59.08,0:00:59.57,Caption,,0,0,0,,wind {\c&H004EC1F2}that{\c&H00FFFFFF} was
+Dialogue: 0,0:00:59.57,0:01:00.06,Caption,,0,0,0,,wind that {\c&H004EC1F2}was{\c&H00FFFFFF}
+Dialogue: 0,0:01:00.06,0:01:00.55,Caption,,0,0,0,,{\c&H004EC1F2}bullying{\c&H00FFFFFF} the disciples
+Dialogue: 0,0:01:00.55,0:01:01.04,Caption,,0,0,0,,bullying {\c&H004EC1F2}the{\c&H00FFFFFF} disciples
+Dialogue: 0,0:01:01.04,0:01:01.53,Caption,,0,0,0,,bullying the {\c&H004EC1F2}disciples{\c&H00FFFFFF}
+Dialogue: 0,0:01:01.53,0:01:02.02,Caption,,0,0,0,,{\c&H004EC1F2}heard{\c&H00FFFFFF} one word
+Dialogue: 0,0:01:02.02,0:01:02.51,Caption,,0,0,0,,heard {\c&H004EC1F2}one{\c&H00FFFFFF} word
+Dialogue: 0,0:01:02.51,0:01:03.00,Caption,,0,0,0,,heard one {\c&H004EC1F2}word{\c&H00FFFFFF}
+Dialogue: 0,0:01:03.00,0:01:03.49,Caption,,0,0,0,,{\c&H004EC1F2}and{\c&H00FFFFFF} immediately sat
+Dialogue: 0,0:01:03.49,0:01:03.98,Caption,,0,0,0,,and {\c&H004EC1F2}immediately{\c&H00FFFFFF} sat
+Dialogue: 0,0:01:03.98,0:01:04.47,Caption,,0,0,0,,and immediately {\c&H004EC1F2}sat{\c&H00FFFFFF}
+Dialogue: 0,0:01:04.47,0:01:04.89,Caption,,0,0,0,,{\c&H004EC1F2}down.{\c&H00FFFFFF}
