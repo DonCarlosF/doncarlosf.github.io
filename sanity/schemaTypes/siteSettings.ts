@@ -35,6 +35,7 @@ export const siteSettings = defineType({
     defineField({ name: "boxcastId", title: "BoxCast channel ID", type: "string", group: "integrations" }),
     defineField({ name: "givingProvider", title: "Giving provider", type: "string", group: "integrations" }),
     defineField({ name: "givingUrl", title: "Giving URL (embed/deep link)", type: "url", group: "integrations" }),
+    defineField({ name: "heroVideoUrl", title: "Hero background video URL (optional, muted loop)", type: "url", group: "integrations" }),
   ],
   preview: { prepare: () => ({ title: "Site Settings" }) },
 });

@@ -28,6 +28,8 @@ export const siteSettings: SiteSettings = {
   boxcastId: "wsiikymmlhksnkgmc24r",
   givingProvider: "Clover",
   givingUrl: "https://www.clover.com/pay-widgets/fab217bf-1afb-4bda-9d0d-085098cbadac",
+  heroVideoUrl: undefined, // add an MP4/HLS hero loop in the CMS when available
+
   // Social handles not supplied — left empty rather than guessed.
   social: [],
   mapEmbedQuery: "1431 17th Avenue, Oakland, CA 94606",
@@ -58,6 +60,8 @@ export const leaders: Leader[] = [
 ];
 
 const sampleSeries: Series = { _id: "ser-sample", title: "Sample Series", slug: "sample-series", description: "Replace with a real series in the CMS." };
+
+export const seriesList: Series[] = [sampleSeries];
 
 // Sample sermons demonstrate the archive UI. Clearly flagged; nothing here is a
 // real KBCF message, title, or scripture claim.

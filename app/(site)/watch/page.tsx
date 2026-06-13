@@ -70,7 +70,10 @@ export default async function WatchPage() {
       <Section id="archive">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <SectionHeading eyebrow="Archive" title="Past messages" />
-          <Link href="/search" className="text-sm font-semibold text-primary hover:underline">Search by topic, speaker, or scripture →</Link>
+          <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm font-semibold text-primary">
+            <Link href="/watch/series" className="hover:underline">Browse by series →</Link>
+            <Link href="/search" className="hover:underline">Search messages →</Link>
+          </div>
         </div>
         <div className="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
           {sermons.map((s) => (

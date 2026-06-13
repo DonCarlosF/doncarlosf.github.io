@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:sanity": "node scripts/seed-sanity.mjs"
   },
   "dependencies": {
     "@portabletext/react": "^6.2.0",

@@ -8,7 +8,7 @@ const imgProj = `{ "src": asset->url, "alt": coalesce(alt, "") }`;
 export const siteSettingsQuery = `*[_type == "siteSettings"][0]{
   churchName, tagline, mission, address, phone, email,
   serviceTimes[]{ day, label, time },
-  boxcastId, givingProvider, givingUrl,
+  boxcastId, givingProvider, givingUrl, heroVideoUrl,
   social[]{ platform, url },
   "mapEmbedQuery": coalesce(mapEmbedQuery, address.street + ", " + address.city + ", " + address.state + " " + address.zip)
 }`;
@@ -32,6 +32,11 @@ export const latestSermonQuery = `*[_type == "sermon"] | order(date desc)[0] ${s
 export const sermonBySlugQuery = `*[_type == "sermon" && slug.current == $slug][0] ${sermonProj}`;
 
 export const clipsQuery = `*[_type == "clip"] | order(viralityScore desc) ${clipProj}`;
+
+const seriesProj = `{ "_id": _id, title, "slug": slug.current, description, "image": image${imgProj} }`;
+export const seriesListQuery = `*[_type == "series"] | order(title asc) ${seriesProj}`;
+export const seriesBySlugQuery = `*[_type == "series" && slug.current == $slug][0] ${seriesProj}`;
+export const sermonsBySeriesQuery = `*[_type == "sermon" && series->slug.current == $slug] | order(date desc) ${sermonProj}`;
 
 const eventProj = `{
   "_id": _id, title, "slug": slug.current, start, end, allDay, recurrence,

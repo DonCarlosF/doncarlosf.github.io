@@ -39,6 +39,7 @@ export type SiteSettings = {
   boxcastId: string;
   givingUrl: string;
   givingProvider: string;
+  heroVideoUrl?: string;   // optional hero background video (muted loop)
   social: SocialLink[];
   mapEmbedQuery: string; // address string used to build a maps embed
 };

@@ -11,7 +11,7 @@ import { sanityClient } from "./client";
 import * as seed from "./seed";
 import * as q from "./queries";
 import type {
-  SiteSettings, Sermon, ChurchEvent, Group, Leader, BlogPost, Testimonial, Clip,
+  SiteSettings, Sermon, ChurchEvent, Group, Leader, BlogPost, Testimonial, Clip, Series,
 } from "./types";
 import {
   getPlanningCenterEvents, getPlanningCenterGroups, isPlanningCenterConfigured,
@@ -55,6 +55,25 @@ export async function getClips(): Promise<Clip[]> {
   const data = await sfetch<Clip[]>(q.clipsQuery);
   if (nonEmpty(data)) return data;
   return seed.sermons.flatMap((s) => s.clips ?? []);
+}
+
+export async function getSeriesList(): Promise<Series[]> {
+  const data = await sfetch<Series[]>(q.seriesListQuery);
+  return nonEmpty(data) ? data : seed.seriesList;
+}
+
+export async function getSeries(slug: string): Promise<{ series: Series; sermons: Sermon[] } | null> {
+  if (sanityClient) {
+    const series = await sfetch<Series>(q.seriesBySlugQuery, { slug });
+    if (series) {
+      const sermons = (await sfetch<Sermon[]>(q.sermonsBySeriesQuery, { slug })) ?? [];
+      return { series, sermons };
+    }
+  }
+  const series = seed.seriesList.find((s) => s.slug === slug);
+  if (!series) return null;
+  const sermons = seed.sermons.filter((s) => s.series?._id === series._id);
+  return { series, sermons };
 }
 
 /** All events (CMS/seed) merged with Planning Center when configured. */

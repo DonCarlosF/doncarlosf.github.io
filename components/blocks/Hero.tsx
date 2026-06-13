@@ -10,7 +10,22 @@ export function Hero({ settings }: { settings: SiteSettings }) {
 
   return (
     <section className="hero-grain relative isolate overflow-hidden text-white">
-      <div className="hero-bg absolute inset-0 -z-10" aria-hidden />
+      {settings.heroVideoUrl ? (
+        <>
+          <video
+            className="absolute inset-0 -z-20 h-full w-full object-cover"
+            src={settings.heroVideoUrl}
+            autoPlay
+            muted
+            loop
+            playsInline
+            aria-hidden
+          />
+          <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black/45 to-black/80" aria-hidden />
+        </>
+      ) : (
+        <div className="hero-bg absolute inset-0 -z-10" aria-hidden />
+      )}
       <Container className="relative py-20 sm:py-28 lg:py-32">
         <div className="max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/75">
