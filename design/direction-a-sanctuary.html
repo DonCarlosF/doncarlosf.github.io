@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KBCF — Direction A: "Sanctuary"</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#211A14; --ivory:#FBF6EE; --ivory-2:#F3E9DA;
+    --garnet:#7A1E2B; --garnet-deep:#5E121D; --amber:#E0A53A;
+    --evergreen:#2E3A2F; --muted:#6F6256; --line:#E4D7C5;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--ivory);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+  .serif{font-family:'Fraunces',Georgia,serif}
+  .eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;font-weight:600;color:var(--garnet)}
+  a{color:inherit;text-decoration:none}
+  .btn{display:inline-flex;align-items:center;gap:.5rem;font-weight:600;font-size:15px;padding:14px 22px;border-radius:999px;transition:transform .25s ease,box-shadow .25s ease,background .25s ease}
+  .btn-primary{background:var(--garnet);color:#fff;box-shadow:0 8px 24px rgba(122,30,43,.28)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(122,30,43,.38)}
+  .btn-ghost{border:1.5px solid rgba(251,246,238,.6);color:#fff}
+  .btn-ghost:hover{background:rgba(251,246,238,.12)}
+  .btn-dark{background:var(--ink);color:#fff}
+  .btn-dark:hover{transform:translateY(-2px)}
+
+  /* NAV */
+  header.nav{position:sticky;top:0;z-index:40;background:rgba(251,246,238,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:70px}
+  .logo{font-family:'Fraunces';font-weight:600;font-size:22px;letter-spacing:-.01em}
+  .logo span{color:var(--garnet)}
+  .nav-links{display:none;gap:30px;font-weight:500;font-size:15px}
+  .nav-links a:hover{color:var(--garnet)}
+  .nav-cta{display:flex;align-items:center;gap:14px}
+  .imnew{font-weight:600;font-size:14px;color:var(--garnet)}
+
+  /* HERO */
+  .hero{position:relative;color:#fff;overflow:hidden}
+  .hero-bg{position:absolute;inset:0;background:
+     radial-gradient(120% 90% at 80% 10%, rgba(224,165,58,.35), transparent 55%),
+     linear-gradient(180deg, rgba(33,26,20,.35), rgba(33,26,20,.78)),
+     linear-gradient(135deg,#5E121D 0%, #7A1E2B 45%, #3a2218 100%);}
+  .hero-bg::after{content:"PLACEHOLDER · real KBCF worship photo (golden hour)";position:absolute;right:16px;bottom:14px;font-size:11px;letter-spacing:.04em;color:rgba(255,255,255,.5);font-weight:500}
+  .grain{position:absolute;inset:0;opacity:.10;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .hero-inner{position:relative;padding:84px 0 70px;max-width:760px}
+  .hero h1{font-size:clamp(40px,7vw,76px);line-height:1.02;font-weight:600;letter-spacing:-.02em;margin:18px 0 18px}
+  .hero h1 em{font-style:italic;color:var(--amber)}
+  .hero p.lead{font-size:clamp(17px,2.2vw,20px);color:rgba(255,255,255,.88);max-width:560px}
+  .hero-cta{display:flex;flex-wrap:wrap;gap:14px;margin-top:30px}
+  .meta{display:flex;flex-wrap:wrap;gap:26px;margin-top:40px;padding-top:26px;border-top:1px solid rgba(255,255,255,.22)}
+  .meta b{display:block;font-family:'Fraunces';font-size:18px}
+  .meta small{color:rgba(255,255,255,.7);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+
+  /* SERVICE STRIP */
+  .strip{background:var(--ink);color:var(--ivory)}
+  .strip .wrap{display:flex;flex-wrap:wrap;gap:14px 40px;justify-content:center;padding:16px 22px;font-size:14px}
+  .strip b{color:var(--amber)}
+
+  section{padding:74px 0}
+  .sec-head{max-width:620px;margin-bottom:40px}
+  .sec-head h2{font-size:clamp(28px,4.4vw,44px);font-weight:600;letter-spacing:-.02em;line-height:1.08;margin:12px 0}
+
+  /* NEW HERE PATHWAY */
+  .paths{display:grid;gap:18px;grid-template-columns:1fr}
+  .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px;transition:transform .3s ease,box-shadow .3s ease}
+  .card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(33,26,20,.10)}
+  .card .ic{width:46px;height:46px;border-radius:12px;background:var(--ivory-2);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px}
+  .card h3{font-family:'Fraunces';font-size:21px;font-weight:600;margin-bottom:8px}
+  .card p{color:var(--muted);font-size:15px}
+  .card a.more{display:inline-block;margin-top:14px;color:var(--garnet);font-weight:600;font-size:14px}
+
+  /* SERMON */
+  .sermon{background:var(--ivory-2)}
+  .sermon-grid{display:grid;gap:30px;grid-template-columns:1fr;align-items:center}
+  .player{aspect-ratio:16/9;border-radius:18px;position:relative;overflow:hidden;background:linear-gradient(135deg,#3a2218,#7A1E2B);box-shadow:0 20px 50px rgba(33,26,20,.18)}
+  .player .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  .player .play div{width:74px;height:74px;border-radius:50%;background:rgba(251,246,238,.92);display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--garnet)}
+  .player .tag{position:absolute;top:14px;left:14px;background:var(--garnet);color:#fff;font-size:11px;font-weight:700;letter-spacing:.12em;padding:6px 12px;border-radius:999px}
+  .player .lbl{position:absolute;bottom:12px;right:14px;font-size:11px;color:rgba(255,255,255,.6)}
+  .sermon h3{font-family:'Fraunces';font-size:clamp(24px,3.6vw,34px);font-weight:600;line-height:1.1;margin:10px 0 8px}
+  .sermon .det{color:var(--muted);font-size:14px;margin-bottom:18px}
+  .clips{display:flex;gap:12px;margin-top:26px;overflow:auto;padding-bottom:6px}
+  .clip{flex:0 0 108px;aspect-ratio:9/16;border-radius:12px;background:linear-gradient(160deg,#7A1E2B,#E0A53A);position:relative}
+  .clip span{position:absolute;left:8px;bottom:8px;font-size:10px;color:#fff;font-weight:600}
+
+  /* GIVE */
+  .give{background:var(--garnet);color:#fff;border-radius:26px;padding:54px 32px;text-align:center;position:relative;overflow:hidden}
+  .give .grain{opacity:.12}
+  .give h2{font-family:'Fraunces';font-size:clamp(28px,4.4vw,42px);font-weight:600;position:relative}
+  .give p{max-width:520px;margin:14px auto 26px;color:rgba(255,255,255,.86);position:relative}
+  .give .btn-amber{background:var(--amber);color:var(--ink);position:relative}
+
+  /* FOOTER */
+  footer{background:var(--ink);color:var(--ivory);padding:60px 0 30px;margin-top:74px}
+  .fgrid{display:grid;gap:34px;grid-template-columns:1fr}
+  .fcol h4{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--amber);margin-bottom:14px}
+  .fcol a,.fcol p{display:block;color:rgba(251,246,238,.78);font-size:14px;margin-bottom:8px}
+  .fbrand .logo{color:#fff;font-size:24px}
+  .fnote{margin-top:40px;padding-top:20px;border-top:1px solid rgba(255,255,255,.12);font-size:12px;color:rgba(251,246,238,.55);display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between}
+
+  @media(min-width:860px){
+    .nav-links{display:flex}
+    .paths{grid-template-columns:repeat(3,1fr)}
+    .sermon-grid{grid-template-columns:1.05fr .95fr}
+    .fgrid{grid-template-columns:1.6fr 1fr 1fr 1fr}
+  }
+</style>
+</head>
+<body>
+<!-- swatch banner for the proposal -->
+<header class="nav"><div class="wrap nav-inner">
+  <div class="logo">Kingdom <span>Builders</span></div>
+  <nav class="nav-links">
+    <a href="#">About</a><a href="#">New Here</a><a href="#">Watch</a><a href="#">Give</a><a href="#">Events</a>
+  </nav>
+  <div class="nav-cta">
+    <a class="imnew" href="#">I'm New</a>
+    <a class="btn btn-primary" href="#">Plan Your Visit</a>
+  </div>
+</div></header>
+
+<section class="hero">
+  <div class="hero-bg"></div><div class="grain"></div>
+  <div class="wrap hero-inner">
+    <div class="eyebrow" style="color:var(--amber)">Kingdom Builders Christian Fellowship · Oakland, CA</div>
+    <h1 class="serif">Church Like <em>No Other.</em></h1>
+    <p class="lead">People are our heart and Jesus is our message. Come as you are — there's a seat for you this weekend.</p>
+    <div class="hero-cta">
+      <a class="btn btn-primary" href="#">Plan Your Visit →</a>
+      <a class="btn btn-ghost" href="#">▶ Watch Live</a>
+    </div>
+    <div class="meta">
+      <div><small>Sundays</small><b>9:00 AM Worship</b></div>
+      <div><small>Wednesdays</small><b>7:00 PM Bible Study</b></div>
+      <div><small>Find us</small><b>1431 17th Ave, Oakland</b></div>
+    </div>
+  </div>
+</section>
+
+<div class="strip"><div class="wrap">
+  <span>🙏 <b>Sat</b> Morning Prayer</span>
+  <span>✨ <b>Sun</b> 9:00 AM Worship</span>
+  <span>📖 <b>Wed</b> 7:00 PM Bible Study</span>
+  <span>📍 1431 17th Avenue, Oakland, CA 94606</span>
+</div></div>
+
+<section><div class="wrap">
+  <div class="sec-head">
+    <div class="eyebrow">New here?</div>
+    <h2 class="serif">Your first Sunday, made simple.</h2>
+    <p style="color:var(--muted)">However you found us, we'd love to meet you. Here's everything you need to walk in with confidence.</p>
+  </div>
+  <div class="paths">
+    <div class="card"><div class="ic">📍</div><h3 class="serif">Plan Your Visit</h3><p>What to expect, where to park, and what to wear (hint: come as you are).</p><a class="more" href="#">Plan a visit →</a></div>
+    <div class="card"><div class="ic">👶</div><h3 class="serif">Kids & Family</h3><p>Safe, fun, age-based environments so the whole family can worship.</p><a class="more" href="#">KBCF Kids →</a></div>
+    <div class="card"><div class="ic">💬</div><h3 class="serif">Let Us Know You're Coming</h3><p>Tell us you're on your way and we'll have someone ready to greet you.</p><a class="more" href="#">Say hello →</a></div>
+  </div>
+</div></section>
+
+<section class="sermon"><div class="wrap">
+  <div class="sermon-grid">
+    <div class="player">
+      <div class="tag">● LATEST MESSAGE</div>
+      <div class="play"><div>▶</div></div>
+      <div class="lbl">PLACEHOLDER · sermon thumbnail</div>
+    </div>
+    <div>
+      <div class="eyebrow">Watch &amp; Grow</div>
+      <h3 class="serif">This Weekend's Message</h3>
+      <p class="det">Pastor L.J. Jennings · Current Series · <span style="color:var(--garnet)">Scripture ref</span></p>
+      <p style="color:var(--muted)">Miss a Sunday or want to share it? Every message is here — plus short clips made for your feed.</p>
+      <div style="margin-top:22px;display:flex;gap:12px;flex-wrap:wrap">
+        <a class="btn btn-dark" href="#">Watch full message</a>
+        <a class="btn" style="border:1.5px solid var(--line)" href="#">Sermon archive</a>
+      </div>
+      <div class="clips">
+        <div class="clip"><span>Clip 1</span></div><div class="clip"><span>Clip 2</span></div>
+        <div class="clip"><span>Clip 3</span></div><div class="clip"><span>Clip 4</span></div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="give">
+    <div class="grain"></div>
+    <div class="eyebrow" style="color:var(--amber)">Giving</div>
+    <h2>Your generosity is changing lives.</h2>
+    <p>From this house to the Dream Center and across Oakland — every gift moves the mission forward.</p>
+    <a class="btn btn-amber" href="#">Give Now</a>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <div class="fgrid">
+    <div class="fcol fbrand">
+      <div class="logo">Kingdom Builders</div>
+      <p style="margin-top:12px">Church Like No Other. People are our heart and Jesus is our message.</p>
+      <p>1431 17th Avenue, Oakland, CA 94606</p>
+    </div>
+    <div class="fcol"><h4>Visit</h4><a href="#">Plan Your Visit</a><a href="#">New Here</a><a href="#">Watch Live</a><a href="#">Events</a></div>
+    <div class="fcol"><h4>Connect</h4><a href="#">Groups</a><a href="#">Dream Center</a><a href="#">Blog</a><a href="#">Contact</a></div>
+    <div class="fcol"><h4>Gatherings</h4><p>Sat · Morning Prayer</p><p>Sun · 9:00 AM</p><p>Wed · 7:00 PM</p></div>
+  </div>
+  <div class="fnote"><span>© Kingdom Builders Christian Fellowship</span><span>Direction A · "Sanctuary" — warm editorial</span></div>
+</div></footer>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KBCF — Direction B: "Movement"</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0B0F; --surface:#15151D; --surface-2:#1E1E28; --line:#2A2A36;
+    --text:#F4F3F0; --muted:#9C9BAA; --indigo:#5B4DFF; --indigo-soft:#7C71FF; --coral:#FF5436;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 22px}
+  .disp{font-family:'Space Grotesk','Inter',sans-serif;letter-spacing:-.02em}
+  a{color:inherit;text-decoration:none}
+  .eyebrow{font-size:12px;letter-spacing:.24em;text-transform:uppercase;font-weight:700;color:var(--indigo-soft)}
+  .btn{display:inline-flex;align-items:center;gap:.5rem;font-weight:700;font-size:15px;padding:14px 24px;border-radius:10px;transition:transform .18s ease,background .18s ease,box-shadow .18s ease}
+  .btn-coral{background:var(--coral);color:#fff;box-shadow:0 8px 30px rgba(255,84,54,.35)}
+  .btn-coral:hover{transform:translateY(-2px) scale(1.01)}
+  .btn-indigo{background:var(--indigo);color:#fff}
+  .btn-indigo:hover{transform:translateY(-2px)}
+  .btn-out{border:1.5px solid var(--line);color:var(--text)}
+  .btn-out:hover{background:var(--surface-2);border-color:var(--indigo)}
+
+  /* NAV */
+  header.nav{position:sticky;top:0;z-index:40;background:rgba(11,11,15,.8);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:72px}
+  .logo{font-family:'Space Grotesk';font-weight:700;font-size:20px;letter-spacing:-.01em;text-transform:uppercase}
+  .logo b{color:var(--indigo-soft)}
+  .nav-links{display:none;gap:30px;font-weight:600;font-size:14px;color:var(--muted)}
+  .nav-links a:hover{color:var(--text)}
+  .nav-cta{display:flex;align-items:center;gap:14px}
+  .imnew{font-weight:700;font-size:13px;letter-spacing:.04em;border:1.5px solid var(--indigo);color:var(--indigo-soft);padding:9px 16px;border-radius:999px}
+
+  /* TICKER */
+  .ticker{background:var(--indigo);overflow:hidden;white-space:nowrap;border-bottom:1px solid var(--line)}
+  .ticker .run{display:inline-block;padding:9px 0;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;animation:scroll 26s linear infinite}
+  .ticker .run span{padding:0 26px;opacity:.95}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  /* HERO */
+  .hero{position:relative;overflow:hidden;min-height:74vh;display:flex;align-items:center}
+  .hero-bg{position:absolute;inset:0;background:
+    radial-gradient(80% 60% at 70% 20%, rgba(91,77,255,.45), transparent 60%),
+    radial-gradient(60% 50% at 15% 90%, rgba(255,84,54,.25), transparent 60%),
+    linear-gradient(180deg,#0B0B0F,#101019);}
+  .hero-bg::after{content:"PLACEHOLDER · full-bleed worship/clip video loop";position:absolute;left:22px;bottom:16px;font-size:11px;color:rgba(255,255,255,.4);font-weight:600}
+  .glow{position:absolute;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(124,113,255,.35),transparent 70%);top:-160px;right:-120px;filter:blur(20px)}
+  .hero-inner{position:relative;padding:70px 0;max-width:880px}
+  .hero h1{font-size:clamp(46px,9vw,104px);line-height:.94;font-weight:700;letter-spacing:-.03em;margin:18px 0}
+  .hero h1 .out{color:transparent;-webkit-text-stroke:1.6px var(--indigo-soft)}
+  .hero p.lead{font-size:clamp(17px,2.2vw,21px);color:var(--muted);max-width:560px}
+  .hero-cta{display:flex;flex-wrap:wrap;gap:14px;margin-top:32px}
+
+  /* STAT ROW */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-top:46px}
+  .stats div{background:var(--surface);padding:20px 18px}
+  .stats small{color:var(--muted);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+  .stats b{display:block;font-family:'Space Grotesk';font-size:clamp(16px,2.4vw,22px);margin-top:4px}
+  .stats b em{color:var(--indigo-soft);font-style:normal}
+
+  section{padding:80px 0}
+  .sec-head h2{font-family:'Space Grotesk';font-size:clamp(30px,5vw,52px);font-weight:700;letter-spacing:-.02em;line-height:1.02;margin:12px 0}
+  .sec-head{max-width:640px;margin-bottom:42px}
+  .sec-head p{color:var(--muted)}
+
+  /* PATHWAY */
+  .paths{display:grid;gap:16px;grid-template-columns:1fr}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:26px;transition:transform .2s ease,border-color .2s ease}
+  .card:hover{transform:translateY(-4px);border-color:var(--indigo)}
+  .card .num{font-family:'Space Grotesk';font-size:13px;font-weight:700;color:var(--indigo-soft);letter-spacing:.1em}
+  .card h3{font-family:'Space Grotesk';font-size:22px;font-weight:700;margin:14px 0 8px}
+  .card p{color:var(--muted);font-size:15px}
+  .card a.more{display:inline-block;margin-top:16px;color:var(--coral);font-weight:700;font-size:14px}
+
+  /* WATCH / CLIPS */
+  .watch{background:linear-gradient(180deg,#0B0B0F,#101019)}
+  .watch-grid{display:grid;gap:28px;grid-template-columns:1fr}
+  .player{aspect-ratio:16/9;border-radius:16px;position:relative;overflow:hidden;background:linear-gradient(135deg,#1b1740,#5B4DFF 130%);border:1px solid var(--line)}
+  .player .live{position:absolute;top:14px;left:14px;background:var(--coral);color:#fff;font-size:11px;font-weight:800;letter-spacing:.12em;padding:6px 12px;border-radius:6px;display:flex;align-items:center;gap:6px}
+  .player .live .dot{width:7px;height:7px;border-radius:50%;background:#fff;animation:blink 1.2s infinite}
+  @keyframes blink{50%{opacity:.25}}
+  .player .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  .player .play div{width:78px;height:78px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--indigo)}
+  .player .lbl{position:absolute;bottom:12px;right:14px;font-size:11px;color:rgba(255,255,255,.55)}
+  .rail-head{display:flex;align-items:center;justify-content:space-between;margin:6px 0 14px}
+  .rail-head h3{font-family:'Space Grotesk';font-size:18px;font-weight:700}
+  .clips{display:flex;gap:14px;overflow:auto;padding-bottom:8px}
+  .clip{flex:0 0 130px;aspect-ratio:9/16;border-radius:14px;position:relative;background:linear-gradient(160deg,#5B4DFF,#1b1740);border:1px solid var(--line);overflow:hidden}
+  .clip:nth-child(2n){background:linear-gradient(160deg,#FF5436,#2a1320)}
+  .clip .vs{position:absolute;top:8px;right:8px;font-size:10px;font-weight:800;background:rgba(0,0,0,.45);padding:3px 7px;border-radius:6px}
+  .clip span.h{position:absolute;left:9px;bottom:10px;right:9px;font-size:11px;font-weight:700;line-height:1.2}
+
+  /* GIVE */
+  .give{border:1px solid var(--line);border-radius:24px;padding:54px 32px;text-align:center;position:relative;overflow:hidden;background:
+     radial-gradient(70% 120% at 50% 0%, rgba(91,77,255,.3), transparent 60%), var(--surface)}
+  .give h2{font-family:'Space Grotesk';font-size:clamp(30px,5vw,46px);font-weight:700}
+  .give p{max-width:520px;margin:14px auto 26px;color:var(--muted)}
+
+  /* FOOTER */
+  footer{border-top:1px solid var(--line);padding:60px 0 30px;margin-top:80px}
+  .fgrid{display:grid;gap:34px;grid-template-columns:1fr}
+  .fcol h4{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--indigo-soft);margin-bottom:14px}
+  .fcol a,.fcol p{display:block;color:var(--muted);font-size:14px;margin-bottom:8px}
+  .fcol a:hover{color:var(--text)}
+  .fbrand .logo{font-size:22px}
+  .fnote{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between}
+
+  @media(min-width:860px){
+    .nav-links{display:flex}
+    .paths{grid-template-columns:repeat(3,1fr)}
+    .watch-grid{grid-template-columns:1.4fr 1fr}
+  }
+</style>
+</head>
+<body>
+<header class="nav"><div class="wrap nav-inner">
+  <div class="logo">Kingdom<b>Builders</b></div>
+  <nav class="nav-links"><a>About</a><a>New Here</a><a>Watch</a><a>Give</a><a>Events</a></nav>
+  <div class="nav-cta"><a class="imnew">I'M NEW</a><a class="btn btn-coral">Plan Your Visit</a></div>
+</div></header>
+
+<div class="ticker"><div class="run">
+  <span>SAT · MORNING PRAYER</span><span>SUN · 9:00 AM WORSHIP</span><span>WED · 7:00 PM BIBLE STUDY</span><span>1431 17TH AVE, OAKLAND</span>
+  <span>SAT · MORNING PRAYER</span><span>SUN · 9:00 AM WORSHIP</span><span>WED · 7:00 PM BIBLE STUDY</span><span>1431 17TH AVE, OAKLAND</span>
+</div></div>
+
+<section class="hero">
+  <div class="hero-bg"></div><div class="glow"></div>
+  <div class="wrap hero-inner">
+    <div class="eyebrow">Kingdom Builders Christian Fellowship · Oakland</div>
+    <h1 class="disp">CHURCH LIKE<br><span class="out">NO OTHER.</span></h1>
+    <p class="lead">People are our heart and Jesus is our message. Pull up this weekend — come exactly as you are.</p>
+    <div class="hero-cta">
+      <a class="btn btn-coral">Plan Your Visit →</a>
+      <a class="btn btn-out">▶ Watch Live</a>
+    </div>
+    <div class="stats">
+      <div><small>Sundays</small><b><em>9:00</em> AM Worship</b></div>
+      <div><small>Wednesdays</small><b><em>7:00</em> PM Study</b></div>
+      <div><small>Location</small><b>1431 17th Ave</b></div>
+    </div>
+  </div>
+</section>
+
+<section><div class="wrap">
+  <div class="sec-head">
+    <div class="eyebrow">New here?</div>
+    <h2 class="disp">Start here. We've got you.</h2>
+    <p>Three steps from "just curious" to "see you Sunday." No pressure, no church-y hoops.</p>
+  </div>
+  <div class="paths">
+    <div class="card"><div class="num">01</div><h3>Plan Your Visit</h3><p>Parking, what to wear, service length — know what to expect before you walk in.</p><a class="more">Plan it →</a></div>
+    <div class="card"><div class="num">02</div><h3>Kids & Family</h3><p>Safe, high-energy environments for every age so the whole crew is covered.</p><a class="more">KBCF Kids →</a></div>
+    <div class="card"><div class="num">03</div><h3>Say You're Coming</h3><p>Give us a heads up and a real person will be ready to meet you at the door.</p><a class="more">Let us know →</a></div>
+  </div>
+</div></section>
+
+<section class="watch"><div class="wrap">
+  <div class="sec-head"><div class="eyebrow">Watch</div><h2 class="disp">Catch the message. Share the clip.</h2></div>
+  <div class="watch-grid">
+    <div>
+      <div class="player">
+        <div class="live"><span class="dot"></span>LIVE / BOXCAST</div>
+        <div class="play"><div>▶</div></div>
+        <div class="lbl">PLACEHOLDER · live + latest message</div>
+      </div>
+      <p style="color:var(--muted);margin-top:16px">Pastor L.J. Jennings · Current Series · <span style="color:var(--indigo-soft)">Scripture ref</span></p>
+    </div>
+    <div>
+      <div class="rail-head"><h3>Clips for your feed</h3><a style="color:var(--coral);font-weight:700;font-size:13px">View all →</a></div>
+      <div class="clips">
+        <div class="clip"><span class="vs">🔥 92</span><span class="h">Hook text goes here</span></div>
+        <div class="clip"><span class="vs">🔥 87</span><span class="h">Vertical clip caption</span></div>
+        <div class="clip"><span class="vs">🔥 81</span><span class="h">Made for sharing</span></div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="give">
+    <div class="eyebrow">Giving</div>
+    <h2 class="disp">Your generosity is changing lives.</h2>
+    <p>From this house to the Dream Center and across Oakland — every gift moves the mission forward.</p>
+    <a class="btn btn-coral">Give Now</a>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <div class="fgrid">
+    <div class="fcol fbrand">
+      <div class="logo disp">Kingdom<b style="color:var(--indigo-soft)">Builders</b></div>
+      <p style="margin-top:12px">Church Like No Other. People are our heart and Jesus is our message.</p>
+      <p>1431 17th Avenue, Oakland, CA 94606</p>
+    </div>
+    <div class="fcol"><h4>Visit</h4><a>Plan Your Visit</a><a>New Here</a><a>Watch Live</a><a>Events</a></div>
+    <div class="fcol"><h4>Connect</h4><a>Groups</a><a>Dream Center</a><a>Blog</a><a>Contact</a></div>
+    <div class="fcol"><h4>Gatherings</h4><p>Sat · Morning Prayer</p><p>Sun · 9:00 AM</p><p>Wed · 7:00 PM</p></div>
+  </div>
+  <div class="fnote"><span>© Kingdom Builders Christian Fellowship</span><span>Direction B · "Movement" — bold &amp; kinetic</span></div>
+</div></footer>
+</body>
+</html>
