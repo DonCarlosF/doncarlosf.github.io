@@ -68,13 +68,18 @@ export async function getEvents(): Promise<ChurchEvent[]> {
   return base;
 }
 
-export async function getUpcomingEvents(limit = 4): Promise<ChurchEvent[]> {
-  const now = Date.now();
+/** Upcoming events (sorted soonest-first), including ones happening today. */
+export async function getUpcomingEventsAll(): Promise<ChurchEvent[]> {
+  const cutoff = Date.now() - 1000 * 60 * 60 * 12;
   const all = await getEvents();
   const future = all
-    .filter((e) => new Date(e.start).getTime() >= now - 1000 * 60 * 60 * 12)
+    .filter((e) => new Date(e.start).getTime() >= cutoff)
     .sort((a, b) => a.start.localeCompare(b.start));
-  return (future.length ? future : all).slice(0, limit);
+  return future.length ? future : [...all].sort((a, b) => a.start.localeCompare(b.start));
+}
+
+export async function getUpcomingEvents(limit = 4): Promise<ChurchEvent[]> {
+  return (await getUpcomingEventsAll()).slice(0, limit);
 }
 
 export async function getEvent(slug: string): Promise<ChurchEvent | null> {

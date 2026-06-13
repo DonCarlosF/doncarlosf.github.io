@@ -1,36 +1,44 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
 export type Theme = "sanctuary" | "movement";
 const STORAGE_KEY = "kbcf-theme";
+const EVENT = "kbcf-theme-change";
 
-type Ctx = { theme: Theme; setTheme: (t: Theme) => void; toggle: () => void };
-const ThemeContext = createContext<Ctx>({ theme: "sanctuary", setTheme: () => {}, toggle: () => {} });
+// The active theme lives on <html data-theme>. We treat that attribute as an
+// external store so components stay in sync without setState-in-effect.
+function subscribe(cb: () => void) {
+  window.addEventListener(EVENT, cb);
+  return () => window.removeEventListener(EVENT, cb);
+}
+function getSnapshot(): Theme {
+  return (document.documentElement.getAttribute("data-theme") as Theme) || "sanctuary";
+}
+function getServerSnapshot(): Theme {
+  return "sanctuary";
+}
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("sanctuary");
-
-  // Sync from whatever the no-flash script already applied to <html>.
-  useEffect(() => {
-    const current = (document.documentElement.getAttribute("data-theme") as Theme) || "sanctuary";
-    setThemeState(current);
-  }, []);
+export function useTheme() {
+  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const setTheme = useCallback((t: Theme) => {
-    setThemeState(t);
     document.documentElement.setAttribute("data-theme", t);
     try { localStorage.setItem(STORAGE_KEY, t); } catch {}
+    window.dispatchEvent(new Event(EVENT));
   }, []);
 
   const toggle = useCallback(() => {
-    setTheme((document.documentElement.getAttribute("data-theme") as Theme) === "movement" ? "sanctuary" : "movement");
+    setTheme(getSnapshot() === "movement" ? "sanctuary" : "movement");
   }, [setTheme]);
 
-  return <ThemeContext.Provider value={{ theme, setTheme, toggle }}>{children}</ThemeContext.Provider>;
+  return { theme, setTheme, toggle };
 }
 
-export const useTheme = () => useContext(ThemeContext);
+/** Kept for layout composition; theme state lives on <html>, not in React. */
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  return <>{children}</>;
+}
 
 /** Inline script: marks JS active (enables reveal animations) and applies the
  *  saved theme before paint (no flash). */

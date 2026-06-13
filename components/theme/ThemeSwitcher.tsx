@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Palette } from "lucide-react";
 import { useTheme, type Theme } from "./ThemeProvider";
 import { cn } from "@/lib/utils/cn";
@@ -16,9 +15,6 @@ const OPTIONS: { value: Theme; label: string }[] = [
  */
 export function ThemeSwitcher() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
 
   return (
     <div

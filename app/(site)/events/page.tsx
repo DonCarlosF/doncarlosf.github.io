@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/blocks/PageHeader";
 import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { getEvents } from "@/lib/content";
+import { getUpcomingEventsAll } from "@/lib/content";
 import { formatEventDate } from "@/lib/utils/format";
 import type { ChurchEvent } from "@/lib/content/types";
 
@@ -19,11 +19,7 @@ function monthKey(iso: string) {
 }
 
 export default async function EventsPage() {
-  const events = await getEvents();
-  const now = Date.now();
-  const upcoming = events
-    .filter((e) => new Date(e.start).getTime() >= now - 1000 * 60 * 60 * 12)
-    .sort((a, b) => a.start.localeCompare(b.start));
+  const upcoming = await getUpcomingEventsAll();
 
   // Group by month for a lightweight calendar-style view.
   const groups = new Map<string, ChurchEvent[]>();
