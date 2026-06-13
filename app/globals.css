@@ -1,0 +1,198 @@
+@import "tailwindcss";
+
+/*
+  KBCF dual-theme design system.
+  Two art directions ship side-by-side as swappable token sets:
+    [data-theme="sanctuary"]  — warm editorial (Direction A)
+    [data-theme="movement"]   — bold & kinetic (Direction B)
+  Components reference semantic tokens only, so flipping data-theme on <html>
+  restyles the entire site with zero per-component changes.
+*/
+
+@theme inline {
+  --color-bg: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-border: var(--c-border);
+  --color-fg: var(--c-fg);
+  --color-muted: var(--c-muted);
+  --color-primary: var(--c-primary);
+  --color-primary-fg: var(--c-primary-fg);
+  --color-accent: var(--c-accent);
+  --color-accent-fg: var(--c-accent-fg);
+  --color-cta: var(--c-cta);
+  --color-cta-fg: var(--c-cta-fg);
+  --color-ring: var(--c-ring);
+
+  --font-display: var(--ff-display);
+  --font-body: var(--ff-body);
+
+  --radius-card: var(--rad-card);
+  --radius-btn: var(--rad-btn);
+}
+
+/* ---------- Direction A · "Sanctuary" (default) ---------- */
+:root,
+[data-theme="sanctuary"] {
+  --c-bg: #fbf6ee;
+  --c-surface: #ffffff;
+  --c-surface-2: #f3e9da;
+  --c-border: #e4d7c5;
+  --c-fg: #211a14;
+  --c-muted: #6f6256;
+  --c-primary: #7a1e2b;
+  --c-primary-fg: #ffffff;
+  --c-accent: #e0a53a;
+  --c-accent-fg: #211a14;
+  --c-cta: #7a1e2b;
+  --c-cta-fg: #ffffff;
+  --c-ring: #7a1e2b;
+
+  --ff-display: var(--font-fraunces), Georgia, serif;
+  --ff-body: var(--font-inter), system-ui, sans-serif;
+
+  --rad-card: 18px;
+  --rad-btn: 999px;
+
+  --dur: 0.5s;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  color-scheme: light;
+}
+
+/* ---------- Direction B · "Movement" ---------- */
+[data-theme="movement"] {
+  --c-bg: #0b0b0f;
+  --c-surface: #15151d;
+  --c-surface-2: #1e1e28;
+  --c-border: #2a2a36;
+  --c-fg: #f4f3f0;
+  --c-muted: #9c9baa;
+  --c-primary: #5b4dff;
+  --c-primary-fg: #ffffff;
+  --c-accent: #7c71ff;
+  --c-accent-fg: #0b0b0f;
+  --c-cta: #ff5436;
+  --c-cta-fg: #ffffff;
+  --c-ring: #7c71ff;
+
+  --ff-display: var(--font-space), system-ui, sans-serif;
+  --ff-body: var(--font-inter), system-ui, sans-serif;
+
+  --rad-card: 16px;
+  --rad-btn: 10px;
+
+  --dur: 0.28s;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    border-color: var(--c-border);
+  }
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--c-bg);
+    color: var(--c-fg);
+    font-family: var(--ff-body);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.4s var(--ease), color 0.4s var(--ease);
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--ff-display);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  /* Visible, high-contrast focus for keyboard users (WCAG 2.4.7). */
+  :focus-visible {
+    outline: 2px solid var(--c-ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  ::selection {
+    background: var(--c-primary);
+    color: var(--c-primary-fg);
+  }
+  :target {
+    scroll-margin-top: 90px;
+  }
+}
+
+@layer components {
+  /* Progressive enhancement: content is visible by default; only hidden
+     (pre-animation) when JS is active, so no-JS users never lose content. */
+  .reveal {
+    transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+    will-change: opacity, transform;
+  }
+  html.js .reveal:not(.is-in) {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  .ticker-track {
+    display: inline-flex;
+    white-space: nowrap;
+    animation: kbcf-marquee 30s linear infinite;
+  }
+
+  .hero-grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.1;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Theme-specific hero accents driven purely by CSS (no hydration branching). */
+  .hero-accent { color: var(--c-accent); }
+  [data-theme="sanctuary"] .hero-accent { font-style: italic; }
+  [data-theme="movement"] .hero-accent {
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--c-accent);
+  }
+
+  /* Hero background differs per direction. */
+  .hero-bg {
+    background:
+      radial-gradient(120% 90% at 80% 8%, color-mix(in srgb, var(--c-accent) 38%, transparent), transparent 55%),
+      linear-gradient(180deg, rgba(20, 14, 10, 0.35), rgba(20, 14, 10, 0.82));
+    background-color: var(--c-primary);
+  }
+  [data-theme="movement"] .hero-bg {
+    background:
+      radial-gradient(80% 60% at 70% 18%, color-mix(in srgb, var(--c-primary) 55%, transparent), transparent 60%),
+      radial-gradient(60% 55% at 12% 95%, color-mix(in srgb, var(--c-cta) 30%, transparent), transparent 60%),
+      linear-gradient(180deg, #0b0b0f, #101019);
+    background-color: #0b0b0f;
+  }
+
+  /* Hero primary CTA: gold in Sanctuary, coral in Movement. */
+  [data-theme="movement"] .hero-cta-primary {
+    background: var(--c-cta);
+    color: var(--c-cta-fg);
+  }
+}
+
+@keyframes kbcf-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Respect user motion preferences (WCAG 2.3.3). */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .ticker-track { animation: none; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
