@@ -10,20 +10,46 @@ ingest → transcribe → score (Claude) → select+tighten → reframe 9:16
        → captions (ASS) → branding → render (ffmpeg) → package (gallery)
 ```
 
-## Install
+## Quickstart (macOS / Apple Silicon)
+
+A new MacBook Pro needs Homebrew first (one time):
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+Then, from the repo:
 
 ```bash
 cd clipper
-python3 -m pip install -r requirements.txt        # core
-python3 -m pip install whisperx faster-whisper    # Stage 2 (ASR), optional/heavy
-python3 -m pip install mediapipe opencv-python     # Stage 5 (face track), optional
-# system binaries (NOT pip):
-#   macOS:  brew install ffmpeg
-#   Ubuntu: sudo apt-get install ffmpeg
-export ANTHROPIC_API_KEY=sk-ant-...               # Claude scoring (text-only)
+./setup.sh             # core: ffmpeg + Python venv + CLI + Montserrat font
+#   or
+./setup.sh --full      # also installs WhisperX + mediapipe for real ASR + render
+
+source .venv/bin/activate
+# add your key:  edit .env  ->  ANTHROPIC_API_KEY=sk-ant-...
+kbcf-clipper doctor    # verify the machine is ready
+make demo              # offline end-to-end on the bundled sample sermon
+kbcf-clipper run       # the real thing: latest broadcast -> 4 clips
 ```
 
-Or install as a command: `pip install -e .` → `kbcf-clipper ...`.
+`setup.sh` is idempotent (safe to re-run), creates `.venv/`, installs the CLI
+with `pip install -e .`, copies `.env.example` → `.env`, and runs `doctor`.
+Common tasks are in the **Makefile** (`make help`).
+
+> **Apple Silicon note:** there's no CUDA on a Mac, so WhisperX/faster-whisper
+> run on **CPU**. `large-v3` is accurate but slow on CPU — for a faster first
+> run use `kbcf-clipper run --asr-model medium` (or `--asr-backend faster-whisper`).
+
+### Manual install (Linux / other)
+
+```bash
+cd clipper
+python3 -m pip install -e ".[dev]"                 # core + tests
+python3 -m pip install -e ".[transcribe,reframe]"  # heavy: ASR + face track
+sudo apt-get install ffmpeg                          # system binary
+export ANTHROPIC_API_KEY=sk-ant-...
+```
 
 ## Use
 
@@ -39,8 +65,14 @@ kbcf-clipper run --facebook https://www.facebook.com/kingdombuilderscf/videos/<i
 # Active-speaker vertical crop instead of static centered
 kbcf-clipper run --reframer face
 
+# Faster first run on a Mac (CPU): smaller Whisper model
+kbcf-clipper run --asr-model medium --asr-backend faster-whisper
+
 # Just show the latest completed broadcast on the channel
 kbcf-clipper latest
+
+# Check the machine is ready (ffmpeg, deps, keys, logo)
+kbcf-clipper doctor
 
 # Offline / no-ffmpeg / CI: start from a transcript, heuristic scorer, no render
 kbcf-clipper run --from-transcript fixtures/sample_transcript.json --mock-score --no-render
@@ -102,7 +134,7 @@ Reframing is a swappable module (`get_reframer`), per the brief.
 
 ## Tests
 ```bash
-pytest          # 26 tests, no ffmpeg/GPU needed
+make test       # or: pytest  — 26 tests, no ffmpeg/GPU needed
 ```
 
 See [`DECISIONS.md`](DECISIONS.md) for library choices and defaults.

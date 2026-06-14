@@ -38,6 +38,7 @@ class RunOptions:
     facebook: Optional[str] = None
     reframer: str = "static"
     asr_backend: str = "whisperx"
+    asr_model: str = "large-v3"
     mock_score: Optional[bool] = None  # None => auto (mock when no API key)
     no_render: bool = False
     refresh: bool = False  # ignore cached transcript/candidates
@@ -73,6 +74,7 @@ def run(cfg: Config, opts: RunOptions) -> Path:
     transcript = transcribe_stage.transcribe(
         source.local_path,
         backend=opts.asr_backend,
+        model_size=opts.asr_model,
         cache_path=None if opts.refresh else transcript_cache,
     )
     transcript.save(transcript_cache)

@@ -17,12 +17,17 @@ import typer
 from . import logconf
 from .config import Config
 from .pipeline import RunOptions, run, run_from_transcript
+from .utils.env import load_dotenv
 
 app = typer.Typer(add_completion=False, help="Turn a KBCF sermon into 4 short-form clips.")
 
 
 def _load(config: str) -> Config:
-    return Config.load(config)
+    cfg = Config.load(config)
+    # Load .env (project root next to config.yaml, then cwd) — real env wins.
+    load_dotenv(cfg.root / ".env")
+    load_dotenv(Path(".env"))
+    return cfg
 
 
 @app.command("run")
@@ -36,6 +41,9 @@ def run_cmd(
     ),
     reframer: str = typer.Option("static", "--reframer", help="static | face"),
     asr_backend: str = typer.Option("whisperx", "--asr-backend", help="whisperx | faster-whisper"),
+    asr_model: str = typer.Option(
+        "large-v3", "--asr-model", help="Whisper model size (macOS/CPU: try medium or small)."
+    ),
     mock_score: Optional[bool] = typer.Option(
         None, "--mock-score/--no-mock-score", help="Force heuristic vs Claude scoring."
     ),
@@ -52,6 +60,7 @@ def run_cmd(
         facebook=facebook,
         reframer=reframer,
         asr_backend=asr_backend,
+        asr_model=asr_model,
         mock_score=mock_score,
         no_render=no_render,
         refresh=refresh,
@@ -79,6 +88,17 @@ def latest_cmd(
     )
     typer.echo(f"{b.get('name')}  {b.get('starts_at')}  id={b['id']}")
     typer.echo(f"view: https://boxcast.tv/view/{b['id']}")
+
+
+@app.command("doctor")
+def doctor_cmd(config: str = typer.Option("config.yaml", "--config", "-c")):
+    """Check this machine is ready to run (ffmpeg, deps, keys, logo)."""
+    from .doctor import run_doctor
+
+    load_dotenv(Path(config).resolve().parent / ".env")
+    load_dotenv(Path(".env"))
+    ok = run_doctor(config)
+    raise typer.Exit(code=0 if ok else 1)
 
 
 # Make `run` the default when invoked with no subcommand.
