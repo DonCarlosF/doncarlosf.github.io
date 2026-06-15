@@ -177,6 +177,64 @@
   [data-theme="movement"] .hero-cta-primary {
     background: var(--c-cta);
     color: var(--c-cta-fg);
+    box-shadow: 0 8px 30px color-mix(in srgb, var(--c-cta) 35%, transparent);
+  }
+
+  /* ---- Movement hero: bigger, more kinetic than Sanctuary ---- */
+  /* Blurred indigo glow orb (decorative); hidden in other themes. */
+  .hero-glow { display: none; }
+  [data-theme="movement"] .hero-glow {
+    display: block;
+    position: absolute;
+    top: -160px;
+    right: -120px;
+    width: min(520px, 70vw);
+    height: min(520px, 70vw);
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--c-accent) 35%, transparent), transparent 70%);
+    filter: blur(20px);
+    pointer-events: none;
+    z-index: -5;
+  }
+
+  /* Taller, vertically-centered stage for the bold direction. */
+  [data-theme="movement"] .hero-section {
+    min-height: 78vh;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Indigo eyebrow + display headline scaled up with tight tracking. */
+  [data-theme="movement"] .hero-eyebrow { color: var(--c-accent); }
+  [data-theme="movement"] .hero-title {
+    font-size: clamp(46px, 9vw, 104px);
+    line-height: 0.94;
+    letter-spacing: -0.03em;
+    font-weight: 700;
+  }
+  [data-theme="movement"] .hero-lead { color: var(--c-muted); }
+
+  /* Plain inline row → bordered 3-up stat grid with hairline separators. */
+  [data-theme="movement"] .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    margin-top: 2.75rem;
+    padding: 0;
+    border: 1px solid var(--c-border);
+    border-radius: var(--rad-card);
+    background: var(--c-border);
+    overflow: hidden;
+  }
+  [data-theme="movement"] .hero-stat {
+    background: color-mix(in srgb, var(--c-surface) 88%, transparent);
+    padding: 18px 18px;
+  }
+  [data-theme="movement"] .hero-stat-label { color: var(--c-muted); }
+  [data-theme="movement"] .hero-stat-value { color: var(--c-fg); }
+
+  @media (max-width: 640px) {
+    [data-theme="movement"] .hero-stats { grid-template-columns: 1fr; }
   }
 }
 
