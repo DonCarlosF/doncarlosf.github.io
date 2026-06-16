@@ -27,7 +27,7 @@ export function NewHerePaths() {
               </span>
               <h3 className="mt-4 font-display text-xl font-semibold">{p.title}</h3>
               <p className="mt-2 text-muted">{p.body}</p>
-              <Link href={p.href} className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:gap-2">
+              <Link href={p.href} className="kbcf-more mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:gap-2">
                 {p.cta} <ArrowRight size={16} aria-hidden />
               </Link>
             </Card>

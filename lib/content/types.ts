@@ -15,7 +15,7 @@ export type Img = {
 export type ServiceTime = {
   day: string;        // e.g. "Sunday"
   label: string;      // e.g. "Worship"
-  time: string;       // e.g. "9:00 AM"
+  time?: string;      // e.g. "9:00 AM" — optional: some services have no fixed clock time
 };
 
 export type SocialLink = {

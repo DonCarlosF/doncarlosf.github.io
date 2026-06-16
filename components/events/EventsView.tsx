@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { MapPin, ArrowRight, Repeat, List, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -49,6 +49,13 @@ function ListView({ events }: { events: ChurchEvent[] }) {
 function CalendarView({ events }: { events: ChurchEvent[] }) {
   const first = events.length ? new Date(events[0].start) : new Date();
   const [cursor, setCursor] = useState({ y: first.getFullYear(), m: first.getMonth() });
+  // Resolved on the client only, so the "today" highlight never causes an
+  // SSR/client hydration mismatch (the server has no single "now"). The
+  // mount-only setState is intentional; the cascading-render rule doesn't
+  // apply to a one-time [] effect.
+  const [today, setToday] = useState<Date | null>(null);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => setToday(new Date()), []);
 
   const byDay = useMemo(() => {
     const map = new Map<string, ChurchEvent[]>();
@@ -64,7 +71,6 @@ function CalendarView({ events }: { events: ChurchEvent[] }) {
   const offset = firstOfMonth.getDay();
   const cells: (number | null)[] = [...Array(offset).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
   const monthLabel = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(firstOfMonth);
-  const today = new Date();
 
   const shift = (delta: number) => setCursor(({ y, m }) => {
     const d = new Date(y, m + delta, 1);
@@ -89,7 +95,7 @@ function CalendarView({ events }: { events: ChurchEvent[] }) {
         {cells.map((day, i) => {
           const date = day ? new Date(cursor.y, cursor.m, day) : null;
           const dayEvents = date ? byDay.get(dayKey(date)) || [] : [];
-          const isToday = date && dayKey(date) === dayKey(today);
+          const isToday = date && today && dayKey(date) === dayKey(today);
           return (
             <div key={i} className={cn("min-h-20 bg-surface p-1.5 sm:min-h-28", !day && "bg-surface/40")}>
               {day && (

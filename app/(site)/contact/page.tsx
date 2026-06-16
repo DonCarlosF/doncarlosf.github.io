@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { ConnectForm } from "@/components/forms/ConnectForm";
 import { MapEmbed } from "@/components/map/MapEmbed";
 import { getSiteSettings } from "@/lib/content";
+import { serviceLabelTime } from "@/lib/utils/format";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -33,7 +34,7 @@ export default async function ContactPage() {
               </li>
               <li className="flex items-start gap-3">
                 <Clock className="mt-0.5 shrink-0 text-primary" size={18} aria-hidden />
-                <span>{settings.serviceTimes.map((s) => `${s.day} ${s.label} ${s.time !== "Morning" ? s.time : ""}`.trim()).join(" · ")}</span>
+                <span>{settings.serviceTimes.map((s) => `${s.day} ${serviceLabelTime(s)}`).join(" · ")}</span>
               </li>
               <li className="flex items-start gap-3">
                 <Phone className="mt-0.5 shrink-0 text-primary" size={18} aria-hidden />

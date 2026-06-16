@@ -37,7 +37,8 @@ export function Hero({ settings }: { settings: SiteSettings }) {
             Church Like <span className="hero-accent">No Other.</span>
           </h1>
           <p className="hero-lead mt-5 max-w-xl text-lg text-white/90 sm:text-xl">
-            {settings.mission} Come as you are — there&apos;s a seat for you this weekend.
+            {settings.mission}{" "}
+            Come as you are — there&apos;s a seat for you this weekend.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">

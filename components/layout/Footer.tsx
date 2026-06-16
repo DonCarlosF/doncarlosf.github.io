@@ -45,7 +45,7 @@ export function Footer({ settings }: { settings: SiteSettings }) {
 
           <div>
             <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Stay in the loop</h2>
-            <p className="mt-4 text-sm text-muted">Service times: {settings.serviceTimes.map((s) => `${s.day} ${s.time}`).join(" · ")}</p>
+            <p className="mt-4 text-sm text-muted">Service times: {settings.serviceTimes.map((s) => `${s.day} ${s.time || s.label}`).join(" · ")}</p>
             <div className="mt-4">
               <NewsletterForm />
             </div>
