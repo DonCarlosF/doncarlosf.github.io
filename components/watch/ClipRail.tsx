@@ -8,9 +8,14 @@ export function ClipRail({ clips }: { clips: Clip[] }) {
   return (
     <ul className="-mx-1 flex snap-x gap-4 overflow-x-auto px-1 pb-3">
       {clips.map((clip) => (
-        <li key={clip._id} className="w-32 shrink-0 snap-start sm:w-36">
+        <li key={clip._id} className="group w-32 shrink-0 snap-start transition-transform duration-300 hover:-translate-y-1 sm:w-36">
           <div className="relative">
-            <SmartImage image={clip.thumbnail || { alt: clip.hook, placeholder: true }} ratio="aspect-[9/16]" rounded="rounded-xl" />
+            <SmartImage
+              image={clip.thumbnail || { alt: clip.hook, placeholder: true }}
+              ratio="aspect-[9/16]"
+              rounded="rounded-xl"
+              imageClassName="transition-transform duration-500 group-hover:scale-105"
+            />
             {typeof clip.viralityScore === "number" && (
               <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-md bg-black/55 px-1.5 py-0.5 text-[10px] font-bold text-white">
                 <Flame size={11} aria-hidden /> {clip.viralityScore}

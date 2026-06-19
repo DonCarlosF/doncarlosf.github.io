@@ -12,7 +12,9 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <Header churchName={settings.churchName} />
       <main id="main">{children}</main>
       <Footer settings={settings} />
-      <ThemeSwitcher />
+      {/* Preview-only affordance. Set NEXT_PUBLIC_SHOW_THEME_SWITCHER=false in
+          production (after a direction is chosen) to hide it. */}
+      {process.env.NEXT_PUBLIC_SHOW_THEME_SWITCHER !== "false" && <ThemeSwitcher />}
     </>
   );
 }

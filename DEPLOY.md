@@ -24,6 +24,7 @@ point DNS — it's for review only.
 | `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET` | Live CMS + `/studio` |
 | `PCO_APP_ID`, `PCO_SECRET` | Planning Center events + groups |
 | `STAFF_EMAIL`, `RESEND_API_KEY` | Connect/contact form → staff email |
+| `NEXT_PUBLIC_SHOW_THEME_SWITCHER=false` | Hides the Sanctuary/Movement preview switcher (set in production once a direction is chosen) |
 
 ## 2. Connect Sanity (live content + `/studio`)
 

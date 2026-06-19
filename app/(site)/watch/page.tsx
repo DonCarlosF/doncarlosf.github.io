@@ -38,7 +38,7 @@ export default async function WatchPage() {
               broadcast otherwise.
             </p>
           </div>
-          <aside className="rounded-card border border-border bg-surface p-6">
+          <aside className="kbcf-card rounded-card border border-border bg-surface p-6 transition-colors duration-300">
             <h2 className="font-display text-xl font-semibold">Watch elsewhere</h2>
             <p className="mt-2 text-sm text-muted">Prefer to watch on social? Catch the simulcast:</p>
             <div className="mt-4 flex flex-col gap-3">
