@@ -60,9 +60,14 @@ export default async function AboutPage() {
         <SectionHeading eyebrow="Leadership" title="Meet our pastors" />
         <div className="mt-10 grid gap-8 sm:grid-cols-2">
           {leaders.map((l) => (
-            <article key={l._id} className="flex flex-col gap-5 sm:flex-row">
+            <article key={l._id} className="group flex flex-col gap-5 sm:flex-row">
               <div className="sm:w-44 sm:shrink-0">
-                <SmartImage image={l.image || { alt: l.name, placeholder: true }} ratio="aspect-square" rounded="rounded-card" />
+                <SmartImage
+                  image={l.image || { alt: l.name, placeholder: true }}
+                  ratio="aspect-square"
+                  rounded="rounded-card"
+                  imageClassName="transition-transform duration-500 group-hover:scale-105"
+                />
               </div>
               <div>
                 <h3 className="font-display text-xl font-semibold">{l.name}</h3>

@@ -25,7 +25,7 @@ export const siteSettings: SiteSettings = {
     { day: "Sunday", label: "Worship", time: "9:00 AM" },
     { day: "Wednesday", label: "Bible Study", time: "7:00 PM" },
   ],
-  boxcastId: "wsiikymmlhksnkgmc24r",
+  boxcastId: "",
   givingProvider: "Clover",
   givingUrl: "https://www.clover.com/pay-widgets/fab217bf-1afb-4bda-9d0d-085098cbadac",
   heroVideoUrl: undefined, // add an MP4/HLS hero loop in the CMS when available

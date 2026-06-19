@@ -23,7 +23,7 @@ function ListView({ events }: { events: ChurchEvent[] }) {
           <h2 className="mb-5 font-display text-2xl font-semibold">{month}</h2>
           <ul className="divide-y divide-border border-y border-border">
             {list.map((e) => (
-              <li key={e._id} className="flex flex-wrap items-center gap-4 py-5">
+              <li key={e._id} className="group flex flex-wrap items-center gap-4 py-5">
                 <div className="min-w-0 flex-1">
                   <Link href={`/events/${e.slug}`} className="font-display text-lg font-semibold hover:text-primary">{e.title}</Link>
                   <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
@@ -34,7 +34,7 @@ function ListView({ events }: { events: ChurchEvent[] }) {
                     {e.location && <span className="inline-flex items-center gap-1"><MapPin size={14} aria-hidden /> {e.location}</span>}
                   </p>
                 </div>
-                <Link href={`/events/${e.slug}`} aria-label={`Details for ${e.title}`} className="text-muted hover:text-primary">
+                <Link href={`/events/${e.slug}`} aria-label={`Details for ${e.title}`} className="text-muted transition-all duration-200 group-hover:translate-x-1 group-hover:text-primary">
                   <ArrowRight size={18} aria-hidden />
                 </Link>
               </li>
