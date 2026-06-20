@@ -7,7 +7,7 @@ const imgProj = `{ "src": asset->url, "alt": coalesce(alt, "") }`;
 
 export const siteSettingsQuery = `*[_type == "siteSettings"][0]{
   churchName, tagline, mission, address, phone, email,
-  serviceTimes[]{ day, label, time },
+  serviceTimes[]{ day, label, time, phone, passcode },
   boxcastId, givingProvider, givingUrl, heroVideoUrl,
   social[]{ platform, url },
   "mapEmbedQuery": coalesce(mapEmbedQuery, address.street + ", " + address.city + ", " + address.state + " " + address.zip)

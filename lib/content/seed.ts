@@ -21,6 +21,7 @@ export const siteSettings: SiteSettings = {
   phone: undefined,
   email: undefined,
   serviceTimes: [
+    { day: "Mon–Fri", label: "Prayer Line", time: "6:30–7:00 AM", phone: "(267) 930-4000", passcode: "089470707#" },
     { day: "Saturday", label: "Morning Prayer" },
     { day: "Sunday", label: "Worship", time: "9:00 AM" },
     { day: "Wednesday", label: "Bible Study", time: "7:00 PM" },

@@ -16,6 +16,8 @@ export type ServiceTime = {
   day: string;        // e.g. "Sunday"
   label: string;      // e.g. "Worship"
   time?: string;      // e.g. "9:00 AM" — optional: some services have no fixed clock time
+  phone?: string;     // dial-in number for call-in gatherings (e.g. the prayer line)
+  passcode?: string;  // dial-in passcode, if any
 };
 
 export type SocialLink = {

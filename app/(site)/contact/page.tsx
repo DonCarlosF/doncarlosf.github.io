@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { MapPin, Phone, Mail, Clock, Navigation } from "lucide-react";
+import { MapPin, Phone, PhoneCall, Mail, Clock, Navigation } from "lucide-react";
 import { PageHeader } from "@/components/blocks/PageHeader";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
@@ -45,6 +45,33 @@ export default async function ContactPage() {
                 <span>{settings.email || "Email — add in CMS"}</span>
               </li>
             </ul>
+
+            {settings.serviceTimes
+              .filter((s) => s.phone)
+              .map((s) => {
+                const digits = s.phone!.replace(/\D/g, "");
+                const tel = digits.length === 10 ? `+1${digits}` : `+${digits}`;
+                return (
+                  <div key={`${s.day}-${s.label}`} className="mt-6 rounded-card border border-border bg-surface-2 p-4">
+                    <p className="flex items-center gap-2 text-sm font-semibold">
+                      <PhoneCall size={16} className="text-primary" aria-hidden /> {s.label} · {s.day}
+                      {s.time ? ` · ${s.time}` : ""}
+                    </p>
+                    <p className="mt-1.5 text-sm text-muted">
+                      Call{" "}
+                      <a href={`tel:${tel}`} className="font-semibold text-primary underline underline-offset-2">
+                        {s.phone}
+                      </a>
+                      {s.passcode ? (
+                        <>
+                          , passcode <span className="font-semibold text-fg">{s.passcode}</span>
+                        </>
+                      ) : null}
+                    </p>
+                  </div>
+                );
+              })}
+
             <div className="mt-6">
               <Button href={directionsHref} variant="outline"><Navigation size={16} aria-hidden /> Get directions</Button>
             </div>
