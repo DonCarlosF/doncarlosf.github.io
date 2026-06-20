@@ -24,7 +24,7 @@ export function BoxcastEmbed({ id, title = "KBCF Live Stream" }: { id?: string; 
   }
 
   return (
-    <div className="relative aspect-video overflow-hidden rounded-card border border-border bg-surface-2">
+    <div className="relative h-[72vh] min-h-[600px] overflow-hidden rounded-card border border-border bg-surface-2">
       {/* Themed loading skeleton; the player iframe covers it once it paints. */}
       <span
         className="absolute inset-0 flex items-center justify-center text-primary"

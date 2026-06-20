@@ -6,12 +6,25 @@
 export const KBCF_BOXCAST_ID = "wsiikymmlhksnkgmc24r";
 
 /**
- * Build the BoxCast channel embed URL. KBCF's id is a channel id; the player
- * surfaces the live broadcast or the "next up" state automatically.
- * (Confirm against BoxCast's current embed snippet before launch.)
+ * Build the BoxCast channel embed URL. We use the rich `view-embed` view (same
+ * as the church's current site) so visitors get the live/next player PLUS the
+ * playlist of past broadcasts, highlights, and a countdown — not just a bare
+ * player. Giving stays on the dedicated Clover page, so BoxCast donations are
+ * disabled here.
  */
 export function boxcastEmbedUrl(id: string): string {
-  return `https://player.boxcast.com/channel/${encodeURIComponent(id)}`;
+  const params = new URLSearchParams({
+    showTitle: "1",
+    showDescription: "1",
+    showHighlights: "1",
+    showRelated: "1", // playlist of past broadcasts
+    showCountdown: "1",
+    showDonations: "0", // giving is handled on the Clover page
+    defaultVideo: "next",
+    market: "house-of-worship",
+    layout: "playlist-to-right",
+  });
+  return `https://boxcast.tv/view-embed/${encodeURIComponent(id)}?${params.toString()}`;
 }
 
 /**

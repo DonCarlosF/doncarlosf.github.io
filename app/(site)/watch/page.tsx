@@ -28,16 +28,14 @@ export default async function WatchPage() {
       />
 
       <Section>
-        <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr]">
-          <div>
-            <Eyebrow>Live now / next up</Eyebrow>
-            <h2 className="mb-4 mt-2 font-display text-2xl font-semibold">KBCF Live</h2>
-            <BoxcastEmbed id={settings.boxcastId} />
-            <p className="mt-3 text-sm text-muted">
-              Streaming via BoxCast. The player shows the live service when we&apos;re on air, and the next scheduled
-              broadcast otherwise.
-            </p>
-          </div>
+        <Eyebrow>Live now / next up</Eyebrow>
+        <h2 className="mb-4 mt-2 font-display text-2xl font-semibold">KBCF Live</h2>
+        <BoxcastEmbed id={settings.boxcastId} />
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+          <p className="text-sm text-muted">
+            Streaming via BoxCast — the player shows the live service when we&apos;re on air, the next scheduled
+            broadcast otherwise, and a playlist of past services and highlights alongside it.
+          </p>
           <aside className="kbcf-card rounded-card border border-border bg-surface p-6 transition-colors duration-300">
             <h2 className="font-display text-xl font-semibold">Watch elsewhere</h2>
             <p className="mt-2 text-sm text-muted">Prefer to watch on social? Catch the simulcast:</p>
