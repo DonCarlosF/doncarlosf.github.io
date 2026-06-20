@@ -7,10 +7,21 @@ import { boxcastEmbedUrl } from "@/lib/integrations/boxcast";
  * state. When no channel id is configured we render a themed placeholder
  * instead of pointing an iframe at a missing channel.
  *
- * `compact` renders just the live/next player (homepage preview); the default
- * renders the full channel view with the past-broadcast playlist (Watch page).
+ * `compact` renders just the live/next player (player only); the default renders
+ * the full channel view with the past-broadcast playlist. `heightClass` overrides
+ * the container height (e.g. a smaller, contained embed on the landing page).
  */
-export function BoxcastEmbed({ id, title = "KBCF Live Stream", compact = false }: { id?: string; title?: string; compact?: boolean }) {
+export function BoxcastEmbed({
+  id,
+  title = "KBCF Live Stream",
+  compact = false,
+  heightClass,
+}: {
+  id?: string;
+  title?: string;
+  compact?: boolean;
+  heightClass?: string;
+}) {
   if (!id) {
     return (
       <div className="flex aspect-video flex-col items-center justify-center gap-3 rounded-card border border-border bg-surface-2 px-6 text-center">
@@ -31,7 +42,7 @@ export function BoxcastEmbed({ id, title = "KBCF Live Stream", compact = false }
     <div
       className={cn(
         "relative overflow-hidden rounded-card border border-border bg-surface-2",
-        compact ? "aspect-video" : "h-[72vh] min-h-[600px]"
+        heightClass ?? (compact ? "aspect-video" : "h-[72vh] min-h-[600px]")
       )}
     >
       {/* Themed loading skeleton; the player iframe covers it once it paints. */}
