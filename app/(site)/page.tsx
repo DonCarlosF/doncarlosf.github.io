@@ -21,7 +21,7 @@ export default async function HomePage() {
       <Hero settings={settings} />
       <ServiceTimesBar settings={settings} />
       <NewHerePaths />
-      <LatestSermon sermon={sermon} />
+      <LatestSermon sermon={sermon} liveId={settings.boxcastId} />
       <UpcomingEvents events={events} />
       <Testimonials testimonials={testimonials} />
       <DreamCenterHighlight mission={dreamCenter.mission} />

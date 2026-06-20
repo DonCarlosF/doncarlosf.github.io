@@ -12,12 +12,15 @@ export const KBCF_BOXCAST_ID = "wsiikymmlhksnkgmc24r";
  * player. Giving stays on the dedicated Clover page, so BoxCast donations are
  * disabled here.
  */
-export function boxcastEmbedUrl(id: string): string {
+export function boxcastEmbedUrl(id: string, opts: { compact?: boolean } = {}): string {
+  const { compact = false } = opts;
+  // Compact = just the live/next player (for the homepage preview). Full = the
+  // rich channel view with the past-broadcast playlist + highlights (Watch page).
   const params = new URLSearchParams({
     showTitle: "1",
-    showDescription: "1",
-    showHighlights: "1",
-    showRelated: "1", // playlist of past broadcasts
+    showDescription: compact ? "0" : "1",
+    showHighlights: compact ? "0" : "1",
+    showRelated: compact ? "0" : "1", // playlist of past broadcasts
     showCountdown: "1",
     showDonations: "0", // giving is handled on the Clover page
     defaultVideo: "next",

@@ -1,12 +1,16 @@
 import { MonitorPlay } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 import { boxcastEmbedUrl } from "@/lib/integrations/boxcast";
 
 /**
  * BoxCast live player. The player itself surfaces the live / next-broadcast
  * state. When no channel id is configured we render a themed placeholder
  * instead of pointing an iframe at a missing channel.
+ *
+ * `compact` renders just the live/next player (homepage preview); the default
+ * renders the full channel view with the past-broadcast playlist (Watch page).
  */
-export function BoxcastEmbed({ id, title = "KBCF Live Stream" }: { id?: string; title?: string }) {
+export function BoxcastEmbed({ id, title = "KBCF Live Stream", compact = false }: { id?: string; title?: string; compact?: boolean }) {
   if (!id) {
     return (
       <div className="flex aspect-video flex-col items-center justify-center gap-3 rounded-card border border-border bg-surface-2 px-6 text-center">
@@ -24,7 +28,12 @@ export function BoxcastEmbed({ id, title = "KBCF Live Stream" }: { id?: string; 
   }
 
   return (
-    <div className="relative h-[72vh] min-h-[600px] overflow-hidden rounded-card border border-border bg-surface-2">
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-card border border-border bg-surface-2",
+        compact ? "aspect-video" : "h-[72vh] min-h-[600px]"
+      )}
+    >
       {/* Themed loading skeleton; the player iframe covers it once it paints. */}
       <span
         className="absolute inset-0 flex items-center justify-center text-primary"
@@ -35,7 +44,7 @@ export function BoxcastEmbed({ id, title = "KBCF Live Stream" }: { id?: string; 
         </span>
       </span>
       <iframe
-        src={boxcastEmbedUrl(id)}
+        src={boxcastEmbedUrl(id, { compact })}
         title={title}
         className="absolute inset-0 h-full w-full"
         allow="autoplay; fullscreen; picture-in-picture"

@@ -4,24 +4,32 @@ import { Section, Eyebrow } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { SmartImage } from "@/components/ui/Media";
 import { ClipRail } from "@/components/watch/ClipRail";
+import { BoxcastEmbed } from "@/components/watch/BoxcastEmbed";
 import type { Sermon } from "@/lib/content/types";
 
-export function LatestSermon({ sermon }: { sermon: Sermon | null }) {
+export function LatestSermon({ sermon, liveId }: { sermon: Sermon | null; liveId?: string }) {
   if (!sermon) return null;
   return (
     <Section tone="surface-2" id="latest-message">
       <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
-        <Link href={`/watch/${sermon.slug}`} className="group relative block" aria-label={`Watch: ${sermon.title}`}>
-          <SmartImage image={sermon.thumbnail || { alt: `${sermon.title} thumbnail`, placeholder: true }} priority />
-          <span className="absolute left-4 top-4 rounded-full bg-cta px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-cta-fg">
-            ● Latest Message
-          </span>
-          <span className="absolute inset-0 flex items-center justify-center">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-primary shadow-lg transition-transform group-hover:scale-110">
-              <Play size={26} aria-hidden />
+        {liveId ? (
+          <div>
+            <Eyebrow className="mb-3">Live now / next up</Eyebrow>
+            <BoxcastEmbed id={liveId} title="KBCF Live" compact />
+          </div>
+        ) : (
+          <Link href={`/watch/${sermon.slug}`} className="group relative block" aria-label={`Watch: ${sermon.title}`}>
+            <SmartImage image={sermon.thumbnail || { alt: `${sermon.title} thumbnail`, placeholder: true }} priority />
+            <span className="absolute left-4 top-4 rounded-full bg-cta px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-cta-fg">
+              ● Latest Message
             </span>
-          </span>
-        </Link>
+            <span className="absolute inset-0 flex items-center justify-center">
+              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-primary shadow-lg transition-transform group-hover:scale-110">
+                <Play size={26} aria-hidden />
+              </span>
+            </span>
+          </Link>
+        )}
 
         <div>
           <Eyebrow>Watch &amp; Grow</Eyebrow>
