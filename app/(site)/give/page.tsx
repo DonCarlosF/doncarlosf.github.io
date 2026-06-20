@@ -27,7 +27,7 @@ export default async function GivePage() {
 
       <Section>
         <div className="grid items-start gap-10 lg:grid-cols-[1.2fr_0.8fr]">
-          <CloverGiving url={settings.givingUrl} />
+          <CloverGiving url={settings.givingUrl} provider={settings.givingProvider} />
 
           <div id="ways" className="space-y-6">
             <div className="kbcf-card rounded-card border border-border bg-surface p-6 transition-colors duration-300">
