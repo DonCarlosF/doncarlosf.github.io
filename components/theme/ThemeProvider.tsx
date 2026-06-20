@@ -2,9 +2,10 @@
 
 import { useCallback, useSyncExternalStore } from "react";
 
-export type Theme = "sanctuary" | "movement";
+export type Theme = "sanctuary" | "grove" | "sterling" | "ember" | "movement";
 const STORAGE_KEY = "kbcf-theme";
 const EVENT = "kbcf-theme-change";
+const THEMES: Theme[] = ["sanctuary", "grove", "sterling", "ember", "movement"];
 
 // The active theme lives on <html data-theme>. We treat that attribute as an
 // external store so components stay in sync without setState-in-effect.
@@ -29,7 +30,8 @@ export function useTheme() {
   }, []);
 
   const toggle = useCallback(() => {
-    setTheme(getSnapshot() === "movement" ? "sanctuary" : "movement");
+    const i = THEMES.indexOf(getSnapshot());
+    setTheme(THEMES[(i + 1) % THEMES.length]);
   }, [setTheme]);
 
   return { theme, setTheme, toggle };
@@ -42,4 +44,4 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
 /** Inline script: marks JS active (enables reveal animations) and applies the
  *  saved theme before paint (no flash). */
-export const themeInitScript = `(function(){try{document.documentElement.classList.add('js');var t=localStorage.getItem('${STORAGE_KEY}');if(t==='movement'||t==='sanctuary'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();`;
+export const themeInitScript = `(function(){try{document.documentElement.classList.add('js');var t=localStorage.getItem('${STORAGE_KEY}');if(['sanctuary','grove','sterling','ember','movement'].indexOf(t)>=0){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();`;

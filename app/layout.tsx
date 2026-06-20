@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter, Space_Grotesk } from "next/font/google";
+import { Fraunces, Inter, Space_Grotesk, Outfit, Bricolage_Grotesque, Newsreader } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider, themeInitScript } from "@/components/theme/ThemeProvider";
@@ -7,6 +7,10 @@ import { ThemeProvider, themeInitScript } from "@/components/theme/ThemeProvider
 const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap", style: ["normal", "italic"] });
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space", display: "swap" });
+// Display faces for the three additional art directions (spectrum themes).
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", display: "swap" }); // Grove
+const bricolage = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-bricolage", display: "swap" }); // Sterling
+const newsreader = Newsreader({ subsets: ["latin"], variable: "--font-newsreader", display: "swap", style: ["normal", "italic"] }); // Ember
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kingdombuilders.example";
 
@@ -46,7 +50,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       lang="en"
       data-theme="sanctuary"
       suppressHydrationWarning
-      className={`${fraunces.variable} ${inter.variable} ${spaceGrotesk.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${inter.variable} ${spaceGrotesk.variable} ${outfit.variable} ${bricolage.variable} ${newsreader.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <Script id="kbcf-theme-init" strategy="beforeInteractive">
