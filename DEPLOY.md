@@ -55,8 +55,8 @@ the API is unavailable.
 
 ## 4. Going to production (later, with approval)
 
-- Replace placeholder copy (statement of faith, bios, Dream Center programs,
-  kids details) and add real photos in the CMS.
+- Replace placeholder copy (statement of faith, bios, Dream Center programs)
+  and add real photos in the CMS.
 - Provide the real old-site URL list to finalize redirects in `next.config.ts`.
 - Add real phone/email/socials in Site Settings.
 - Only then attach the production domain.

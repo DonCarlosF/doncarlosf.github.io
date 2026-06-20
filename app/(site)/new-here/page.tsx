@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Car, Shirt, Clock, Baby, Coffee, HeartHandshake } from "lucide-react";
+import { Car, Shirt, Clock, Coffee } from "lucide-react";
 import { PageHeader } from "@/components/blocks/PageHeader";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
@@ -9,7 +9,7 @@ import { getSiteSettings } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "New Here",
-  description: "Planning your first visit to KBCF? Here's what to expect — parking, kids, what to wear, and how to connect.",
+  description: "Planning your first visit to KBCF? Here's what to expect — parking, what to wear, and how to connect.",
 };
 
 const EXPECT = [
@@ -46,29 +46,6 @@ export default async function NewHerePage() {
               <p className="mt-2 text-sm text-muted">{e.body}</p>
             </Card>
           ))}
-        </div>
-      </Section>
-
-      <Section tone="surface-2" id="kids">
-        <div className="grid items-center gap-8 lg:grid-cols-2">
-          <div>
-            <SectionHeading
-              eyebrow="Kids & Family"
-              title="Your kids will love it here."
-              intro="Safe, fun, age-appropriate environments mean the whole family can worship with confidence. Check-in is quick, and our team is background-checked."
-            />
-            <p className="mt-4 inline-flex items-center gap-2 text-sm text-muted">
-              <Baby size={18} className="text-primary" aria-hidden /> [Placeholder — add age ranges & check-in details in the CMS.]
-            </p>
-          </div>
-          <Card>
-            <h3 className="flex items-center gap-2 font-display text-lg font-semibold">
-              <HeartHandshake size={18} className="text-primary" aria-hidden /> Got questions?
-            </h3>
-            <p className="mt-2 text-sm text-muted">
-              We&apos;re happy to help you plan your visit. Fill out the form below and our team will be ready for you.
-            </p>
-          </Card>
         </div>
       </Section>
 
