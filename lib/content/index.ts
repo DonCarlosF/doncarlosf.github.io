@@ -12,6 +12,7 @@ import * as seed from "./seed";
 import * as q from "./queries";
 import type {
   SiteSettings, Sermon, ChurchEvent, Group, Leader, BlogPost, Testimonial, Clip, Series,
+  HomeContent, AboutContent,
 } from "./types";
 import {
   getPlanningCenterEvents, getPlanningCenterGroups, isPlanningCenterConfigured,
@@ -133,6 +134,18 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
 export async function getTestimonials(): Promise<Testimonial[]> {
   const data = await sfetch<Testimonial[]>(q.testimonialsQuery);
   return nonEmpty(data) ? data : seed.testimonials;
+}
+
+/** Home page content (CMS singleton, seed fallback). Falls back to seed if the
+ *  doc is missing or any required block is absent, so the page never half-renders. */
+export async function getHomePage(): Promise<HomeContent> {
+  const data = await sfetch<HomeContent>(q.homePageQuery);
+  return data && nonEmpty(data.heroSlides) ? data : seed.homePage;
+}
+
+export async function getAboutPage(): Promise<AboutContent> {
+  const data = await sfetch<AboutContent>(q.aboutPageQuery);
+  return data && data.intro ? data : seed.aboutPage;
 }
 
 export const dreamCenter = seed.dreamCenter;

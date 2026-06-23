@@ -1,23 +1,26 @@
 import Link from "next/link";
-import { MapPin, MessageCircle, ArrowRight } from "lucide-react";
+import { HeartHandshake, Compass, MessageCircle, Sparkles, ArrowRight } from "lucide-react";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { Card } from "@/components/ui/Card";
 import { Reveal } from "@/components/ui/Reveal";
 
+/** Action Pathways — the four ways to take a next step at KBCF. */
 const PATHS = [
-  { icon: MapPin, title: "Plan Your Visit", body: "What to expect, where to park, and what to wear (hint: come as you are).", href: "/new-here", cta: "Plan a visit" },
-  { icon: MessageCircle, title: "Let Us Know You're Coming", body: "Tell us you're on your way and we'll have someone ready to greet you.", href: "/new-here#connect", cta: "Say hello" },
+  { icon: HeartHandshake, title: "Join Us!", body: "Plan your first visit, find service times, and know exactly what to expect.", href: "/new-here", cta: "Plan a visit" },
+  { icon: Compass, title: "New Here?", body: "Get to know who we are — a church like no other in the heart of Oakland.", href: "/about", cta: "About KBCF" },
+  { icon: MessageCircle, title: "Get Connected", body: "Let us know you're coming and find your place in the KBCF family.", href: "/new-here#connect", cta: "Connect with us" },
+  { icon: Sparkles, title: "Make an Impact", body: "Serve your city through the Dream Center and our outreach across Oakland.", href: "/dream-center", cta: "Serve & give" },
 ];
 
 export function NewHerePaths() {
   return (
     <Section id="new-here">
       <SectionHeading
-        eyebrow="New here?"
-        title="Your first Sunday, made simple."
-        intro="However you found us, we'd love to meet you. Here's everything you need to walk in with confidence."
+        eyebrow="Take your next step"
+        title="However you found us, there's a place for you."
+        intro="Pick the path that fits where you are today — we'd love to walk it with you."
       />
-      <div className="mt-10 grid gap-5 sm:grid-cols-2">
+      <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {PATHS.map((p, i) => (
           <Reveal key={p.title} delay={i * 80}>
             <Card className="h-full">

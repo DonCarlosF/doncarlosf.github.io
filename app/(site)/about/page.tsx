@@ -3,59 +3,31 @@ import { BookOpen } from "lucide-react";
 import { PageHeader } from "@/components/blocks/PageHeader";
 import { Section, SectionHeading, Eyebrow } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { SmartImage } from "@/components/ui/Media";
-import { getSiteSettings, getLeaders } from "@/lib/content";
+import { getAboutPage, getLeaders } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "The story, beliefs, and leadership of Kingdom Builders Christian Fellowship in Oakland, CA.",
+  description: "The story, beliefs, mission, and leadership of Kingdom Builders Christian Fellowship in Oakland, CA.",
 };
 
 export default async function AboutPage() {
-  const [settings, leaders] = await Promise.all([getSiteSettings(), getLeaders()]);
+  const [about, leaders] = await Promise.all([getAboutPage(), getLeaders()]);
 
   return (
     <>
-      <PageHeader
-        eyebrow="About KBCF"
-        title="People are our heart. Jesus is our message."
-        intro={`${settings.tagline}. A contemporary, Gospel-centered family in the heart of Oakland.`}
-      />
+      <PageHeader eyebrow="About KBCF" title="A Church Like No Other" intro={about.intro} />
 
-      <Section>
-        <div className="grid items-center gap-10 lg:grid-cols-2">
-          <div>
-            <Eyebrow>Our story</Eyebrow>
-            <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl">Built on the Gospel, for the Bay.</h2>
-            <p className="mt-4 text-lg text-muted">
-              Kingdom Builders Christian Fellowship was founded in 2009 by Pastor L.J. Jennings and Karen Jennings,
-              after more than 20 years of ministry across the Bay Area. The message is sacred — the method is not.
-            </p>
-            <p className="mt-4 text-muted">
-              [Placeholder — add the full, approved church story here in the CMS.]
-            </p>
-            <div className="mt-6">
-              <Button href="/new-here">Plan your first visit</Button>
-            </div>
-          </div>
-          <SmartImage image={{ alt: "The KBCF family gathered for worship", placeholder: true }} ratio="aspect-[4/3]" />
+      {/* Mission */}
+      <Section tone="surface-2">
+        <div className="mx-auto max-w-3xl text-center">
+          <Eyebrow>Our Mission</Eyebrow>
+          <p className="mt-4 text-balance font-display text-2xl leading-snug sm:text-3xl">{about.mission}</p>
         </div>
       </Section>
 
-      <Section tone="surface-2" id="beliefs">
-        <SectionHeading eyebrow="What we believe" title="Our beliefs" />
-        <div className="mt-8 flex items-start gap-4 rounded-card border border-dashed border-border bg-surface p-6">
-          <BookOpen className="mt-1 shrink-0 text-primary" aria-hidden />
-          <div>
-            <p className="font-medium">Statement of faith — awaiting approved copy.</p>
-            <p className="mt-1 text-sm text-muted">
-              Doctrine and the statement of faith will be supplied by KBCF and added in the CMS. (We don&apos;t write
-              theology on the church&apos;s behalf.)
-            </p>
-          </div>
-        </div>
-      </Section>
-
+      {/* Meet our pastors */}
       <Section id="leadership">
         <SectionHeading eyebrow="Leadership" title="Meet our pastors" />
         <div className="mt-10 grid gap-8 sm:grid-cols-2">
@@ -63,7 +35,7 @@ export default async function AboutPage() {
             <article key={l._id} className="group flex flex-col gap-5 sm:flex-row">
               <div className="sm:w-44 sm:shrink-0">
                 <SmartImage
-                  image={l.image || { alt: l.name, placeholder: true }}
+                  image={l.image ?? { alt: l.name, placeholder: true }}
                   ratio="aspect-square"
                   rounded="rounded-card"
                   imageClassName="transition-transform duration-500 group-hover:scale-105"
@@ -72,13 +44,61 @@ export default async function AboutPage() {
               <div>
                 <h3 className="font-display text-xl font-semibold">{l.name}</h3>
                 <p className="text-sm font-medium text-primary">{l.role}</p>
-                {l.bio && <p className="mt-3 text-sm text-muted">{l.bio}</p>}
+                {l.bio && <p className="mt-3 text-sm leading-relaxed text-muted">{l.bio}</p>}
               </div>
             </article>
           ))}
         </div>
       </Section>
 
+      {/* Our Story */}
+      <Section tone="surface-2" id="story">
+        <SectionHeading eyebrow="Our journey" title={about.storyHeading ?? "Our Story"} />
+        {about.story ? (
+          <p className="mt-6 max-w-3xl text-lg leading-relaxed text-muted">{about.story}</p>
+        ) : (
+          <div className="mt-6 flex items-start gap-4 rounded-card border border-dashed border-border bg-surface p-6">
+            <BookOpen className="mt-1 shrink-0 text-primary" aria-hidden />
+            <div>
+              <p className="font-medium">Our full story is on the way.</p>
+              <p className="mt-1 text-sm text-muted">
+                The pastoral team is preparing this section — it can be added any time in the CMS.
+              </p>
+            </div>
+          </div>
+        )}
+      </Section>
+
+      {/* Our beliefs — Five Pillars */}
+      <Section id="beliefs">
+        <SectionHeading eyebrow="What we believe" title="The Five Pillars of Christianity" />
+        <div className="mt-10 grid gap-5 sm:grid-cols-2">
+          {about.beliefs.map((b, i) => (
+            <Card key={b.name} className="h-full">
+              <span className="font-display text-sm font-bold tracking-wider text-primary">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <h3 className="mt-2 font-display text-xl font-semibold">{b.name}</h3>
+              <p className="mt-2 leading-relaxed text-muted">{b.body}</p>
+            </Card>
+          ))}
+        </div>
+      </Section>
+
+      {/* Core values */}
+      <Section tone="surface-2">
+        <SectionHeading eyebrow="How we live it out" title="Our Core Values" />
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {about.coreValues.map((v) => (
+            <Card key={v.title} className="h-full">
+              <h3 className="font-display text-lg font-semibold">{v.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">{v.body}</p>
+            </Card>
+          ))}
+        </div>
+      </Section>
+
+      {/* CTA */}
       <Section tone="surface">
         <div className="rounded-card bg-primary px-6 py-12 text-center text-primary-fg sm:py-14">
           <h2 className="font-display text-2xl font-semibold sm:text-3xl">Curious what a Sunday is like?</h2>

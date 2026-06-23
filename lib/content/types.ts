@@ -148,6 +148,48 @@ export type Testimonial = {
   image?: Img;
 };
 
+/** Home page content (CMS singleton `homePage`, with a seed fallback). */
+export type HeroSlide = {
+  eyebrow?: string;
+  title?: string;
+  accent?: string;   // emphasized phrase, rendered with the theme hero-accent treatment
+  ctaLabel?: string;
+  ctaHref?: string;
+};
+
+export type EventBanner = {
+  enabled?: boolean;
+  title: string;
+  date?: string;     // human-readable, editable (e.g. "May 8, 2024")
+  location?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+};
+
+export type HomeContent = {
+  heroSlides: HeroSlide[];
+  eventBanner?: EventBanner;
+  welcomeHeading: string;
+  welcomeBody: string;
+  pastorsHeading: string;
+  pastorsBody: string;
+  pastorsImage?: Img;
+};
+
+/** About page content (CMS singleton `aboutPage`, with a seed fallback). */
+export type Belief = { name: string; body: string };   // Five Pillars of Christianity
+export type CoreValue = { title: string; body: string };
+
+export type AboutContent = {
+  intro: string;
+  mission: string;
+  storyHeading?: string;
+  story?: string;
+  storyPlaceholder?: boolean;
+  beliefs: Belief[];
+  coreValues: CoreValue[];
+};
+
 /** Editable homepage / generic page blocks live under `page`. */
 export type Page = {
   _id: string;

@@ -67,3 +67,16 @@ export const blogPostBySlugQuery = `*[_type == "blogPost" && slug.current == $sl
 export const testimonialsQuery = `*[_type == "testimonial"]{
   "_id": _id, quote, attribution, "image": image${imgProj}
 }`;
+
+export const homePageQuery = `*[_type == "homePage"][0]{
+  heroSlides[]{ eyebrow, title, accent, ctaLabel, ctaHref },
+  eventBanner{ enabled, title, date, location, ctaLabel, ctaHref },
+  welcomeHeading, welcomeBody, pastorsHeading, pastorsBody,
+  "pastorsImage": pastorsImage${imgProj}
+}`;
+
+export const aboutPageQuery = `*[_type == "aboutPage"][0]{
+  intro, mission, storyHeading, story, storyPlaceholder,
+  beliefs[]{ name, body },
+  coreValues[]{ title, body }
+}`;

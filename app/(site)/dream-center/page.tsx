@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { HandHeart, HeartHandshake, Gift } from "lucide-react";
+import { HandHeart, Gift } from "lucide-react";
 import { PageHeader } from "@/components/blocks/PageHeader";
 import { Section, SectionHeading, Eyebrow } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { SmartImage } from "@/components/ui/Media";
+import { VolunteerForm } from "@/components/forms/VolunteerForm";
 import { dreamCenter } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -20,7 +21,7 @@ export default function DreamCenterPage() {
         title="Loving Oakland, in Jesus' name."
         intro={dreamCenter.mission}
       >
-        <Button href="#serve">Serve / Volunteer</Button>
+        <Button href="#volunteer">Serve / Volunteer</Button>
         <Button href="/give" variant="outline">Donate</Button>
       </PageHeader>
 
@@ -49,20 +50,19 @@ export default function DreamCenterPage() {
         </div>
       </Section>
 
-      <Section id="serve">
-        <div className="grid gap-6 sm:grid-cols-2">
-          <Card>
-            <HeartHandshake className="text-primary" aria-hidden />
-            <h3 className="mt-3 font-display text-xl font-semibold">Volunteer</h3>
-            <p className="mt-2 text-sm text-muted">Give your time and talents to serve neighbors across Oakland.</p>
-            <div className="mt-5"><Button href="/contact" size="sm">Sign up to serve</Button></div>
-          </Card>
-          <Card>
-            <Gift className="text-primary" aria-hidden />
-            <h3 className="mt-3 font-display text-xl font-semibold">Give</h3>
-            <p className="mt-2 text-sm text-muted">Your generosity fuels outreach that changes lives.</p>
-            <div className="mt-5"><Button href="/give" size="sm">Donate to outreach</Button></div>
-          </Card>
+      <Section id="volunteer" tone="surface-2">
+        <div className="grid items-start gap-10 lg:grid-cols-[1fr_1fr]">
+          <div>
+            <Eyebrow>Get involved</Eyebrow>
+            <h2 className="kbcf-section-title mt-2 font-display text-3xl font-semibold sm:text-4xl">
+              {dreamCenter.volunteerHeading}
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-muted">{dreamCenter.volunteerBody}</p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button href="/give" variant="outline"><Gift size={16} aria-hidden /> Give to outreach</Button>
+            </div>
+          </div>
+          <VolunteerForm />
         </div>
       </Section>
     </>

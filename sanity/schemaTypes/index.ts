@@ -1,6 +1,8 @@
 import type { SchemaTypeDefinition } from "sanity";
 import { accessibleImage, serviceTime, socialLink } from "./objects";
 import { siteSettings } from "./siteSettings";
+import { homePage } from "./homePage";
+import { aboutPage } from "./aboutPage";
 import { speaker, leader } from "./people";
 import { sermon, clip, series } from "./sermon";
 import { event } from "./event";
@@ -13,7 +15,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     // objects
     accessibleImage, serviceTime, socialLink,
     // documents
-    siteSettings,
+    siteSettings, homePage, aboutPage,
     sermon, clip, series, speaker,
     event, group, leader,
     blogPost, testimonial, page,
