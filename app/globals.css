@@ -332,30 +332,6 @@
   letter-spacing: -0.03em;
   font-weight: 700;
 }
-[data-theme="movement"] .hero-lead { color: var(--c-muted); }
-
-/* Plain inline row → bordered 3-up stat grid with hairline separators. */
-[data-theme="movement"] .hero-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  margin-top: 2.75rem;
-  padding: 0;
-  border: 1px solid var(--c-border);
-  border-radius: var(--rad-card);
-  background: var(--c-border);
-  overflow: hidden;
-}
-[data-theme="movement"] .hero-stat {
-  background: color-mix(in srgb, var(--c-surface) 88%, transparent);
-  padding: 18px 18px;
-}
-[data-theme="movement"] .hero-stat-label { color: var(--c-muted); }
-[data-theme="movement"] .hero-stat-value { color: var(--c-fg); }
-
-@media (max-width: 640px) {
-  [data-theme="movement"] .hero-stats { grid-template-columns: 1fr; }
-}
 
 /* ---- Movement kinetic treatment: section headers, cards, "more" links ---- */
 /* Eyebrow shifts to the softer indigo accent in Movement (matches reference). */

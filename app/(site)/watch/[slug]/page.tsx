@@ -51,7 +51,8 @@ export default async function SermonPage({ params }: { params: Promise<{ slug: s
               <iframe src={yt} title={sermon.title} className="absolute inset-0 h-full w-full" allowFullScreen loading="lazy" />
             </div>
           ) : sermon.boxcastId ? (
-            <BoxcastEmbed id={sermon.boxcastId} title={sermon.title} />
+            // Per-sermon broadcast: player only (compact), not the channel playlist view.
+            <BoxcastEmbed id={sermon.boxcastId} title={sermon.title} compact />
           ) : (
             <SmartImage image={sermon.thumbnail || { alt: `${sermon.title} thumbnail`, placeholder: true }} priority />
           )}

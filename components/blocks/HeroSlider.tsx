@@ -44,6 +44,9 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
               aria-roledescription="slide"
               aria-label={`${i + 1} of ${items.length}`}
               aria-hidden={i !== active}
+              // inert keeps the hidden slide's CTA out of the tab order (a11y:
+              // aria-hidden content must not contain focusable elements).
+              inert={i !== active}
               className={cn(
                 "absolute inset-0 flex flex-col justify-center transition-opacity duration-700",
                 i === active ? "opacity-100" : "pointer-events-none opacity-0"

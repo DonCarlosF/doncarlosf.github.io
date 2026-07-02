@@ -8,7 +8,7 @@ import { Reveal } from "@/components/ui/Reveal";
 const PATHS = [
   { icon: HeartHandshake, title: "Join Us!", body: "Plan your first visit, find service times, and know exactly what to expect.", href: "/new-here", cta: "Plan a visit" },
   { icon: Compass, title: "New Here?", body: "Get to know who we are — a church like no other in the heart of Oakland.", href: "/about", cta: "About KBCF" },
-  { icon: MessageCircle, title: "Get Connected", body: "Let us know you're coming and find your place in the KBCF family.", href: "/new-here#connect", cta: "Connect with us" },
+  { icon: MessageCircle, title: "Get Connected", body: "Find your people — life groups and ministries across the KBCF family.", href: "/groups", cta: "Find a group" },
   { icon: Sparkles, title: "Make an Impact", body: "Serve your city through the Dream Center and our outreach across Oakland.", href: "/dream-center", cta: "Serve & give" },
 ];
 

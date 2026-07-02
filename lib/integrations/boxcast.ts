@@ -1,9 +1,8 @@
 /**
  * BoxCast helpers. KBCF streams via BoxCast (house-of-worship channel).
- * The default channel id is the verified KBCF id; it can be overridden per
- * sermon or via siteSettings in the CMS.
+ * The channel id lives in siteSettings.boxcastId (CMS-editable, seeded with the
+ * verified KBCF id); sermons may carry their own per-broadcast id.
  */
-export const KBCF_BOXCAST_ID = "wsiikymmlhksnkgmc24r";
 
 /**
  * Build the BoxCast channel embed URL. We use the rich `view-embed` view (same
