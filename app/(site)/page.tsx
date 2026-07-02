@@ -10,6 +10,7 @@ import { DreamCenterHighlight } from "@/components/blocks/DreamCenterHighlight";
 import { GivingBlock } from "@/components/blocks/GivingBlock";
 import { Testimonials } from "@/components/blocks/Testimonials";
 import { getSiteSettings, getHomePage, getLatestSermon, getUpcomingEvents, getTestimonials, dreamCenter } from "@/lib/content";
+import { localOr } from "@/lib/content/local-images";
 
 export default async function HomePage() {
   const [settings, home, sermon, events, testimonials] = await Promise.all([
@@ -31,7 +32,10 @@ export default async function HomePage() {
       <LatestSermon sermon={sermon} liveId={settings.boxcastId} />
       <UpcomingEvents events={events} />
       <Testimonials testimonials={testimonials} />
-      <DreamCenterHighlight mission={dreamCenter.mission} />
+      <DreamCenterHighlight
+        mission={dreamCenter.mission}
+        image={localOr("dream-center", { alt: "Dream Center serving the Oakland community", placeholder: true })}
+      />
       <GivingBlock />
     </>
   );

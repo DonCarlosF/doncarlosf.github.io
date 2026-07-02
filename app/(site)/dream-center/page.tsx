@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { SmartImage } from "@/components/ui/Media";
 import { VolunteerForm } from "@/components/forms/VolunteerForm";
 import { dreamCenter } from "@/lib/content";
+import { localOr } from "@/lib/content/local-images";
 
 export const metadata: Metadata = {
   title: "Dream Center",
@@ -27,7 +28,7 @@ export default function DreamCenterPage() {
 
       <Section>
         <div className="grid items-center gap-10 lg:grid-cols-2">
-          <SmartImage image={{ alt: "Dream Center volunteers serving the community", placeholder: true }} ratio="aspect-[4/3]" />
+          <SmartImage image={localOr("dream-center", { alt: "Dream Center volunteers serving the community", placeholder: true })} ratio="aspect-[4/3]" />
           <div>
             <Eyebrow>Our mission</Eyebrow>
             <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl">Meeting real needs, sharing real hope.</h2>

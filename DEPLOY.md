@@ -53,7 +53,19 @@ Then staff edit everything at `your-preview-url/studio` — no code.
 Events/groups then come live from Planning Center, falling back to the CMS when
 the API is unavailable.
 
-## 4. Going to production (later, with approval)
+## 4. Adding real photos (two ways)
+
+**No-setup way (works today):** upload photos to `public/images/` using the
+GitHub web UI (open the folder → *Add file → Upload files*). Specific file names
+map to specific spots — see the table in `public/images/README.md`
+(`pastors.jpg`, `pastor-lj.jpg`, `pastor-karen.jpg`, `dream-center.jpg`).
+Vercel redeploys automatically and the photo replaces the placeholder.
+
+**CMS way (once Sanity is connected):** upload in the Studio at `/studio`
+(Home Page → Pastors photo, Leaders → image, etc.). Studio images take
+precedence over the `public/images/` files.
+
+## 5. Going to production (later, with approval)
 
 - Replace placeholder copy (statement of faith, bios, Dream Center programs)
   and add real photos in the CMS.

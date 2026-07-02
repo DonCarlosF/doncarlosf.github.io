@@ -2,12 +2,13 @@ import { HandHeart, ArrowRight } from "lucide-react";
 import { Section, Eyebrow } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { SmartImage } from "@/components/ui/Media";
+import type { Img } from "@/lib/content/types";
 
-export function DreamCenterHighlight({ mission }: { mission: string }) {
+export function DreamCenterHighlight({ mission, image }: { mission: string; image?: Img }) {
   return (
     <Section tone="surface">
       <div className="grid items-center gap-10 lg:grid-cols-2">
-        <SmartImage image={{ alt: "Dream Center serving the Oakland community", placeholder: true }} ratio="aspect-[4/3]" />
+        <SmartImage image={image ?? { alt: "Dream Center serving the Oakland community", placeholder: true }} ratio="aspect-[4/3]" />
         <div>
           <Eyebrow>Dream Center</Eyebrow>
           <h2 className="mt-2 inline-flex items-center gap-3 font-display text-3xl font-semibold sm:text-4xl">

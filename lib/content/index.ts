@@ -10,6 +10,7 @@ import "server-only";
 import { sanityClient } from "./client";
 import * as seed from "./seed";
 import * as q from "./queries";
+import { localOr } from "./local-images";
 import type {
   SiteSettings, Sermon, ChurchEvent, Group, Leader, BlogPost, Testimonial, Clip, Series,
   HomeContent, AboutContent,
@@ -116,9 +117,19 @@ export async function getGroups(): Promise<Group[]> {
   return nonEmpty(cms) ? cms : seed.groups;
 }
 
+/** Well-known local photo names for the seeded leaders; other leaders fall back
+ *  to a slug of their name (e.g. "Dr. Karen Jennings" -> dr-karen-jennings.jpg). */
+const LEADER_LOCAL_IMG: Record<string, string> = { "ldr-lj": "pastor-lj", "ldr-karen": "pastor-karen" };
+const nameSlug = (n: string) => n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
 export async function getLeaders(): Promise<Leader[]> {
   const data = await sfetch<Leader[]>(q.leadersQuery);
-  return nonEmpty(data) ? data : seed.leaders;
+  const leaders = nonEmpty(data) ? data : seed.leaders;
+  return leaders.map((l) =>
+    l.image?.src
+      ? l
+      : { ...l, image: localOr(LEADER_LOCAL_IMG[l._id] ?? nameSlug(l.name), l.image ?? { alt: l.name, placeholder: true }) }
+  );
 }
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
@@ -139,7 +150,7 @@ export async function getTestimonials(): Promise<Testimonial[]> {
 /** Merge a CMS doc over seed defaults, dropping null/undefined/empty-array
  *  fields — so a half-filled Studio document never blanks or crashes a page. */
 function withSeedDefaults<T extends object>(fallback: T, data: Partial<T> | null): T {
-  if (!data) return fallback;
+  if (!data) return { ...fallback };
   const clean = Object.fromEntries(
     Object.entries(data).filter(([, v]) => v != null && !(Array.isArray(v) && v.length === 0))
   );
@@ -148,7 +159,12 @@ function withSeedDefaults<T extends object>(fallback: T, data: Partial<T> | null
 
 /** Home page content (CMS singleton, seed fallback per-field). */
 export async function getHomePage(): Promise<HomeContent> {
-  return withSeedDefaults(seed.homePage, await sfetch<HomeContent>(q.homePageQuery));
+  const home = withSeedDefaults(seed.homePage, await sfetch<HomeContent>(q.homePageQuery));
+  // No CMS photo yet? Pick up public/images/pastors.* if the file exists.
+  if (!home.pastorsImage?.src) {
+    home.pastorsImage = localOr("pastors", home.pastorsImage ?? { alt: "Pastors LJ & Karen Jennings", placeholder: true });
+  }
+  return home;
 }
 
 export async function getAboutPage(): Promise<AboutContent> {
