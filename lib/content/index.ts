@@ -136,16 +136,23 @@ export async function getTestimonials(): Promise<Testimonial[]> {
   return nonEmpty(data) ? data : seed.testimonials;
 }
 
-/** Home page content (CMS singleton, seed fallback). Falls back to seed if the
- *  doc is missing or any required block is absent, so the page never half-renders. */
+/** Merge a CMS doc over seed defaults, dropping null/undefined/empty-array
+ *  fields — so a half-filled Studio document never blanks or crashes a page. */
+function withSeedDefaults<T extends object>(fallback: T, data: Partial<T> | null): T {
+  if (!data) return fallback;
+  const clean = Object.fromEntries(
+    Object.entries(data).filter(([, v]) => v != null && !(Array.isArray(v) && v.length === 0))
+  );
+  return { ...fallback, ...clean } as T;
+}
+
+/** Home page content (CMS singleton, seed fallback per-field). */
 export async function getHomePage(): Promise<HomeContent> {
-  const data = await sfetch<HomeContent>(q.homePageQuery);
-  return data && nonEmpty(data.heroSlides) ? data : seed.homePage;
+  return withSeedDefaults(seed.homePage, await sfetch<HomeContent>(q.homePageQuery));
 }
 
 export async function getAboutPage(): Promise<AboutContent> {
-  const data = await sfetch<AboutContent>(q.aboutPageQuery);
-  return data && data.intro ? data : seed.aboutPage;
+  return withSeedDefaults(seed.aboutPage, await sfetch<AboutContent>(q.aboutPageQuery));
 }
 
 export const dreamCenter = seed.dreamCenter;

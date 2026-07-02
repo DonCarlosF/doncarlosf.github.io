@@ -16,7 +16,7 @@ export function DreamCenterHighlight({ mission }: { mission: string }) {
           <p className="mt-4 text-lg text-muted">{mission}</p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button href="/dream-center">Explore the Dream Center <ArrowRight size={16} aria-hidden /></Button>
-            <Button href="/dream-center#serve" variant="outline">Serve / Volunteer</Button>
+            <Button href="/dream-center#volunteer" variant="outline">Serve / Volunteer</Button>
           </div>
         </div>
       </div>
