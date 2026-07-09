@@ -1,10 +1,9 @@
 /**
  * Unified content API. Every page/component imports from here and never cares
- * whether data came from Sanity, Planning Center, or the local seed.
+ * whether data came from Sanity or the local seed.
  *
  *   Sanity configured?  -> live CMS content (ISR, on-demand revalidation)
- *   Planning Center?     -> live events/groups merged in
- *   Neither?             -> local seed (known KBCF facts + clearly-flagged samples)
+ *   Otherwise           -> local seed (known KBCF facts + clearly-flagged samples)
  */
 import "server-only";
 import { sanityClient } from "./client";
@@ -15,9 +14,6 @@ import type {
   SiteSettings, Sermon, ChurchEvent, Group, Leader, BlogPost, Testimonial, Clip, Series,
   HomeContent, AboutContent, OutreachProgram,
 } from "./types";
-import {
-  getPlanningCenterEvents, getPlanningCenterGroups, isPlanningCenterConfigured,
-} from "@/lib/integrations/planningcenter";
 
 const REVALIDATE = 60;
 
@@ -78,15 +74,10 @@ export async function getSeries(slug: string): Promise<{ series: Series; sermons
   return { series, sermons };
 }
 
-/** All events (CMS/seed) merged with Planning Center when configured. */
+/** All events — CMS-native (KBCF does not use Planning Center). */
 export async function getEvents(): Promise<ChurchEvent[]> {
   const cms = (await sfetch<ChurchEvent[]>(q.eventsQuery)) ?? [];
-  const base = nonEmpty(cms) ? cms : seed.events;
-  if (isPlanningCenterConfigured) {
-    const pco = await getPlanningCenterEvents();
-    return [...pco, ...base].sort((a, b) => a.start.localeCompare(b.start));
-  }
-  return base;
+  return nonEmpty(cms) ? cms : seed.events;
 }
 
 /** Upcoming events (sorted soonest-first), including ones happening today. */
@@ -110,10 +101,6 @@ export async function getEvent(slug: string): Promise<ChurchEvent | null> {
 
 export async function getGroups(): Promise<Group[]> {
   const cms = (await sfetch<Group[]>(q.groupsQuery)) ?? [];
-  if (isPlanningCenterConfigured) {
-    const pco = await getPlanningCenterGroups();
-    if (nonEmpty(pco)) return pco;
-  }
   return nonEmpty(cms) ? cms : seed.groups;
 }
 

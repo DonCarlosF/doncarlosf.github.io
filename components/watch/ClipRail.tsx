@@ -90,11 +90,11 @@ export function ClipRail({ clips }: { clips: Clip[] }) {
         return (
           <li key={clip._id} className="group w-32 shrink-0 snap-start sm:w-36">
             {yt ? (
-              <button type="button" onClick={() => setPlaying(clip._id)} aria-label={`Play clip: ${clip.hook}`} className="block w-full text-left">
+              <button type="button" onClick={() => setPlaying(clip._id)} className="block w-full text-left">
                 {card}
               </button>
             ) : post ? (
-              <a href={post} target="_blank" rel="noopener noreferrer" aria-label={`Watch clip: ${clip.hook}`} className="block">
+              <a href={post} target="_blank" rel="noopener noreferrer" className="block">
                 {card}
               </a>
             ) : (

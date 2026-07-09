@@ -41,7 +41,6 @@ export type SiteSettings = {
   boxcastId: string;
   givingUrl: string;
   givingProvider: string;
-  heroVideoUrl?: string;   // optional hero background video (muted loop)
   social: SocialLink[];
   mapEmbedQuery: string; // address string used to build a maps embed
 };
@@ -209,10 +208,3 @@ export type AboutContent = {
   coreValues: CoreValue[];
 };
 
-/** Editable homepage / generic page blocks live under `page`. */
-export type Page = {
-  _id: string;
-  title: string;
-  slug: string;
-  blocks?: unknown[];
-};

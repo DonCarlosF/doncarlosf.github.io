@@ -1,16 +1,9 @@
 @import "tailwindcss";
 
 /*
-  KBCF multi-theme design system.
-  Five art directions ship side-by-side as swappable token sets, arranged on a
-  spectrum from warm/calm to bold/kinetic:
-    [data-theme="sanctuary"] — warm editorial    (light · garnet/gold · serif)
-    [data-theme="grove"]     — fresh & organic   (light · forest/clay · Outfit)
-    [data-theme="sterling"]  — crisp & modern    (light · ink/electric · Bricolage)
-    [data-theme="ember"]     — warm & intimate   (dark  · amber/ember · Newsreader)
-    [data-theme="movement"]  — bold & kinetic    (dark  · indigo/coral · Space Grotesk)
-  Components reference semantic tokens only, so flipping data-theme on <html>
-  restyles the entire site with zero per-component changes.
+  KBCF design system — Direction A "Sanctuary" (locked).
+  Warm editorial: Fraunces display + Inter body; garnet #7A1E2B + gold #E0A53A
+  on ivory; slow, cinematic motion. Components reference semantic tokens only.
 */
 
 @theme inline {
@@ -35,9 +28,7 @@
   --radius-btn: var(--rad-btn);
 }
 
-/* ---------- Direction A · "Sanctuary" (default) ---------- */
-:root,
-[data-theme="sanctuary"] {
+:root {
   --c-bg: #fbf6ee;
   --c-surface: #ffffff;
   --c-surface-2: #f3e9da;
@@ -63,114 +54,6 @@
   color-scheme: light;
 }
 
-/* ---------- Direction B · "Movement" ---------- */
-[data-theme="movement"] {
-  --c-bg: #0b0b0f;
-  --c-surface: #15151d;
-  --c-surface-2: #1e1e28;
-  --c-border: #2a2a36;
-  --c-fg: #f4f3f0;
-  --c-muted: #9c9baa;
-  --c-primary: #5b4dff;
-  --c-primary-fg: #ffffff;
-  --c-accent: #7c71ff;
-  --c-accent-fg: #0b0b0f;
-  --c-cta: #ff5436;
-  --c-cta-fg: #ffffff;
-  --c-ring: #7c71ff;
-
-  --ff-display: var(--font-space), system-ui, sans-serif;
-  --ff-body: var(--font-inter), system-ui, sans-serif;
-
-  --rad-card: 16px;
-  --rad-btn: 10px;
-
-  --dur: 0.28s;
-  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  color-scheme: dark;
-}
-
-/* ---------- Direction C · "Grove" — fresh & organic (light) ---------- */
-[data-theme="grove"] {
-  --c-bg: #f4f7f0;
-  --c-surface: #ffffff;
-  --c-surface-2: #e7efe0;
-  --c-border: #d5e0ca;
-  --c-fg: #1b2a20;
-  --c-muted: #516354;
-  --c-primary: #2f6b4f;   /* forest green */
-  --c-primary-fg: #ffffff;
-  --c-accent: #d98a4e;    /* warm clay */
-  --c-accent-fg: #21160c;
-  --c-cta: #c2632f;       /* terracotta */
-  --c-cta-fg: #ffffff;
-  --c-ring: #2f6b4f;
-
-  --ff-display: var(--font-outfit), system-ui, sans-serif;
-  --ff-body: var(--font-inter), system-ui, sans-serif;
-
-  --rad-card: 20px;
-  --rad-btn: 999px;
-
-  --dur: 0.45s;
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  color-scheme: light;
-}
-
-/* ---------- Direction D · "Sterling" — crisp & modern (light) ---------- */
-[data-theme="sterling"] {
-  --c-bg: #f4f5f7;
-  --c-surface: #ffffff;
-  --c-surface-2: #eaecf1;
-  --c-border: #dadde4;
-  --c-fg: #14161a;
-  --c-muted: #5b616d;
-  --c-primary: #15171c;   /* ink — structure */
-  --c-primary-fg: #ffffff;
-  --c-accent: #3d5afe;    /* electric indigo — actions */
-  --c-accent-fg: #ffffff;
-  --c-cta: #3d5afe;
-  --c-cta-fg: #ffffff;
-  --c-ring: #3d5afe;
-
-  --ff-display: var(--font-bricolage), system-ui, sans-serif;
-  --ff-body: var(--font-inter), system-ui, sans-serif;
-
-  --rad-card: 8px;
-  --rad-btn: 6px;
-
-  --dur: 0.3s;
-  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  color-scheme: light;
-}
-
-/* ---------- Direction E · "Ember" — warm & intimate (dark) ---------- */
-[data-theme="ember"] {
-  --c-bg: #1a1410;        /* espresso */
-  --c-surface: #241c17;
-  --c-surface-2: #2f261d;
-  --c-border: #41342a;
-  --c-fg: #f3ebdf;        /* warm ivory */
-  --c-muted: #b3a48f;
-  --c-primary: #d98a3d;   /* amber */
-  --c-primary-fg: #1a1410;
-  --c-accent: #d4622a;    /* ember orange */
-  --c-accent-fg: #ffffff;
-  --c-cta: #d4622a;
-  --c-cta-fg: #ffffff;
-  --c-ring: #d4622a;
-
-  --ff-display: var(--font-newsreader), Georgia, serif;
-  --ff-body: var(--font-inter), system-ui, sans-serif;
-
-  --rad-card: 14px;
-  --rad-btn: 10px;
-
-  --dur: 0.42s;
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  color-scheme: dark;
-}
-
 @layer base {
   * {
     border-color: var(--c-border);
@@ -185,7 +68,6 @@
     font-family: var(--ff-body);
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
-    transition: background-color 0.4s var(--ease), color 0.4s var(--ease);
   }
   h1, h2, h3, h4 {
     font-family: var(--ff-display);
@@ -219,12 +101,6 @@
     transform: translateY(18px);
   }
 
-  .ticker-track {
-    display: inline-flex;
-    white-space: nowrap;
-    animation: kbcf-marquee 30s linear infinite;
-  }
-
   .hero-grain::after {
     content: "";
     position: absolute;
@@ -235,125 +111,18 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
-  /* Theme-specific hero accents driven purely by CSS (no hydration branching). */
-  .hero-accent { color: var(--c-accent); }
-  [data-theme="sanctuary"] .hero-accent { font-style: italic; }
-  [data-theme="movement"] .hero-accent {
-    color: transparent;
-    -webkit-text-stroke: 1.5px var(--c-accent);
-  }
-  /* Grove: organic thick underline. */
-  [data-theme="grove"] .hero-accent {
-    text-decoration: underline;
-    text-decoration-color: var(--c-accent);
-    text-decoration-thickness: 0.09em;
-    text-underline-offset: 0.14em;
-  }
-  /* Sterling: editorial highlight marker. */
-  [data-theme="sterling"] .hero-accent {
-    color: var(--c-accent-fg);
-    background: var(--c-accent);
-    padding: 0 0.12em;
-    border-radius: 6px;
-  }
-  /* Ember: candlelit italic with a warm glow. */
-  [data-theme="ember"] .hero-accent {
+  /* Sanctuary hero accent: italic gold. */
+  .hero-accent {
+    color: var(--c-accent);
     font-style: italic;
-    text-shadow: 0 0 28px color-mix(in srgb, var(--c-accent) 50%, transparent);
   }
 
-  /* Hero background differs per direction. */
   .hero-bg {
     background:
       radial-gradient(120% 90% at 80% 8%, color-mix(in srgb, var(--c-accent) 38%, transparent), transparent 55%),
       linear-gradient(180deg, rgba(20, 14, 10, 0.35), rgba(20, 14, 10, 0.82));
     background-color: var(--c-primary);
   }
-  [data-theme="movement"] .hero-bg {
-    background:
-      radial-gradient(80% 60% at 70% 18%, color-mix(in srgb, var(--c-primary) 55%, transparent), transparent 60%),
-      radial-gradient(60% 55% at 12% 95%, color-mix(in srgb, var(--c-cta) 30%, transparent), transparent 60%),
-      linear-gradient(180deg, #0b0b0f, #101019);
-    background-color: #0b0b0f;
-  }
-  /* Ember's primary is a light amber, so it needs its own warm-dark hero. */
-  [data-theme="ember"] .hero-bg {
-    background:
-      radial-gradient(90% 70% at 78% 10%, color-mix(in srgb, var(--c-primary) 42%, transparent), transparent 60%),
-      radial-gradient(70% 60% at 8% 100%, color-mix(in srgb, var(--c-accent) 30%, transparent), transparent 60%),
-      linear-gradient(180deg, #1a1410, #241a12);
-    background-color: #1a1410;
-  }
-
-  /* ---- Movement hero: bigger, more kinetic than Sanctuary ---- */
-  /* Blurred indigo glow orb (decorative); hidden in other themes. */
-  .hero-glow { display: none; }
-  [data-theme="movement"] .hero-glow {
-    display: block;
-    position: absolute;
-    top: -160px;
-    right: -120px;
-    width: min(520px, 70vw);
-    height: min(520px, 70vw);
-    border-radius: 50%;
-    background: radial-gradient(circle, color-mix(in srgb, var(--c-accent) 35%, transparent), transparent 70%);
-    filter: blur(20px);
-    pointer-events: none;
-    z-index: -5;
-  }
-
-  /* Taller, vertically-centered stage for the bold direction. */
-  [data-theme="movement"] .hero-section {
-    min-height: 78vh;
-    display: flex;
-    align-items: center;
-  }
-}
-
-/*
-  Theme overrides that must outrank Tailwind utilities.
-  In Tailwind v4 the `utilities` cascade layer beats `components` regardless of
-  selector specificity, so these element-level theme tweaks — which compete with
-  utility classes like text-white/90, bg-accent, flex, and border-border — live
-  OUTSIDE any @layer. Unlayered rules win over every layered rule, so the
-  [data-theme] scope reliably restyles the element.
-*/
-[data-theme="movement"] .hero-cta-primary {
-  background: var(--c-cta);
-  color: var(--c-cta-fg);
-  box-shadow: 0 8px 30px color-mix(in srgb, var(--c-cta) 35%, transparent);
-}
-
-/* Indigo eyebrow + display headline scaled up with tight tracking. */
-[data-theme="movement"] .hero-eyebrow { color: var(--c-accent); }
-[data-theme="movement"] .hero-title {
-  font-size: clamp(46px, 9vw, 104px);
-  line-height: 0.94;
-  letter-spacing: -0.03em;
-  font-weight: 700;
-}
-
-/* ---- Movement kinetic treatment: section headers, cards, "more" links ---- */
-/* Eyebrow shifts to the softer indigo accent in Movement (matches reference). */
-[data-theme="movement"] .kbcf-eyebrow { color: var(--c-accent); }
-/* Punchier display headings. */
-[data-theme="movement"] .kbcf-section-title { font-weight: 700; letter-spacing: -0.03em; }
-/* Sterling's architectural feel: tighter display tracking. */
-[data-theme="sterling"] .kbcf-section-title { letter-spacing: -0.03em; }
-
-/* Content cards get visible hover feedback on the dark themes: the border lights
-   up. (hover:shadow-xl is invisible on near-black, so the hover state otherwise
-   reads as dead.) Lift comes from the component's own hover:-translate-y-1. The
-   light themes (Sanctuary/Grove/Sterling) keep the default lift + shadow. */
-[data-theme="movement"] .kbcf-card:hover { border-color: var(--c-primary); }
-[data-theme="ember"] .kbcf-card:hover { border-color: var(--c-accent); }
-
-/* In-card / archive "more" links go coral in Movement. */
-[data-theme="movement"] .kbcf-more { color: var(--c-cta); }
-
-@keyframes kbcf-marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
 }
 
 /* Long-form article styling for Portable Text (blog body). */
@@ -373,7 +142,6 @@
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
-  .ticker-track { animation: none; }
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;

@@ -106,7 +106,7 @@ export default async function AboutPage() {
             Here&apos;s exactly what to expect on your first visit — no surprises, no pressure.
           </p>
           <div className="mt-6">
-            <Button href="/new-here" variant="accent" className="hero-cta-primary">What to expect</Button>
+            <Button href="/new-here" variant="accent">What to expect</Button>
           </div>
         </div>
       </Section>

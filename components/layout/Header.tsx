@@ -15,7 +15,7 @@ const NAV = [
   { href: "/events", label: "Events" },
 ];
 
-export function Header({ churchName }: { churchName: string }) {
+export function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -46,7 +46,7 @@ export function Header({ churchName }: { churchName: string }) {
         Skip to content
       </a>
       <div className="mx-auto flex h-[70px] max-w-6xl items-center justify-between px-5 sm:px-6 lg:px-8">
-        <Link href="/" className="font-display text-xl font-semibold tracking-tight" aria-label={`${churchName} home`}>
+        <Link href="/" className="font-display text-xl font-semibold tracking-tight">
           Kingdom<span className="text-primary"> Builders</span>
         </Link>
 

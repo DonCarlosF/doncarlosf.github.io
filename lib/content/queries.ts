@@ -8,7 +8,7 @@ const imgProj = `{ "src": asset->url, "alt": coalesce(alt, "") }`;
 export const siteSettingsQuery = `*[_type == "siteSettings"][0]{
   churchName, tagline, mission, address, phone, email,
   serviceTimes[]{ day, label, time, phone, passcode },
-  boxcastId, givingProvider, givingUrl, heroVideoUrl,
+  boxcastId, givingProvider, givingUrl,
   social[]{ platform, url },
   "mapEmbedQuery": coalesce(mapEmbedQuery, address.street + ", " + address.city + ", " + address.state + " " + address.zip)
 }`;
@@ -45,8 +45,6 @@ const eventProj = `{
 }`;
 
 export const eventsQuery = `*[_type == "event"] | order(start asc) ${eventProj}`;
-export const eventBySlugQuery = `*[_type == "event" && slug.current == $slug][0] ${eventProj}`;
-export const upcomingEventsQuery = `*[_type == "event" && start >= now()] | order(start asc)[0...6] ${eventProj}`;
 
 export const groupsQuery = `*[_type == "group"]{
   "_id": _id, name, "slug": slug.current, type, schedule, location, description, joinUrl, "image": image${imgProj}

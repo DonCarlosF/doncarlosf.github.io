@@ -18,22 +18,21 @@ export const siteSettings: SiteSettings = {
   tagline: "Church Like No Other",
   mission: "People are our heart and Jesus is our message.",
   address: { street: "1431 17th Avenue", city: "Oakland", state: "CA", zip: "94606" },
-  // phone/email unknown — intentionally omitted so the UI shows a clear placeholder.
-  phone: undefined,
+  phone: "(510) 326-2446",
+  // TODO(owner): pick the canonical email (info@ vs hello@) — placeholder until then.
   email: undefined,
+  // TODO(owner): confirm service times (sourced from the church's old site).
   serviceTimes: [
     { day: "Mon–Fri", label: "Prayer Line", time: "6:30–7:00 AM", phone: "(267) 930-4000", passcode: "089470707#" },
-    { day: "Saturday", label: "Morning Prayer" },
-    { day: "Sunday", label: "Worship", time: "9:00 AM" },
+    { day: "Saturday", label: "Morning Prayer", time: "9:00 AM" },
+    { day: "Sunday", label: "Worship", time: "9:00–10:45 AM" },
+    { day: "Wednesday", label: "Corporate Prayer", time: "6:30 PM" },
     { day: "Wednesday", label: "Bible Study", time: "7:00 PM" },
   ],
   boxcastId: "wsiikymmlhksnkgmc24r",
   givingProvider: "Clover",
   givingUrl: "https://www.clover.com/pay-widgets/fab217bf-1afb-4bda-9d0d-085098cbadac",
-  heroVideoUrl: undefined, // add an MP4/HLS hero loop in the CMS when available
-
-  // Social handles not supplied — left empty rather than guessed.
-  social: [],
+  social: [{ platform: "facebook", url: "https://www.facebook.com/kingdombuilderscf" }],
   mapEmbedQuery: "1431 17th Avenue, Oakland, CA 94606",
 };
 
@@ -210,14 +209,7 @@ export const homePage: HomeContent = {
     { eyebrow: "There's a place for you", title: "You belong", accent: "here.", ctaLabel: "Get connected", ctaHref: "/new-here#connect" },
     { eyebrow: "Livestream every weekend", title: "Watch", accent: "online.", ctaLabel: "Watch live", ctaHref: "/watch" },
   ],
-  eventBanner: {
-    enabled: true,
-    title: "Corporate Prayer & Bible Study",
-    date: "May 8, 2024",
-    location: "1431 17th Avenue, Oakland, CA 94606",
-    ctaLabel: "Get directions",
-    ctaHref: "https://maps.google.com/?q=1431%2017th%20Avenue%2C%20Oakland%2C%20CA%2094606",
-  },
+  // No seeded banner: EventBanner falls back to the soonest upcoming event.
   welcomeHeading: "Church Like No Other",
   welcomeBody:
     "Welcome to Kingdom Builders! Whatever your age or life story, you are welcome! Our mission is simple: People are our heart and Jesus is our message. Kingdom Builders is an Oakland, CA based 21st century ministry. We love people from where they are and disciple them to be all God has called them to be. Come experience the love of Christ for yourself. We’re glad you’re here!",

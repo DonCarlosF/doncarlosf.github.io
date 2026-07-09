@@ -22,9 +22,9 @@ point DNS — it's for review only.
 | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | Correct metadata/sitemap/OG URLs |
 | `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET` | Live CMS + `/studio` |
-| `PCO_APP_ID`, `PCO_SECRET` | Planning Center events + groups |
 | `STAFF_EMAIL`, `RESEND_API_KEY` | Connect/contact form → staff email |
-| `NEXT_PUBLIC_SHOW_THEME_SWITCHER=false` | Hides the Sanctuary/Movement preview switcher (set in production once a direction is chosen) |
+| `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` | Plausible analytics (loads only when set) |
+| `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Search Console verification meta tag |
 
 ## 2. Connect Sanity (live content + `/studio`)
 
@@ -44,14 +44,10 @@ NEXT_PUBLIC_SANITY_PROJECT_ID=xxxx SANITY_WRITE_TOKEN=sk... npm run seed:sanity
 
 Then staff edit everything at `your-preview-url/studio` — no code.
 
-## 3. Connect Planning Center (events + groups)
+## 3. Events & groups
 
-1. Create a Personal Access Token at
-   `https://api.planningcenteronline.com/oauth/applications`.
-2. Set `PCO_APP_ID` and `PCO_SECRET` in Vercel and redeploy.
-
-Events/groups then come live from Planning Center, falling back to the CMS when
-the API is unavailable.
+CMS-native: staff manage events and groups directly in the Studio (KBCF does not
+use Planning Center).
 
 ## 4. Adding real photos (two ways)
 

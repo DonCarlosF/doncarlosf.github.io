@@ -9,7 +9,7 @@ import { event } from "./event";
 import { group } from "./group";
 import { outreachProgram } from "./outreachProgram";
 import { blogPost } from "./blogPost";
-import { testimonial, page } from "./misc";
+import { testimonial } from "./misc";
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
@@ -19,6 +19,6 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     siteSettings, homePage, aboutPage,
     sermon, clip, series, speaker,
     event, group, leader, outreachProgram,
-    blogPost, testimonial, page,
+    blogPost, testimonial,
   ],
 };

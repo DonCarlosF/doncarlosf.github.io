@@ -31,7 +31,6 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
       aria-label="Welcome"
     >
       <div className="hero-bg absolute inset-0 -z-10" aria-hidden />
-      <div className="hero-glow" aria-hidden />
 
       <Container className="relative w-full py-20">
         <h1 className="sr-only">Kingdom Builders Christian Fellowship — Church Like No Other</h1>
@@ -62,7 +61,7 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
               </p>
               {s.ctaLabel && s.ctaHref && (
                 <div className="mt-8">
-                  <Button href={s.ctaHref} size="lg" variant="accent" className="hero-cta-primary">
+                  <Button href={s.ctaHref} size="lg" variant="accent">
                     {s.ctaLabel}
                   </Button>
                 </div>
@@ -81,11 +80,16 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                 aria-selected={i === active}
                 aria-label={`Show slide ${i + 1}${[s.title, s.accent].filter(Boolean).length ? `: ${[s.title, s.accent].filter(Boolean).join(" ")}` : ""}`}
                 onClick={() => setActive(i)}
-                className={cn(
-                  "h-2.5 rounded-full transition-all",
-                  i === active ? "w-8 bg-white" : "w-2.5 bg-white/40 hover:bg-white/70"
-                )}
-              />
+                className="group flex h-6 min-w-6 items-center justify-center"
+              >
+                <span
+                  aria-hidden
+                  className={cn(
+                    "h-2.5 rounded-full transition-all",
+                    i === active ? "w-8 bg-white" : "w-2.5 bg-white/40 group-hover:bg-white/70"
+                  )}
+                />
+              </button>
             ))}
           </div>
         )}

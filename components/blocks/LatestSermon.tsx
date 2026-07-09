@@ -4,7 +4,7 @@ import { Section, Eyebrow } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { SmartImage } from "@/components/ui/Media";
 import { ClipRail } from "@/components/watch/ClipRail";
-import { BoxcastEmbed } from "@/components/watch/BoxcastEmbed";
+import { BoxcastFacade } from "@/components/watch/BoxcastFacade";
 import type { Sermon } from "@/lib/content/types";
 
 export function LatestSermon({ sermon, liveId }: { sermon: Sermon | null; liveId?: string }) {
@@ -38,9 +38,9 @@ export function LatestSermon({ sermon, liveId }: { sermon: Sermon | null; liveId
         {liveId ? (
           <div>
             <Eyebrow className="mb-3">Live now / next up</Eyebrow>
-            {/* Full channel view (live/next player + past-broadcast playlist),
-                contained to a smaller height than the Watch page. */}
-            <BoxcastEmbed id={liveId} title="KBCF Live" heightClass="h-[520px] lg:h-[580px]" />
+            {/* Click-to-load facade — no BoxCast iframe at initial page load
+                (Home LCP). Tap swaps in the full channel view. */}
+            <BoxcastFacade id={liveId} title="KBCF Live" heightClass="h-[520px] lg:h-[580px]" />
           </div>
         ) : (
           <Link href={`/watch/${sermon.slug}`} className="group relative block" aria-label={`Watch: ${sermon.title}`}>

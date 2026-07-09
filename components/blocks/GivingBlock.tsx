@@ -12,7 +12,7 @@ export function GivingBlock() {
             From this house to the Dream Center and across Oakland — every gift moves the mission forward.
           </p>
           <div className="mt-7">
-            <Button href="/give" variant="accent" className="hero-cta-primary">Give Now</Button>
+            <Button href="/give" variant="accent">Give Now</Button>
           </div>
         </div>
       </div>

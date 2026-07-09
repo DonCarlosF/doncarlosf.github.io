@@ -4,7 +4,6 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "cdn.sanity.io" },
-      { protocol: "https", hostname: "avatars.planningcenteronline.com" },
       { protocol: "https", hostname: "**.amazonaws.com" },
       { protocol: "https", hostname: "**.cloudfront.net" },
     ],
@@ -29,6 +28,24 @@ const nextConfig: NextConfig = {
       { source: "/connect", destination: "/new-here", permanent: true },
       { source: "/dreamcenter", destination: "/dream-center", permanent: true },
       { source: "/the-dream-center", destination: "/dream-center", permanent: true },
+      { source: "/about/new-here", destination: "/new-here", permanent: true },
+      { source: "/about/groups", destination: "/groups", permanent: true },
+      { source: "/get-connected", destination: "/new-here", permanent: true },
+      // Real old WordPress post slugs (fetched from the live wp-json API) — root-level permalinks.
+      { source: "/the-ultimate-mother-in-law", destination: "/blog", permanent: true },
+      { source: "/jochebed-mother-of-courage", destination: "/blog", permanent: true },
+      { source: "/leah-mother-of-many-sons", destination: "/blog", permanent: true },
+      { source: "/mother-protector-of-her-dead", destination: "/blog", permanent: true },
+      { source: "/mother-of-two-nations", destination: "/blog", permanent: true },
+      { source: "/mother-of-many-nations", destination: "/blog", permanent: true },
+      { source: "/the-original-mother", destination: "/blog", permanent: true },
+      { source: "/signed-sealed-delivered-im-yours", destination: "/blog", permanent: true },
+      { source: "/the-power-of-the-tongue", destination: "/blog", permanent: true },
+      { source: "/changing-lanes-to-stake-claim-to-your-territory", destination: "/blog", permanent: true },
+      { source: "/2-ways-to-stake-claim-to-your-territory", destination: "/blog", permanent: true },
+      { source: "/7-tenants-of-the-financial-covenant", destination: "/blog", permanent: true },
+      { source: "/this-weeks-visual-word", destination: "/blog", permanent: true },
+      { source: "/10-questions-answers-about-tithing", destination: "/blog", permanent: true },
     ];
   },
 };

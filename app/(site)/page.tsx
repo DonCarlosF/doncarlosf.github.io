@@ -24,7 +24,7 @@ export default async function HomePage() {
   return (
     <>
       <HeroSlider slides={home.heroSlides} />
-      <EventBanner banner={home.eventBanner} />
+      <EventBanner banner={home.eventBanner} fallbackEvent={events[0]} />
       <ServiceTimesBar settings={settings} />
       <WelcomeIntro heading={home.welcomeHeading} body={home.welcomeBody} />
       <NewHerePaths />
