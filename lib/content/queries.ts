@@ -14,7 +14,8 @@ export const siteSettingsQuery = `*[_type == "siteSettings"][0]{
 }`;
 
 const clipProj = `{
-  "_id": _id, hook, caption, "videoUrl": videoUrl, platform, hashtags, viralityScore,
+  "_id": _id, hook, caption, sermonDate, scriptureRefs, platforms, hashtags, viralityScore, status,
+  "verticalVideoUrl": verticalVideo.asset->url,
   "thumbnail": thumbnail${imgProj}
 }`;
 
@@ -31,7 +32,7 @@ export const sermonsQuery = `*[_type == "sermon"] | order(date desc) ${sermonPro
 export const latestSermonQuery = `*[_type == "sermon"] | order(date desc)[0] ${sermonProj}`;
 export const sermonBySlugQuery = `*[_type == "sermon" && slug.current == $slug][0] ${sermonProj}`;
 
-export const clipsQuery = `*[_type == "clip"] | order(viralityScore desc) ${clipProj}`;
+export const clipsQuery = `*[_type == "clip" && status == "published"] | order(sermonDate desc, viralityScore desc) ${clipProj}`;
 
 const seriesProj = `{ "_id": _id, title, "slug": slug.current, description, "image": image${imgProj} }`;
 export const seriesListQuery = `*[_type == "series"] | order(title asc) ${seriesProj}`;
@@ -63,6 +64,10 @@ const postProj = `{
 
 export const blogPostsQuery = `*[_type == "blogPost"] | order(date desc) ${postProj}`;
 export const blogPostBySlugQuery = `*[_type == "blogPost" && slug.current == $slug][0] ${postProj}`;
+
+export const outreachProgramsQuery = `*[_type == "outreachProgram"] | order(order asc){
+  "_id": _id, name, description, stat, statLabel, schedule, serveCta, order, "image": image${imgProj}
+}`;
 
 export const testimonialsQuery = `*[_type == "testimonial"]{
   "_id": _id, quote, attribution, "image": image${imgProj}

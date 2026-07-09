@@ -56,14 +56,12 @@ export default async function WatchPage() {
         </div>
       </Section>
 
-      {clips.length > 0 && (
-        <Section tone="surface-2">
-          <SectionHeading eyebrow="Shorts" title="Clips for your feed" />
-          <div className="mt-8">
-            <ClipRail clips={clips} />
-          </div>
-        </Section>
-      )}
+      <Section tone="surface-2">
+        <SectionHeading eyebrow="Shorts" title="Clips for your feed" />
+        <div className="mt-8">
+          <ClipRail clips={clips} />
+        </div>
+      </Section>
 
       <Section id="archive">
         <div className="flex flex-wrap items-end justify-between gap-4">

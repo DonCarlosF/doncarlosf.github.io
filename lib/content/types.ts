@@ -61,15 +61,21 @@ export type Series = {
   description?: string;
 };
 
+/** Clip documents are upserted by the church-clip-manager repo — the shape is a
+ *  cross-repo contract (see CLIP_CONTRACT.md). */
+export type ClipPlatforms = { youtube?: string; instagram?: string; tiktok?: string };
 export type Clip = {
   _id: string;
-  hook: string;          // short hook text
+  hook: string;            // short hook text
   caption?: string;
-  videoUrl?: string;     // vertical video
+  sermonDate?: string;     // YYYY-MM-DD (rail sorts by this, newest first)
+  scriptureRefs?: string[];
+  platforms?: ClipPlatforms; // post URLs where the clip is published
+  verticalVideoUrl?: string; // optional MP4 asset URL
   thumbnail?: Img;
-  platform?: "instagram" | "tiktok" | "youtube" | "facebook";
   hashtags?: string[];
-  viralityScore?: number; // 0-100, from the clip tool
+  viralityScore?: number;  // 0-100, from the clip tool
+  status?: "scheduled" | "published"; // rail renders only "published"
 };
 
 export type Sermon = {
@@ -139,6 +145,19 @@ export type BlogPost = {
   body?: unknown;          // Portable Text (Sanity) — sample uses plain string
   bodyText?: string;
   sample?: boolean;
+};
+
+/** Dream Center outreach program with its real impact stat. */
+export type OutreachProgram = {
+  _id: string;
+  name: string;
+  description?: string;
+  stat?: string;      // e.g. "500+"
+  statLabel?: string; // e.g. "households served weekly"
+  schedule?: string;  // e.g. "Thursdays 11 AM"
+  serveCta?: string;
+  image?: Img;
+  order?: number;
 };
 
 export type Testimonial = {

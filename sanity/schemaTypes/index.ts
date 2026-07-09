@@ -7,6 +7,7 @@ import { speaker, leader } from "./people";
 import { sermon, clip, series } from "./sermon";
 import { event } from "./event";
 import { group } from "./group";
+import { outreachProgram } from "./outreachProgram";
 import { blogPost } from "./blogPost";
 import { testimonial, page } from "./misc";
 
@@ -17,7 +18,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     // documents
     siteSettings, homePage, aboutPage,
     sermon, clip, series, speaker,
-    event, group, leader,
+    event, group, leader, outreachProgram,
     blogPost, testimonial, page,
   ],
 };

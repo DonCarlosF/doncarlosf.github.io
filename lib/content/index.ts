@@ -13,7 +13,7 @@ import * as q from "./queries";
 import { localOr } from "./local-images";
 import type {
   SiteSettings, Sermon, ChurchEvent, Group, Leader, BlogPost, Testimonial, Clip, Series,
-  HomeContent, AboutContent,
+  HomeContent, AboutContent, OutreachProgram,
 } from "./types";
 import {
   getPlanningCenterEvents, getPlanningCenterGroups, isPlanningCenterConfigured,
@@ -172,6 +172,11 @@ export async function getAboutPage(): Promise<AboutContent> {
 }
 
 export const dreamCenter = seed.dreamCenter;
+
+export async function getOutreachPrograms(): Promise<OutreachProgram[]> {
+  const data = await sfetch<OutreachProgram[]>(q.outreachProgramsQuery);
+  return nonEmpty(data) ? data : seed.outreachPrograms;
+}
 
 /** Lightweight search across sermons + blog (title/description/excerpt). */
 export async function search(term: string) {

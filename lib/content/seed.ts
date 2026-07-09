@@ -10,7 +10,7 @@
  */
 import type {
   SiteSettings, Sermon, ChurchEvent, Group, Leader, BlogPost, Testimonial, Series, Speaker,
-  HomeContent, AboutContent,
+  HomeContent, AboutContent, OutreachProgram,
 } from "./types";
 
 export const siteSettings: SiteSettings = {
@@ -79,9 +79,11 @@ export const sermons: Sermon[] = [
     thumbnail: { alt: "Sermon thumbnail placeholder", placeholder: true },
     sample: true,
     clips: [
-      { _id: "clip-1", hook: "Hook text for a vertical clip", platform: "instagram", viralityScore: 92, thumbnail: { alt: "Clip placeholder", placeholder: true } },
-      { _id: "clip-2", hook: "Another shareable moment", platform: "tiktok", viralityScore: 87, thumbnail: { alt: "Clip placeholder", placeholder: true } },
-      { _id: "clip-3", hook: "Made for your feed", platform: "youtube", viralityScore: 81, thumbnail: { alt: "Clip placeholder", placeholder: true } },
+      // Sample clips demonstrating the rail. clip-1 carries a public YouTube URL
+      // purely to exercise the inline-play facade (replace with real KBCF clips).
+      { _id: "clip-1", hook: "Sample clip — tap to play (replace in Studio)", sermonDate: "2026-06-07", status: "published", viralityScore: 92, platforms: { youtube: "https://www.youtube.com/watch?v=jNQXAC9IVRw" }, thumbnail: { alt: "Clip placeholder", placeholder: true } },
+      { _id: "clip-2", hook: "Another shareable moment", sermonDate: "2026-06-07", status: "published", viralityScore: 87, thumbnail: { alt: "Clip placeholder", placeholder: true } },
+      { _id: "clip-3", hook: "Scheduled clip (hidden until published)", sermonDate: "2026-06-07", status: "scheduled", viralityScore: 81, thumbnail: { alt: "Clip placeholder", placeholder: true } },
     ],
   },
   {
@@ -174,15 +176,32 @@ export const testimonials: Testimonial[] = [
 ];
 
 export const dreamCenter = {
-  // "Dream Center" is KBCF's community outreach arm (verified). Program
-  // specifics are placeholders pending approved copy.
   mission:
     "The Dream Center is the community outreach arm of Kingdom Builders Christian Fellowship, serving Oakland with the love of Jesus.",
-  programsPlaceholder: true,
+  // KBCF's outreach identity — the three H's.
+  threeHs: ["Housing", "Health", "Hunger"] as const,
+  headlineStat: "500+",
+  headlineStatLabel: "households fed every week",
+  housingStory: {
+    heading: "Affordable housing on church-owned land",
+    body: "KBCF is developing approximately 40 units of affordable housing on church-owned land at Eastmont/MacArthur — homes for seniors, formerly homeless veterans, and people with special needs.",
+  },
   volunteerHeading: "Volunteer With Us!",
   volunteerBody:
     "With just a few hours of your time, you can immerse into a compassionate network that offers hope to individuals and Oakland communities. Not only will your time and service touch and change the lives of others, but will also impact you and yours.",
 };
+
+/** Owner-supplied outreach programs with real stats (editable in the CMS). */
+export const outreachPrograms: OutreachProgram[] = [
+  { _id: "op-feeding", name: "Feeding Families", stat: "500+", statLabel: "households · 25,000+ lbs of food weekly", schedule: "Thursdays 11 AM", serveCta: "Serve on Thursdays", order: 1, image: { alt: "Feeding Families food distribution", placeholder: true } },
+  { _id: "op-thanksgiving", name: "Thanksgiving Turkey Giveaway", stat: "1,000+", statLabel: "turkeys given annually", serveCta: "Volunteer", order: 2, image: { alt: "Thanksgiving turkey giveaway", placeholder: true } },
+  { _id: "op-b2s", name: "Back to School Bash", stat: "700+", statLabel: "students served", serveCta: "Volunteer", order: 3, image: { alt: "Back to School Bash", placeholder: true } },
+  { _id: "op-recovery", name: "Celebrate Recovery", description: "A Christ-centered recovery community.", serveCta: "Get involved", order: 4, image: { alt: "Celebrate Recovery", placeholder: true } },
+  { _id: "op-sober", name: "Men's Sober-Living Home", description: "A sober-living home for men rebuilding their lives.", serveCta: "Learn more", order: 5, image: { alt: "Men's sober-living home", placeholder: true } },
+  { _id: "op-streets", name: "Take It to the Streets", description: "Meals for our homeless neighbors at People's Park, Berkeley.", serveCta: "Serve a meal", order: 6, image: { alt: "Take It to the Streets meals", placeholder: true } },
+  { _id: "op-health", name: "Free Health Fair", description: "Free health resources for the community.", serveCta: "Volunteer", order: 7, image: { alt: "Free health fair", placeholder: true } },
+  { _id: "op-cleanup", name: "Neighborhood Clean-Ups", description: "Monthly clean-ups around our Oakland neighborhoods.", schedule: "Monthly", serveCta: "Join a clean-up", order: 8, image: { alt: "Neighborhood clean-up", placeholder: true } },
+];
 
 /** Home page content — editable in the CMS (homePage singleton). */
 export const homePage: HomeContent = {
