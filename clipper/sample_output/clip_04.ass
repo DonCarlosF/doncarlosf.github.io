@@ -1,0 +1,83 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 2
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,Alignment,MarginL,MarginR,MarginV,Encoding
+Style: Caption,Montserrat,72,&H00FFFFFF,&H000000FF,&H00000000,&H64000000,-1,0,0,0,100,100,0,0,1,4.0,2.0,2,120,120,470,1
+Style: Hook,Montserrat,64,&H004EC1F2,&H000000FF,&H00000000,&H64000000,-1,0,0,0,100,100,0,0,1,5.0,2.0,8,120,120,1180,1
+
+[Events]
+Format: Layer,Start,End,Style,Name,MarginL,MarginR,MarginV,Effect,Text
+Dialogue: 0,0:00:00.00,0:00:00.49,Caption,,0,0,0,,{\c&H004EC1F2}Say{\c&H00FFFFFF} to that
+Dialogue: 0,0:00:00.00,0:00:03.00,Hook,,0,0,0,,Say to that situation, peace, be still, and then watch how…
+Dialogue: 0,0:00:00.00,0:00:34.07,Caption,,0,0,0,,{\an7}{\c&H004EC1F2}{\fs56}{\b1}KBCF
+Dialogue: 0,0:00:00.49,0:00:00.98,Caption,,0,0,0,,Say {\c&H004EC1F2}to{\c&H00FFFFFF} that
+Dialogue: 0,0:00:00.98,0:00:01.47,Caption,,0,0,0,,Say to {\c&H004EC1F2}that{\c&H00FFFFFF}
+Dialogue: 0,0:00:01.47,0:00:01.96,Caption,,0,0,0,,{\c&H004EC1F2}situation,{\c&H00FFFFFF} peace, be
+Dialogue: 0,0:00:01.96,0:00:02.45,Caption,,0,0,0,,situation, {\c&H004EC1F2}peace,{\c&H00FFFFFF} be
+Dialogue: 0,0:00:02.45,0:00:02.94,Caption,,0,0,0,,situation, peace, {\c&H004EC1F2}be{\c&H00FFFFFF}
+Dialogue: 0,0:00:02.94,0:00:03.43,Caption,,0,0,0,,{\c&H004EC1F2}still,{\c&H00FFFFFF} and then
+Dialogue: 0,0:00:03.43,0:00:03.92,Caption,,0,0,0,,still, {\c&H004EC1F2}and{\c&H00FFFFFF} then
+Dialogue: 0,0:00:03.92,0:00:04.41,Caption,,0,0,0,,still, and {\c&H004EC1F2}then{\c&H00FFFFFF}
+Dialogue: 0,0:00:04.41,0:00:04.90,Caption,,0,0,0,,{\c&H004EC1F2}watch{\c&H00FFFFFF} how fast
+Dialogue: 0,0:00:04.90,0:00:05.39,Caption,,0,0,0,,watch {\c&H004EC1F2}how{\c&H00FFFFFF} fast
+Dialogue: 0,0:00:05.39,0:00:05.88,Caption,,0,0,0,,watch how {\c&H004EC1F2}fast{\c&H00FFFFFF}
+Dialogue: 0,0:00:05.88,0:00:06.37,Caption,,0,0,0,,{\c&H004EC1F2}heaven{\c&H00FFFFFF} backs you
+Dialogue: 0,0:00:06.37,0:00:06.86,Caption,,0,0,0,,heaven {\c&H004EC1F2}backs{\c&H00FFFFFF} you
+Dialogue: 0,0:00:06.86,0:00:07.35,Caption,,0,0,0,,heaven backs {\c&H004EC1F2}you{\c&H00FFFFFF}
+Dialogue: 0,0:00:07.35,0:00:08.44,Caption,,0,0,0,,{\c&H004EC1F2}up.{\c&H00FFFFFF} And listen,
+Dialogue: 0,0:00:08.44,0:00:08.93,Caption,,0,0,0,,up. {\c&H004EC1F2}And{\c&H00FFFFFF} listen,
+Dialogue: 0,0:00:08.93,0:00:09.42,Caption,,0,0,0,,up. And {\c&H004EC1F2}listen,{\c&H00FFFFFF}
+Dialogue: 0,0:00:09.42,0:00:09.91,Caption,,0,0,0,,{\c&H004EC1F2}if{\c&H00FFFFFF} this word
+Dialogue: 0,0:00:09.91,0:00:10.40,Caption,,0,0,0,,if {\c&H004EC1F2}this{\c&H00FFFFFF} word
+Dialogue: 0,0:00:10.40,0:00:10.89,Caption,,0,0,0,,if this {\c&H004EC1F2}word{\c&H00FFFFFF}
+Dialogue: 0,0:00:10.89,0:00:11.38,Caption,,0,0,0,,{\c&H004EC1F2}found{\c&H00FFFFFF} you in
+Dialogue: 0,0:00:11.38,0:00:11.87,Caption,,0,0,0,,found {\c&H004EC1F2}you{\c&H00FFFFFF} in
+Dialogue: 0,0:00:11.87,0:00:12.36,Caption,,0,0,0,,found you {\c&H004EC1F2}in{\c&H00FFFFFF}
+Dialogue: 0,0:00:12.36,0:00:12.85,Caption,,0,0,0,,{\c&H004EC1F2}the{\c&H00FFFFFF} right place
+Dialogue: 0,0:00:12.85,0:00:13.34,Caption,,0,0,0,,the {\c&H004EC1F2}right{\c&H00FFFFFF} place
+Dialogue: 0,0:00:13.34,0:00:13.83,Caption,,0,0,0,,the right {\c&H004EC1F2}place{\c&H00FFFFFF}
+Dialogue: 0,0:00:13.83,0:00:14.32,Caption,,0,0,0,,{\c&H004EC1F2}today,{\c&H00FFFFFF} do not
+Dialogue: 0,0:00:14.32,0:00:14.81,Caption,,0,0,0,,today, {\c&H004EC1F2}do{\c&H00FFFFFF} not
+Dialogue: 0,0:00:14.81,0:00:15.30,Caption,,0,0,0,,today, do {\c&H004EC1F2}not{\c&H00FFFFFF}
+Dialogue: 0,0:00:15.00,0:00:18.00,Hook,,0,0,0,,Say to that situation, peace, be still, and then watch how…
+Dialogue: 0,0:00:15.30,0:00:15.79,Caption,,0,0,0,,{\c&H004EC1F2}keep{\c&H00FFFFFF} it to
+Dialogue: 0,0:00:15.79,0:00:16.28,Caption,,0,0,0,,keep {\c&H004EC1F2}it{\c&H00FFFFFF} to
+Dialogue: 0,0:00:16.28,0:00:16.77,Caption,,0,0,0,,keep it {\c&H004EC1F2}to{\c&H00FFFFFF}
+Dialogue: 0,0:00:16.77,0:00:17.86,Caption,,0,0,0,,{\c&H004EC1F2}yourself.{\c&H00FFFFFF} Somebody you
+Dialogue: 0,0:00:17.86,0:00:18.35,Caption,,0,0,0,,yourself. {\c&H004EC1F2}Somebody{\c&H00FFFFFF} you
+Dialogue: 0,0:00:18.35,0:00:18.84,Caption,,0,0,0,,yourself. Somebody {\c&H004EC1F2}you{\c&H00FFFFFF}
+Dialogue: 0,0:00:18.84,0:00:19.33,Caption,,0,0,0,,{\c&H004EC1F2}love{\c&H00FFFFFF} is in
+Dialogue: 0,0:00:19.33,0:00:19.82,Caption,,0,0,0,,love {\c&H004EC1F2}is{\c&H00FFFFFF} in
+Dialogue: 0,0:00:19.82,0:00:20.31,Caption,,0,0,0,,love is {\c&H004EC1F2}in{\c&H00FFFFFF}
+Dialogue: 0,0:00:20.31,0:00:20.80,Caption,,0,0,0,,{\c&H004EC1F2}a{\c&H00FFFFFF} storm right
+Dialogue: 0,0:00:20.80,0:00:21.29,Caption,,0,0,0,,a {\c&H004EC1F2}storm{\c&H00FFFFFF} right
+Dialogue: 0,0:00:21.29,0:00:21.78,Caption,,0,0,0,,a storm {\c&H004EC1F2}right{\c&H00FFFFFF}
+Dialogue: 0,0:00:21.78,0:00:22.27,Caption,,0,0,0,,{\c&H004EC1F2}now{\c&H00FFFFFF} and they
+Dialogue: 0,0:00:22.27,0:00:22.76,Caption,,0,0,0,,now {\c&H004EC1F2}and{\c&H00FFFFFF} they
+Dialogue: 0,0:00:22.76,0:00:23.25,Caption,,0,0,0,,now and {\c&H004EC1F2}they{\c&H00FFFFFF}
+Dialogue: 0,0:00:23.25,0:00:23.74,Caption,,0,0,0,,{\c&H004EC1F2}are{\c&H00FFFFFF} waiting on
+Dialogue: 0,0:00:23.74,0:00:24.23,Caption,,0,0,0,,are {\c&H004EC1F2}waiting{\c&H00FFFFFF} on
+Dialogue: 0,0:00:24.23,0:00:24.72,Caption,,0,0,0,,are waiting {\c&H004EC1F2}on{\c&H00FFFFFF}
+Dialogue: 0,0:00:24.72,0:00:25.21,Caption,,0,0,0,,{\c&H004EC1F2}your{\c&H00FFFFFF} invitation. Bring
+Dialogue: 0,0:00:25.21,0:00:26.30,Caption,,0,0,0,,your {\c&H004EC1F2}invitation.{\c&H00FFFFFF} Bring
+Dialogue: 0,0:00:26.30,0:00:26.79,Caption,,0,0,0,,your invitation. {\c&H004EC1F2}Bring{\c&H00FFFFFF}
+Dialogue: 0,0:00:26.79,0:00:27.28,Caption,,0,0,0,,{\c&H004EC1F2}them{\c&H00FFFFFF} with you
+Dialogue: 0,0:00:27.28,0:00:27.77,Caption,,0,0,0,,them {\c&H004EC1F2}with{\c&H00FFFFFF} you
+Dialogue: 0,0:00:27.77,0:00:28.26,Caption,,0,0,0,,them with {\c&H004EC1F2}you{\c&H00FFFFFF}
+Dialogue: 0,0:00:28.26,0:00:28.75,Caption,,0,0,0,,{\c&H004EC1F2}next{\c&H00FFFFFF} Sunday, and
+Dialogue: 0,0:00:28.75,0:00:29.24,Caption,,0,0,0,,next {\c&H004EC1F2}Sunday,{\c&H00FFFFFF} and
+Dialogue: 0,0:00:29.24,0:00:29.73,Caption,,0,0,0,,next Sunday, {\c&H004EC1F2}and{\c&H00FFFFFF}
+Dialogue: 0,0:00:29.73,0:00:30.22,Caption,,0,0,0,,{\c&H004EC1F2}let's{\c&H00FFFFFF} grow together
+Dialogue: 0,0:00:30.22,0:00:30.71,Caption,,0,0,0,,let's {\c&H004EC1F2}grow{\c&H00FFFFFF} together
+Dialogue: 0,0:00:30.71,0:00:31.20,Caption,,0,0,0,,let's grow {\c&H004EC1F2}together{\c&H00FFFFFF}
+Dialogue: 0,0:00:31.20,0:00:31.69,Caption,,0,0,0,,{\c&H004EC1F2}as{\c&H00FFFFFF} a family
+Dialogue: 0,0:00:31.69,0:00:32.18,Caption,,0,0,0,,as {\c&H004EC1F2}a{\c&H00FFFFFF} family
+Dialogue: 0,0:00:32.18,0:00:32.67,Caption,,0,0,0,,as a {\c&H004EC1F2}family{\c&H00FFFFFF}
+Dialogue: 0,0:00:32.67,0:00:33.16,Caption,,0,0,0,,{\c&H004EC1F2}in{\c&H00FFFFFF} this faith.
+Dialogue: 0,0:00:33.16,0:00:33.65,Caption,,0,0,0,,in {\c&H004EC1F2}this{\c&H00FFFFFF} faith.
+Dialogue: 0,0:00:33.65,0:00:34.07,Caption,,0,0,0,,in this {\c&H004EC1F2}faith.{\c&H00FFFFFF}

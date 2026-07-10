@@ -1,0 +1,6295 @@
+{
+  "language": "en",
+  "backend": "fixture",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 7.77,
+      "text": "Um, so, can I talk to somebody who's been holding on by a thread this week?",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "Um,",
+          "start": 0.0,
+          "end": 0.42,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "so,",
+          "start": 0.49,
+          "end": 0.91,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "can",
+          "start": 0.98,
+          "end": 1.4,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "I",
+          "start": 1.47,
+          "end": 1.89,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "talk",
+          "start": 1.96,
+          "end": 2.38,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "to",
+          "start": 2.45,
+          "end": 2.87,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "somebody",
+          "start": 2.94,
+          "end": 3.36,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "who's",
+          "start": 3.43,
+          "end": 3.85,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "been",
+          "start": 3.92,
+          "end": 4.34,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "holding",
+          "start": 4.41,
+          "end": 4.83,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "on",
+          "start": 4.9,
+          "end": 5.32,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "by",
+          "start": 5.39,
+          "end": 5.81,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "a",
+          "start": 5.88,
+          "end": 6.3,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "thread",
+          "start": 6.37,
+          "end": 6.79,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "this",
+          "start": 6.86,
+          "end": 7.28,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "week?",
+          "start": 7.35,
+          "end": 7.77,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 8.44,
+      "end": 14.74,
+      "text": "You smiled at work, you posted the picture, you said you were fine.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "You",
+          "start": 8.44,
+          "end": 8.86,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "smiled",
+          "start": 8.93,
+          "end": 9.35,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "at",
+          "start": 9.42,
+          "end": 9.84,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "work,",
+          "start": 9.91,
+          "end": 10.33,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 10.4,
+          "end": 10.82,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "posted",
+          "start": 10.89,
+          "end": 11.31,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 11.38,
+          "end": 11.8,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "picture,",
+          "start": 11.87,
+          "end": 12.29,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 12.36,
+          "end": 12.78,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "said",
+          "start": 12.85,
+          "end": 13.27,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 13.34,
+          "end": 13.76,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "were",
+          "start": 13.83,
+          "end": 14.25,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "fine.",
+          "start": 14.32,
+          "end": 14.74,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 15.41,
+      "end": 21.71,
+      "text": "But on the inside, behind the door nobody sees, you were quietly breaking.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "But",
+          "start": 15.41,
+          "end": 15.83,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "on",
+          "start": 15.9,
+          "end": 16.32,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 16.39,
+          "end": 16.81,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "inside,",
+          "start": 16.88,
+          "end": 17.3,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "behind",
+          "start": 17.37,
+          "end": 17.79,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 17.86,
+          "end": 18.28,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "door",
+          "start": 18.35,
+          "end": 18.77,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "nobody",
+          "start": 18.84,
+          "end": 19.26,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "sees,",
+          "start": 19.33,
+          "end": 19.75,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 19.82,
+          "end": 20.24,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "were",
+          "start": 20.31,
+          "end": 20.73,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "quietly",
+          "start": 20.8,
+          "end": 21.22,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "breaking.",
+          "start": 21.29,
+          "end": 21.71,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 22.38,
+      "end": 29.17,
+      "text": "Here's what nobody tells you about the storm: the storm is not your enemy.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "Here's",
+          "start": 22.38,
+          "end": 22.8,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "what",
+          "start": 22.87,
+          "end": 23.29,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "nobody",
+          "start": 23.36,
+          "end": 23.78,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "tells",
+          "start": 23.85,
+          "end": 24.27,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 24.34,
+          "end": 24.76,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "about",
+          "start": 24.83,
+          "end": 25.25,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 25.32,
+          "end": 25.74,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "storm:",
+          "start": 25.81,
+          "end": 26.23,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 26.3,
+          "end": 26.72,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "storm",
+          "start": 26.79,
+          "end": 27.21,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "is",
+          "start": 27.28,
+          "end": 27.7,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "not",
+          "start": 27.77,
+          "end": 28.19,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "your",
+          "start": 28.26,
+          "end": 28.68,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "enemy.",
+          "start": 28.75,
+          "end": 29.17,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 29.84,
+      "end": 38.59,
+      "text": "The storm is the very thing God is using to wake something up on the inside of you.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "The",
+          "start": 29.84,
+          "end": 30.26,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "storm",
+          "start": 30.33,
+          "end": 30.75,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "is",
+          "start": 30.82,
+          "end": 31.24,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 31.31,
+          "end": 31.73,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "very",
+          "start": 31.8,
+          "end": 32.22,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "thing",
+          "start": 32.29,
+          "end": 32.71,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "God",
+          "start": 32.78,
+          "end": 33.2,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "is",
+          "start": 33.27,
+          "end": 33.69,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "using",
+          "start": 33.76,
+          "end": 34.18,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "to",
+          "start": 34.25,
+          "end": 34.67,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "wake",
+          "start": 34.74,
+          "end": 35.16,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "something",
+          "start": 35.23,
+          "end": 35.65,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "up",
+          "start": 35.72,
+          "end": 36.14,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "on",
+          "start": 36.21,
+          "end": 36.63,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 36.7,
+          "end": 37.12,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "inside",
+          "start": 37.19,
+          "end": 37.61,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "of",
+          "start": 37.68,
+          "end": 38.1,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you.",
+          "start": 38.17,
+          "end": 38.59,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 39.26,
+      "end": 46.54,
+      "text": "Because a faith that has never been tested is a faith that cannot be trusted.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "Because",
+          "start": 39.26,
+          "end": 39.68,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "a",
+          "start": 39.75,
+          "end": 40.17,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "faith",
+          "start": 40.24,
+          "end": 40.66,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "that",
+          "start": 40.73,
+          "end": 41.15,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "has",
+          "start": 41.22,
+          "end": 41.64,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "never",
+          "start": 41.71,
+          "end": 42.13,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "been",
+          "start": 42.2,
+          "end": 42.62,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "tested",
+          "start": 42.69,
+          "end": 43.11,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "is",
+          "start": 43.18,
+          "end": 43.6,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "a",
+          "start": 43.67,
+          "end": 44.09,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "faith",
+          "start": 44.16,
+          "end": 44.58,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "that",
+          "start": 44.65,
+          "end": 45.07,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "cannot",
+          "start": 45.14,
+          "end": 45.56,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "be",
+          "start": 45.63,
+          "end": 46.05,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "trusted.",
+          "start": 46.12,
+          "end": 46.54,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 47.21,
+      "end": 54.49,
+      "text": "And some of you are about to find out exactly what you are made of.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "And",
+          "start": 47.21,
+          "end": 47.63,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "some",
+          "start": 47.7,
+          "end": 48.12,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "of",
+          "start": 48.19,
+          "end": 48.61,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 48.68,
+          "end": 49.1,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "are",
+          "start": 49.17,
+          "end": 49.59,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "about",
+          "start": 49.66,
+          "end": 50.08,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "to",
+          "start": 50.15,
+          "end": 50.57,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "find",
+          "start": 50.64,
+          "end": 51.06,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "out",
+          "start": 51.13,
+          "end": 51.55,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "exactly",
+          "start": 51.62,
+          "end": 52.04,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "what",
+          "start": 52.11,
+          "end": 52.53,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 52.6,
+          "end": 53.02,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "are",
+          "start": 53.09,
+          "end": 53.51,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "made",
+          "start": 53.58,
+          "end": 54.0,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "of.",
+          "start": 54.07,
+          "end": 54.49,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 55.16,
+      "end": 62.44,
+      "text": "Turn with me to Mark chapter 4, verse 38, and watch the scene very closely.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "Turn",
+          "start": 55.16,
+          "end": 55.58,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "with",
+          "start": 55.65,
+          "end": 56.07,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "me",
+          "start": 56.14,
+          "end": 56.56,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "to",
+          "start": 56.63,
+          "end": 57.05,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "Mark",
+          "start": 57.12,
+          "end": 57.54,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "chapter",
+          "start": 57.61,
+          "end": 58.03,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "4,",
+          "start": 58.1,
+          "end": 58.52,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "verse",
+          "start": 58.59,
+          "end": 59.01,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "38,",
+          "start": 59.08,
+          "end": 59.5,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "and",
+          "start": 59.57,
+          "end": 59.99,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "watch",
+          "start": 60.06,
+          "end": 60.48,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 60.55,
+          "end": 60.97,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "scene",
+          "start": 61.04,
+          "end": 61.46,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "very",
+          "start": 61.53,
+          "end": 61.95,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "closely.",
+          "start": 62.02,
+          "end": 62.44,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 63.11,
+      "end": 71.37,
+      "text": "Jesus is asleep in the back of the boat while the disciples are panicking for their lives.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "Jesus",
+          "start": 63.11,
+          "end": 63.53,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "is",
+          "start": 63.6,
+          "end": 64.02,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "asleep",
+          "start": 64.09,
+          "end": 64.51,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "in",
+          "start": 64.58,
+          "end": 65.0,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 65.07,
+          "end": 65.49,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "back",
+          "start": 65.56,
+          "end": 65.98,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "of",
+          "start": 66.05,
+          "end": 66.47,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 66.54,
+          "end": 66.96,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "boat",
+          "start": 67.03,
+          "end": 67.45,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "while",
+          "start": 67.52,
+          "end": 67.94,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 68.01,
+          "end": 68.43,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "disciples",
+          "start": 68.5,
+          "end": 68.92,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "are",
+          "start": 68.99,
+          "end": 69.41,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "panicking",
+          "start": 69.48,
+          "end": 69.9,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "for",
+          "start": 69.97,
+          "end": 70.39,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "their",
+          "start": 70.46,
+          "end": 70.88,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "lives.",
+          "start": 70.95,
+          "end": 71.37,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 72.04,
+      "end": 79.32,
+      "text": "And they ask him the question every one of us has asked God at midnight.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "And",
+          "start": 72.04,
+          "end": 72.46,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "they",
+          "start": 72.53,
+          "end": 72.95,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "ask",
+          "start": 73.02,
+          "end": 73.44,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "him",
+          "start": 73.51,
+          "end": 73.93,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 74.0,
+          "end": 74.42,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "question",
+          "start": 74.49,
+          "end": 74.91,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "every",
+          "start": 74.98,
+          "end": 75.4,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "one",
+          "start": 75.47,
+          "end": 75.89,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "of",
+          "start": 75.96,
+          "end": 76.38,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "us",
+          "start": 76.45,
+          "end": 76.87,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "has",
+          "start": 76.94,
+          "end": 77.36,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "asked",
+          "start": 77.43,
+          "end": 77.85,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "God",
+          "start": 77.92,
+          "end": 78.34,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "at",
+          "start": 78.41,
+          "end": 78.83,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "midnight.",
+          "start": 78.9,
+          "end": 79.32,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 79.99,
+      "end": 87.27,
+      "text": "Do you not care, Lord, do you not care that we are perishing out here?",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "Do",
+          "start": 79.99,
+          "end": 80.41,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 80.48,
+          "end": 80.9,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "not",
+          "start": 80.97,
+          "end": 81.39,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "care,",
+          "start": 81.46,
+          "end": 81.88,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "Lord,",
+          "start": 81.95,
+          "end": 82.37,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "do",
+          "start": 82.44,
+          "end": 82.86,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 82.93,
+          "end": 83.35,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "not",
+          "start": 83.42,
+          "end": 83.84,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "care",
+          "start": 83.91,
+          "end": 84.33,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "that",
+          "start": 84.4,
+          "end": 84.82,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "we",
+          "start": 84.89,
+          "end": 85.31,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "are",
+          "start": 85.38,
+          "end": 85.8,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "perishing",
+          "start": 85.87,
+          "end": 86.29,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "out",
+          "start": 86.36,
+          "end": 86.78,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "here?",
+          "start": 86.85,
+          "end": 87.27,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 87.94,
+      "end": 95.22,
+      "text": "But watch this, watch this: the peace was already in the boat the whole time.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "But",
+          "start": 87.94,
+          "end": 88.36,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "watch",
+          "start": 88.43,
+          "end": 88.85,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "this,",
+          "start": 88.92,
+          "end": 89.34,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "watch",
+          "start": 89.41,
+          "end": 89.83,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "this:",
+          "start": 89.9,
+          "end": 90.32,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 90.39,
+          "end": 90.81,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "peace",
+          "start": 90.88,
+          "end": 91.3,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "was",
+          "start": 91.37,
+          "end": 91.79,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "already",
+          "start": 91.86,
+          "end": 92.28,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "in",
+          "start": 92.35,
+          "end": 92.77,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 92.84,
+          "end": 93.26,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "boat",
+          "start": 93.33,
+          "end": 93.75,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 93.82,
+          "end": 94.24,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "whole",
+          "start": 94.31,
+          "end": 94.73,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "time.",
+          "start": 94.8,
+          "end": 95.22,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 95.89,
+      "end": 102.68,
+      "text": "They were screaming for a rescue while their rescue was sleeping right beside them.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "They",
+          "start": 95.89,
+          "end": 96.31,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "were",
+          "start": 96.38,
+          "end": 96.8,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "screaming",
+          "start": 96.87,
+          "end": 97.29,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "for",
+          "start": 97.36,
+          "end": 97.78,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "a",
+          "start": 97.85,
+          "end": 98.27,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "rescue",
+          "start": 98.34,
+          "end": 98.76,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "while",
+          "start": 98.83,
+          "end": 99.25,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "their",
+          "start": 99.32,
+          "end": 99.74,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "rescue",
+          "start": 99.81,
+          "end": 100.23,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "was",
+          "start": 100.3,
+          "end": 100.72,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "sleeping",
+          "start": 100.79,
+          "end": 101.21,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "right",
+          "start": 101.28,
+          "end": 101.7,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "beside",
+          "start": 101.77,
+          "end": 102.19,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "them.",
+          "start": 102.26,
+          "end": 102.68,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 103.35,
+      "end": 111.61,
+      "text": "Sometimes you are crying out for a peace that is already sleeping on the inside of you.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "Sometimes",
+          "start": 103.35,
+          "end": 103.77,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 103.84,
+          "end": 104.26,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "are",
+          "start": 104.33,
+          "end": 104.75,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "crying",
+          "start": 104.82,
+          "end": 105.24,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "out",
+          "start": 105.31,
+          "end": 105.73,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "for",
+          "start": 105.8,
+          "end": 106.22,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "a",
+          "start": 106.29,
+          "end": 106.71,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "peace",
+          "start": 106.78,
+          "end": 107.2,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "that",
+          "start": 107.27,
+          "end": 107.69,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "is",
+          "start": 107.76,
+          "end": 108.18,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "already",
+          "start": 108.25,
+          "end": 108.67,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "sleeping",
+          "start": 108.74,
+          "end": 109.16,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "on",
+          "start": 109.23,
+          "end": 109.65,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 109.72,
+          "end": 110.14,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "inside",
+          "start": 110.21,
+          "end": 110.63,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "of",
+          "start": 110.7,
+          "end": 111.12,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you.",
+          "start": 111.19,
+          "end": 111.61,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 112.28,
+      "end": 120.54,
+      "text": "When Jesus finally stood up and said peace, be still, the wind did not argue with him.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "When",
+          "start": 112.28,
+          "end": 112.7,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "Jesus",
+          "start": 112.77,
+          "end": 113.19,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "finally",
+          "start": 113.26,
+          "end": 113.68,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "stood",
+          "start": 113.75,
+          "end": 114.17,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "up",
+          "start": 114.24,
+          "end": 114.66,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "and",
+          "start": 114.73,
+          "end": 115.15,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "said",
+          "start": 115.22,
+          "end": 115.64,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "peace,",
+          "start": 115.71,
+          "end": 116.13,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "be",
+          "start": 116.2,
+          "end": 116.62,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "still,",
+          "start": 116.69,
+          "end": 117.11,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 117.18,
+          "end": 117.6,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "wind",
+          "start": 117.67,
+          "end": 118.09,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "did",
+          "start": 118.16,
+          "end": 118.58,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "not",
+          "start": 118.65,
+          "end": 119.07,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "argue",
+          "start": 119.14,
+          "end": 119.56,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "with",
+          "start": 119.63,
+          "end": 120.05,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "him.",
+          "start": 120.12,
+          "end": 120.54,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 121.21,
+      "end": 128.0,
+      "text": "The wind that was bullying the disciples heard one word and immediately sat down.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "The",
+          "start": 121.21,
+          "end": 121.63,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "wind",
+          "start": 121.7,
+          "end": 122.12,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "that",
+          "start": 122.19,
+          "end": 122.61,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "was",
+          "start": 122.68,
+          "end": 123.1,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "bullying",
+          "start": 123.17,
+          "end": 123.59,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 123.66,
+          "end": 124.08,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "disciples",
+          "start": 124.15,
+          "end": 124.57,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "heard",
+          "start": 124.64,
+          "end": 125.06,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "one",
+          "start": 125.13,
+          "end": 125.55,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "word",
+          "start": 125.62,
+          "end": 126.04,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "and",
+          "start": 126.11,
+          "end": 126.53,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "immediately",
+          "start": 126.6,
+          "end": 127.02,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "sat",
+          "start": 127.09,
+          "end": 127.51,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "down.",
+          "start": 127.58,
+          "end": 128.0,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 128.67,
+      "end": 136.93,
+      "text": "That same voice, that same authority, that same power is living down on the inside of you.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "That",
+          "start": 128.67,
+          "end": 129.09,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "same",
+          "start": 129.16,
+          "end": 129.58,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "voice,",
+          "start": 129.65,
+          "end": 130.07,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "that",
+          "start": 130.14,
+          "end": 130.56,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "same",
+          "start": 130.63,
+          "end": 131.05,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "authority,",
+          "start": 131.12,
+          "end": 131.54,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "that",
+          "start": 131.61,
+          "end": 132.03,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "same",
+          "start": 132.1,
+          "end": 132.52,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "power",
+          "start": 132.59,
+          "end": 133.01,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "is",
+          "start": 133.08,
+          "end": 133.5,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "living",
+          "start": 133.57,
+          "end": 133.99,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "down",
+          "start": 134.06,
+          "end": 134.48,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "on",
+          "start": 134.55,
+          "end": 134.97,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 135.04,
+          "end": 135.46,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "inside",
+          "start": 135.53,
+          "end": 135.95,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "of",
+          "start": 136.02,
+          "end": 136.44,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you.",
+          "start": 136.51,
+          "end": 136.93,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 137.6,
+      "end": 146.35,
+      "text": "You have been talking about the storm, but God says it is time to talk to the storm.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "You",
+          "start": 137.6,
+          "end": 138.02,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "have",
+          "start": 138.09,
+          "end": 138.51,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "been",
+          "start": 138.58,
+          "end": 139.0,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "talking",
+          "start": 139.07,
+          "end": 139.49,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "about",
+          "start": 139.56,
+          "end": 139.98,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 140.05,
+          "end": 140.47,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "storm,",
+          "start": 140.54,
+          "end": 140.96,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "but",
+          "start": 141.03,
+          "end": 141.45,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "God",
+          "start": 141.52,
+          "end": 141.94,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "says",
+          "start": 142.01,
+          "end": 142.43,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "it",
+          "start": 142.5,
+          "end": 142.92,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "is",
+          "start": 142.99,
+          "end": 143.41,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "time",
+          "start": 143.48,
+          "end": 143.9,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "to",
+          "start": 143.97,
+          "end": 144.39,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "talk",
+          "start": 144.46,
+          "end": 144.88,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "to",
+          "start": 144.95,
+          "end": 145.37,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 145.44,
+          "end": 145.86,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "storm.",
+          "start": 145.93,
+          "end": 146.35,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 147.02,
+      "end": 154.3,
+      "text": "Hallelujah, somebody in this room ought to give God a real praise right about now.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "Hallelujah,",
+          "start": 147.02,
+          "end": 147.44,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "somebody",
+          "start": 147.51,
+          "end": 147.93,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "in",
+          "start": 148.0,
+          "end": 148.42,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "this",
+          "start": 148.49,
+          "end": 148.91,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "room",
+          "start": 148.98,
+          "end": 149.4,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "ought",
+          "start": 149.47,
+          "end": 149.89,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "to",
+          "start": 149.96,
+          "end": 150.38,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "give",
+          "start": 150.45,
+          "end": 150.87,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "God",
+          "start": 150.94,
+          "end": 151.36,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "a",
+          "start": 151.43,
+          "end": 151.85,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "real",
+          "start": 151.92,
+          "end": 152.34,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "praise",
+          "start": 152.41,
+          "end": 152.83,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "right",
+          "start": 152.9,
+          "end": 153.32,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "about",
+          "start": 153.39,
+          "end": 153.81,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "now.",
+          "start": 153.88,
+          "end": 154.3,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 154.97,
+      "end": 161.76,
+      "text": "Because the breakthrough you have been begging for is the breakthrough you already carry.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "Because",
+          "start": 154.97,
+          "end": 155.39,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 155.46,
+          "end": 155.88,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "breakthrough",
+          "start": 155.95,
+          "end": 156.37,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 156.44,
+          "end": 156.86,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "have",
+          "start": 156.93,
+          "end": 157.35,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "been",
+          "start": 157.42,
+          "end": 157.84,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "begging",
+          "start": 157.91,
+          "end": 158.33,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "for",
+          "start": 158.4,
+          "end": 158.82,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "is",
+          "start": 158.89,
+          "end": 159.31,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 159.38,
+          "end": 159.8,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "breakthrough",
+          "start": 159.87,
+          "end": 160.29,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 160.36,
+          "end": 160.78,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "already",
+          "start": 160.85,
+          "end": 161.27,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "carry.",
+          "start": 161.34,
+          "end": 161.76,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 162.43,
+      "end": 170.69,
+      "text": "Grace did not bring you this far just to abandon you at the edge of your miracle.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "Grace",
+          "start": 162.43,
+          "end": 162.85,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "did",
+          "start": 162.92,
+          "end": 163.34,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "not",
+          "start": 163.41,
+          "end": 163.83,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "bring",
+          "start": 163.9,
+          "end": 164.32,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 164.39,
+          "end": 164.81,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "this",
+          "start": 164.88,
+          "end": 165.3,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "far",
+          "start": 165.37,
+          "end": 165.79,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "just",
+          "start": 165.86,
+          "end": 166.28,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "to",
+          "start": 166.35,
+          "end": 166.77,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "abandon",
+          "start": 166.84,
+          "end": 167.26,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 167.33,
+          "end": 167.75,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "at",
+          "start": 167.82,
+          "end": 168.24,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 168.31,
+          "end": 168.73,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "edge",
+          "start": 168.8,
+          "end": 169.22,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "of",
+          "start": 169.29,
+          "end": 169.71,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "your",
+          "start": 169.78,
+          "end": 170.2,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "miracle.",
+          "start": 170.27,
+          "end": 170.69,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 171.36,
+      "end": 177.17,
+      "text": "So here is your assignment, church, before you leave this place today.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "So",
+          "start": 171.36,
+          "end": 171.78,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "here",
+          "start": 171.85,
+          "end": 172.27,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "is",
+          "start": 172.34,
+          "end": 172.76,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "your",
+          "start": 172.83,
+          "end": 173.25,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "assignment,",
+          "start": 173.32,
+          "end": 173.74,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "church,",
+          "start": 173.81,
+          "end": 174.23,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "before",
+          "start": 174.3,
+          "end": 174.72,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 174.79,
+          "end": 175.21,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "leave",
+          "start": 175.28,
+          "end": 175.7,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "this",
+          "start": 175.77,
+          "end": 176.19,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "place",
+          "start": 176.26,
+          "end": 176.68,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "today.",
+          "start": 176.75,
+          "end": 177.17,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 177.84,
+      "end": 184.63,
+      "text": "Stop negotiating with the storm, and stop rehearsing the fear over and over again.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "Stop",
+          "start": 177.84,
+          "end": 178.26,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "negotiating",
+          "start": 178.33,
+          "end": 178.75,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "with",
+          "start": 178.82,
+          "end": 179.24,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 179.31,
+          "end": 179.73,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "storm,",
+          "start": 179.8,
+          "end": 180.22,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "and",
+          "start": 180.29,
+          "end": 180.71,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "stop",
+          "start": 180.78,
+          "end": 181.2,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "rehearsing",
+          "start": 181.27,
+          "end": 181.69,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 181.76,
+          "end": 182.18,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "fear",
+          "start": 182.25,
+          "end": 182.67,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "over",
+          "start": 182.74,
+          "end": 183.16,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "and",
+          "start": 183.23,
+          "end": 183.65,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "over",
+          "start": 183.72,
+          "end": 184.14,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "again.",
+          "start": 184.21,
+          "end": 184.63,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 185.3,
+      "end": 193.56,
+      "text": "Open your mouth and speak to it the way Jesus did, with the authority you've been given.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "Open",
+          "start": 185.3,
+          "end": 185.72,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "your",
+          "start": 185.79,
+          "end": 186.21,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "mouth",
+          "start": 186.28,
+          "end": 186.7,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "and",
+          "start": 186.77,
+          "end": 187.19,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "speak",
+          "start": 187.26,
+          "end": 187.68,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "to",
+          "start": 187.75,
+          "end": 188.17,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "it",
+          "start": 188.24,
+          "end": 188.66,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 188.73,
+          "end": 189.15,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "way",
+          "start": 189.22,
+          "end": 189.64,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "Jesus",
+          "start": 189.71,
+          "end": 190.13,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "did,",
+          "start": 190.2,
+          "end": 190.62,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "with",
+          "start": 190.69,
+          "end": 191.11,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 191.18,
+          "end": 191.6,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "authority",
+          "start": 191.67,
+          "end": 192.09,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you've",
+          "start": 192.16,
+          "end": 192.58,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "been",
+          "start": 192.65,
+          "end": 193.07,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "given.",
+          "start": 193.14,
+          "end": 193.56,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 194.23,
+      "end": 202.0,
+      "text": "Say to that situation, peace, be still, and then watch how fast heaven backs you up.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "Say",
+          "start": 194.23,
+          "end": 194.65,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "to",
+          "start": 194.72,
+          "end": 195.14,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "that",
+          "start": 195.21,
+          "end": 195.63,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "situation,",
+          "start": 195.7,
+          "end": 196.12,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "peace,",
+          "start": 196.19,
+          "end": 196.61,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "be",
+          "start": 196.68,
+          "end": 197.1,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "still,",
+          "start": 197.17,
+          "end": 197.59,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "and",
+          "start": 197.66,
+          "end": 198.08,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "then",
+          "start": 198.15,
+          "end": 198.57,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "watch",
+          "start": 198.64,
+          "end": 199.06,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "how",
+          "start": 199.13,
+          "end": 199.55,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "fast",
+          "start": 199.62,
+          "end": 200.04,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "heaven",
+          "start": 200.11,
+          "end": 200.53,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "backs",
+          "start": 200.6,
+          "end": 201.02,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 201.09,
+          "end": 201.51,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "up.",
+          "start": 201.58,
+          "end": 202.0,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 202.67,
+      "end": 211.42,
+      "text": "And listen, if this word found you in the right place today, do not keep it to yourself.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "And",
+          "start": 202.67,
+          "end": 203.09,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "listen,",
+          "start": 203.16,
+          "end": 203.58,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "if",
+          "start": 203.65,
+          "end": 204.07,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "this",
+          "start": 204.14,
+          "end": 204.56,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "word",
+          "start": 204.63,
+          "end": 205.05,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "found",
+          "start": 205.12,
+          "end": 205.54,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 205.61,
+          "end": 206.03,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "in",
+          "start": 206.1,
+          "end": 206.52,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "the",
+          "start": 206.59,
+          "end": 207.01,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "right",
+          "start": 207.08,
+          "end": 207.5,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "place",
+          "start": 207.57,
+          "end": 207.99,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "today,",
+          "start": 208.06,
+          "end": 208.48,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "do",
+          "start": 208.55,
+          "end": 208.97,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "not",
+          "start": 209.04,
+          "end": 209.46,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "keep",
+          "start": 209.53,
+          "end": 209.95,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "it",
+          "start": 210.02,
+          "end": 210.44,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "to",
+          "start": 210.51,
+          "end": 210.93,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "yourself.",
+          "start": 211.0,
+          "end": 211.42,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 212.09,
+      "end": 219.86,
+      "text": "Somebody you love is in a storm right now and they are waiting on your invitation.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "Somebody",
+          "start": 212.09,
+          "end": 212.51,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 212.58,
+          "end": 213.0,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "love",
+          "start": 213.07,
+          "end": 213.49,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "is",
+          "start": 213.56,
+          "end": 213.98,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "in",
+          "start": 214.05,
+          "end": 214.47,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "a",
+          "start": 214.54,
+          "end": 214.96,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "storm",
+          "start": 215.03,
+          "end": 215.45,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "right",
+          "start": 215.52,
+          "end": 215.94,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "now",
+          "start": 216.01,
+          "end": 216.43,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "and",
+          "start": 216.5,
+          "end": 216.92,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "they",
+          "start": 216.99,
+          "end": 217.41,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "are",
+          "start": 217.48,
+          "end": 217.9,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "waiting",
+          "start": 217.97,
+          "end": 218.39,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "on",
+          "start": 218.46,
+          "end": 218.88,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "your",
+          "start": 218.95,
+          "end": 219.37,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "invitation.",
+          "start": 219.44,
+          "end": 219.86,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    },
+    {
+      "start": 220.53,
+      "end": 228.3,
+      "text": "Bring them with you next Sunday, and let's grow together as a family in this faith.",
+      "speaker": "SPEAKER_00",
+      "words": [
+        {
+          "text": "Bring",
+          "start": 220.53,
+          "end": 220.95,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "them",
+          "start": 221.02,
+          "end": 221.44,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "with",
+          "start": 221.51,
+          "end": 221.93,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "you",
+          "start": 222.0,
+          "end": 222.42,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "next",
+          "start": 222.49,
+          "end": 222.91,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "Sunday,",
+          "start": 222.98,
+          "end": 223.4,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "and",
+          "start": 223.47,
+          "end": 223.89,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "let's",
+          "start": 223.96,
+          "end": 224.38,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "grow",
+          "start": 224.45,
+          "end": 224.87,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "together",
+          "start": 224.94,
+          "end": 225.36,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "as",
+          "start": 225.43,
+          "end": 225.85,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "a",
+          "start": 225.92,
+          "end": 226.34,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "family",
+          "start": 226.41,
+          "end": 226.83,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "in",
+          "start": 226.9,
+          "end": 227.32,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "this",
+          "start": 227.39,
+          "end": 227.81,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        },
+        {
+          "text": "faith.",
+          "start": 227.88,
+          "end": 228.3,
+          "confidence": 0.92,
+          "speaker": "SPEAKER_00"
+        }
+      ]
+    }
+  ],
+  "words": [
+    {
+      "text": "Um,",
+      "start": 0.0,
+      "end": 0.42,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "so,",
+      "start": 0.49,
+      "end": 0.91,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "can",
+      "start": 0.98,
+      "end": 1.4,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "I",
+      "start": 1.47,
+      "end": 1.89,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "talk",
+      "start": 1.96,
+      "end": 2.38,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "to",
+      "start": 2.45,
+      "end": 2.87,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "somebody",
+      "start": 2.94,
+      "end": 3.36,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "who's",
+      "start": 3.43,
+      "end": 3.85,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "been",
+      "start": 3.92,
+      "end": 4.34,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "holding",
+      "start": 4.41,
+      "end": 4.83,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "on",
+      "start": 4.9,
+      "end": 5.32,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "by",
+      "start": 5.39,
+      "end": 5.81,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "a",
+      "start": 5.88,
+      "end": 6.3,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "thread",
+      "start": 6.37,
+      "end": 6.79,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "this",
+      "start": 6.86,
+      "end": 7.28,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "week?",
+      "start": 7.35,
+      "end": 7.77,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "You",
+      "start": 8.44,
+      "end": 8.86,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "smiled",
+      "start": 8.93,
+      "end": 9.35,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "at",
+      "start": 9.42,
+      "end": 9.84,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "work,",
+      "start": 9.91,
+      "end": 10.33,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 10.4,
+      "end": 10.82,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "posted",
+      "start": 10.89,
+      "end": 11.31,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 11.38,
+      "end": 11.8,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "picture,",
+      "start": 11.87,
+      "end": 12.29,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 12.36,
+      "end": 12.78,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "said",
+      "start": 12.85,
+      "end": 13.27,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 13.34,
+      "end": 13.76,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "were",
+      "start": 13.83,
+      "end": 14.25,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "fine.",
+      "start": 14.32,
+      "end": 14.74,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "But",
+      "start": 15.41,
+      "end": 15.83,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "on",
+      "start": 15.9,
+      "end": 16.32,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 16.39,
+      "end": 16.81,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "inside,",
+      "start": 16.88,
+      "end": 17.3,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "behind",
+      "start": 17.37,
+      "end": 17.79,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 17.86,
+      "end": 18.28,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "door",
+      "start": 18.35,
+      "end": 18.77,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "nobody",
+      "start": 18.84,
+      "end": 19.26,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "sees,",
+      "start": 19.33,
+      "end": 19.75,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 19.82,
+      "end": 20.24,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "were",
+      "start": 20.31,
+      "end": 20.73,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "quietly",
+      "start": 20.8,
+      "end": 21.22,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "breaking.",
+      "start": 21.29,
+      "end": 21.71,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Here's",
+      "start": 22.38,
+      "end": 22.8,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "what",
+      "start": 22.87,
+      "end": 23.29,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "nobody",
+      "start": 23.36,
+      "end": 23.78,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "tells",
+      "start": 23.85,
+      "end": 24.27,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 24.34,
+      "end": 24.76,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "about",
+      "start": 24.83,
+      "end": 25.25,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 25.32,
+      "end": 25.74,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "storm:",
+      "start": 25.81,
+      "end": 26.23,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 26.3,
+      "end": 26.72,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "storm",
+      "start": 26.79,
+      "end": 27.21,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "is",
+      "start": 27.28,
+      "end": 27.7,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "not",
+      "start": 27.77,
+      "end": 28.19,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "your",
+      "start": 28.26,
+      "end": 28.68,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "enemy.",
+      "start": 28.75,
+      "end": 29.17,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "The",
+      "start": 29.84,
+      "end": 30.26,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "storm",
+      "start": 30.33,
+      "end": 30.75,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "is",
+      "start": 30.82,
+      "end": 31.24,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 31.31,
+      "end": 31.73,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "very",
+      "start": 31.8,
+      "end": 32.22,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "thing",
+      "start": 32.29,
+      "end": 32.71,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "God",
+      "start": 32.78,
+      "end": 33.2,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "is",
+      "start": 33.27,
+      "end": 33.69,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "using",
+      "start": 33.76,
+      "end": 34.18,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "to",
+      "start": 34.25,
+      "end": 34.67,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "wake",
+      "start": 34.74,
+      "end": 35.16,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "something",
+      "start": 35.23,
+      "end": 35.65,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "up",
+      "start": 35.72,
+      "end": 36.14,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "on",
+      "start": 36.21,
+      "end": 36.63,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 36.7,
+      "end": 37.12,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "inside",
+      "start": 37.19,
+      "end": 37.61,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "of",
+      "start": 37.68,
+      "end": 38.1,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you.",
+      "start": 38.17,
+      "end": 38.59,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Because",
+      "start": 39.26,
+      "end": 39.68,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "a",
+      "start": 39.75,
+      "end": 40.17,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "faith",
+      "start": 40.24,
+      "end": 40.66,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "that",
+      "start": 40.73,
+      "end": 41.15,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "has",
+      "start": 41.22,
+      "end": 41.64,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "never",
+      "start": 41.71,
+      "end": 42.13,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "been",
+      "start": 42.2,
+      "end": 42.62,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "tested",
+      "start": 42.69,
+      "end": 43.11,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "is",
+      "start": 43.18,
+      "end": 43.6,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "a",
+      "start": 43.67,
+      "end": 44.09,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "faith",
+      "start": 44.16,
+      "end": 44.58,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "that",
+      "start": 44.65,
+      "end": 45.07,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "cannot",
+      "start": 45.14,
+      "end": 45.56,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "be",
+      "start": 45.63,
+      "end": 46.05,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "trusted.",
+      "start": 46.12,
+      "end": 46.54,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "And",
+      "start": 47.21,
+      "end": 47.63,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "some",
+      "start": 47.7,
+      "end": 48.12,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "of",
+      "start": 48.19,
+      "end": 48.61,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 48.68,
+      "end": 49.1,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "are",
+      "start": 49.17,
+      "end": 49.59,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "about",
+      "start": 49.66,
+      "end": 50.08,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "to",
+      "start": 50.15,
+      "end": 50.57,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "find",
+      "start": 50.64,
+      "end": 51.06,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "out",
+      "start": 51.13,
+      "end": 51.55,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "exactly",
+      "start": 51.62,
+      "end": 52.04,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "what",
+      "start": 52.11,
+      "end": 52.53,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 52.6,
+      "end": 53.02,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "are",
+      "start": 53.09,
+      "end": 53.51,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "made",
+      "start": 53.58,
+      "end": 54.0,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "of.",
+      "start": 54.07,
+      "end": 54.49,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Turn",
+      "start": 55.16,
+      "end": 55.58,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "with",
+      "start": 55.65,
+      "end": 56.07,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "me",
+      "start": 56.14,
+      "end": 56.56,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "to",
+      "start": 56.63,
+      "end": 57.05,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Mark",
+      "start": 57.12,
+      "end": 57.54,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "chapter",
+      "start": 57.61,
+      "end": 58.03,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "4,",
+      "start": 58.1,
+      "end": 58.52,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "verse",
+      "start": 58.59,
+      "end": 59.01,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "38,",
+      "start": 59.08,
+      "end": 59.5,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "and",
+      "start": 59.57,
+      "end": 59.99,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "watch",
+      "start": 60.06,
+      "end": 60.48,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 60.55,
+      "end": 60.97,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "scene",
+      "start": 61.04,
+      "end": 61.46,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "very",
+      "start": 61.53,
+      "end": 61.95,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "closely.",
+      "start": 62.02,
+      "end": 62.44,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Jesus",
+      "start": 63.11,
+      "end": 63.53,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "is",
+      "start": 63.6,
+      "end": 64.02,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "asleep",
+      "start": 64.09,
+      "end": 64.51,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "in",
+      "start": 64.58,
+      "end": 65.0,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 65.07,
+      "end": 65.49,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "back",
+      "start": 65.56,
+      "end": 65.98,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "of",
+      "start": 66.05,
+      "end": 66.47,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 66.54,
+      "end": 66.96,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "boat",
+      "start": 67.03,
+      "end": 67.45,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "while",
+      "start": 67.52,
+      "end": 67.94,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 68.01,
+      "end": 68.43,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "disciples",
+      "start": 68.5,
+      "end": 68.92,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "are",
+      "start": 68.99,
+      "end": 69.41,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "panicking",
+      "start": 69.48,
+      "end": 69.9,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "for",
+      "start": 69.97,
+      "end": 70.39,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "their",
+      "start": 70.46,
+      "end": 70.88,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "lives.",
+      "start": 70.95,
+      "end": 71.37,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "And",
+      "start": 72.04,
+      "end": 72.46,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "they",
+      "start": 72.53,
+      "end": 72.95,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "ask",
+      "start": 73.02,
+      "end": 73.44,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "him",
+      "start": 73.51,
+      "end": 73.93,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 74.0,
+      "end": 74.42,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "question",
+      "start": 74.49,
+      "end": 74.91,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "every",
+      "start": 74.98,
+      "end": 75.4,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "one",
+      "start": 75.47,
+      "end": 75.89,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "of",
+      "start": 75.96,
+      "end": 76.38,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "us",
+      "start": 76.45,
+      "end": 76.87,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "has",
+      "start": 76.94,
+      "end": 77.36,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "asked",
+      "start": 77.43,
+      "end": 77.85,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "God",
+      "start": 77.92,
+      "end": 78.34,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "at",
+      "start": 78.41,
+      "end": 78.83,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "midnight.",
+      "start": 78.9,
+      "end": 79.32,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Do",
+      "start": 79.99,
+      "end": 80.41,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 80.48,
+      "end": 80.9,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "not",
+      "start": 80.97,
+      "end": 81.39,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "care,",
+      "start": 81.46,
+      "end": 81.88,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Lord,",
+      "start": 81.95,
+      "end": 82.37,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "do",
+      "start": 82.44,
+      "end": 82.86,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 82.93,
+      "end": 83.35,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "not",
+      "start": 83.42,
+      "end": 83.84,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "care",
+      "start": 83.91,
+      "end": 84.33,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "that",
+      "start": 84.4,
+      "end": 84.82,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "we",
+      "start": 84.89,
+      "end": 85.31,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "are",
+      "start": 85.38,
+      "end": 85.8,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "perishing",
+      "start": 85.87,
+      "end": 86.29,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "out",
+      "start": 86.36,
+      "end": 86.78,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "here?",
+      "start": 86.85,
+      "end": 87.27,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "But",
+      "start": 87.94,
+      "end": 88.36,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "watch",
+      "start": 88.43,
+      "end": 88.85,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "this,",
+      "start": 88.92,
+      "end": 89.34,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "watch",
+      "start": 89.41,
+      "end": 89.83,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "this:",
+      "start": 89.9,
+      "end": 90.32,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 90.39,
+      "end": 90.81,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "peace",
+      "start": 90.88,
+      "end": 91.3,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "was",
+      "start": 91.37,
+      "end": 91.79,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "already",
+      "start": 91.86,
+      "end": 92.28,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "in",
+      "start": 92.35,
+      "end": 92.77,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 92.84,
+      "end": 93.26,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "boat",
+      "start": 93.33,
+      "end": 93.75,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 93.82,
+      "end": 94.24,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "whole",
+      "start": 94.31,
+      "end": 94.73,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "time.",
+      "start": 94.8,
+      "end": 95.22,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "They",
+      "start": 95.89,
+      "end": 96.31,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "were",
+      "start": 96.38,
+      "end": 96.8,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "screaming",
+      "start": 96.87,
+      "end": 97.29,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "for",
+      "start": 97.36,
+      "end": 97.78,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "a",
+      "start": 97.85,
+      "end": 98.27,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "rescue",
+      "start": 98.34,
+      "end": 98.76,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "while",
+      "start": 98.83,
+      "end": 99.25,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "their",
+      "start": 99.32,
+      "end": 99.74,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "rescue",
+      "start": 99.81,
+      "end": 100.23,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "was",
+      "start": 100.3,
+      "end": 100.72,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "sleeping",
+      "start": 100.79,
+      "end": 101.21,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "right",
+      "start": 101.28,
+      "end": 101.7,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "beside",
+      "start": 101.77,
+      "end": 102.19,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "them.",
+      "start": 102.26,
+      "end": 102.68,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Sometimes",
+      "start": 103.35,
+      "end": 103.77,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 103.84,
+      "end": 104.26,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "are",
+      "start": 104.33,
+      "end": 104.75,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "crying",
+      "start": 104.82,
+      "end": 105.24,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "out",
+      "start": 105.31,
+      "end": 105.73,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "for",
+      "start": 105.8,
+      "end": 106.22,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "a",
+      "start": 106.29,
+      "end": 106.71,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "peace",
+      "start": 106.78,
+      "end": 107.2,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "that",
+      "start": 107.27,
+      "end": 107.69,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "is",
+      "start": 107.76,
+      "end": 108.18,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "already",
+      "start": 108.25,
+      "end": 108.67,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "sleeping",
+      "start": 108.74,
+      "end": 109.16,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "on",
+      "start": 109.23,
+      "end": 109.65,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 109.72,
+      "end": 110.14,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "inside",
+      "start": 110.21,
+      "end": 110.63,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "of",
+      "start": 110.7,
+      "end": 111.12,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you.",
+      "start": 111.19,
+      "end": 111.61,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "When",
+      "start": 112.28,
+      "end": 112.7,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Jesus",
+      "start": 112.77,
+      "end": 113.19,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "finally",
+      "start": 113.26,
+      "end": 113.68,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "stood",
+      "start": 113.75,
+      "end": 114.17,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "up",
+      "start": 114.24,
+      "end": 114.66,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "and",
+      "start": 114.73,
+      "end": 115.15,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "said",
+      "start": 115.22,
+      "end": 115.64,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "peace,",
+      "start": 115.71,
+      "end": 116.13,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "be",
+      "start": 116.2,
+      "end": 116.62,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "still,",
+      "start": 116.69,
+      "end": 117.11,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 117.18,
+      "end": 117.6,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "wind",
+      "start": 117.67,
+      "end": 118.09,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "did",
+      "start": 118.16,
+      "end": 118.58,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "not",
+      "start": 118.65,
+      "end": 119.07,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "argue",
+      "start": 119.14,
+      "end": 119.56,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "with",
+      "start": 119.63,
+      "end": 120.05,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "him.",
+      "start": 120.12,
+      "end": 120.54,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "The",
+      "start": 121.21,
+      "end": 121.63,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "wind",
+      "start": 121.7,
+      "end": 122.12,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "that",
+      "start": 122.19,
+      "end": 122.61,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "was",
+      "start": 122.68,
+      "end": 123.1,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "bullying",
+      "start": 123.17,
+      "end": 123.59,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 123.66,
+      "end": 124.08,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "disciples",
+      "start": 124.15,
+      "end": 124.57,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "heard",
+      "start": 124.64,
+      "end": 125.06,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "one",
+      "start": 125.13,
+      "end": 125.55,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "word",
+      "start": 125.62,
+      "end": 126.04,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "and",
+      "start": 126.11,
+      "end": 126.53,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "immediately",
+      "start": 126.6,
+      "end": 127.02,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "sat",
+      "start": 127.09,
+      "end": 127.51,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "down.",
+      "start": 127.58,
+      "end": 128.0,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "That",
+      "start": 128.67,
+      "end": 129.09,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "same",
+      "start": 129.16,
+      "end": 129.58,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "voice,",
+      "start": 129.65,
+      "end": 130.07,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "that",
+      "start": 130.14,
+      "end": 130.56,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "same",
+      "start": 130.63,
+      "end": 131.05,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "authority,",
+      "start": 131.12,
+      "end": 131.54,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "that",
+      "start": 131.61,
+      "end": 132.03,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "same",
+      "start": 132.1,
+      "end": 132.52,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "power",
+      "start": 132.59,
+      "end": 133.01,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "is",
+      "start": 133.08,
+      "end": 133.5,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "living",
+      "start": 133.57,
+      "end": 133.99,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "down",
+      "start": 134.06,
+      "end": 134.48,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "on",
+      "start": 134.55,
+      "end": 134.97,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 135.04,
+      "end": 135.46,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "inside",
+      "start": 135.53,
+      "end": 135.95,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "of",
+      "start": 136.02,
+      "end": 136.44,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you.",
+      "start": 136.51,
+      "end": 136.93,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "You",
+      "start": 137.6,
+      "end": 138.02,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "have",
+      "start": 138.09,
+      "end": 138.51,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "been",
+      "start": 138.58,
+      "end": 139.0,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "talking",
+      "start": 139.07,
+      "end": 139.49,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "about",
+      "start": 139.56,
+      "end": 139.98,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 140.05,
+      "end": 140.47,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "storm,",
+      "start": 140.54,
+      "end": 140.96,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "but",
+      "start": 141.03,
+      "end": 141.45,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "God",
+      "start": 141.52,
+      "end": 141.94,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "says",
+      "start": 142.01,
+      "end": 142.43,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "it",
+      "start": 142.5,
+      "end": 142.92,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "is",
+      "start": 142.99,
+      "end": 143.41,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "time",
+      "start": 143.48,
+      "end": 143.9,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "to",
+      "start": 143.97,
+      "end": 144.39,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "talk",
+      "start": 144.46,
+      "end": 144.88,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "to",
+      "start": 144.95,
+      "end": 145.37,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 145.44,
+      "end": 145.86,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "storm.",
+      "start": 145.93,
+      "end": 146.35,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Hallelujah,",
+      "start": 147.02,
+      "end": 147.44,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "somebody",
+      "start": 147.51,
+      "end": 147.93,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "in",
+      "start": 148.0,
+      "end": 148.42,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "this",
+      "start": 148.49,
+      "end": 148.91,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "room",
+      "start": 148.98,
+      "end": 149.4,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "ought",
+      "start": 149.47,
+      "end": 149.89,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "to",
+      "start": 149.96,
+      "end": 150.38,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "give",
+      "start": 150.45,
+      "end": 150.87,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "God",
+      "start": 150.94,
+      "end": 151.36,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "a",
+      "start": 151.43,
+      "end": 151.85,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "real",
+      "start": 151.92,
+      "end": 152.34,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "praise",
+      "start": 152.41,
+      "end": 152.83,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "right",
+      "start": 152.9,
+      "end": 153.32,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "about",
+      "start": 153.39,
+      "end": 153.81,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "now.",
+      "start": 153.88,
+      "end": 154.3,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Because",
+      "start": 154.97,
+      "end": 155.39,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 155.46,
+      "end": 155.88,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "breakthrough",
+      "start": 155.95,
+      "end": 156.37,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 156.44,
+      "end": 156.86,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "have",
+      "start": 156.93,
+      "end": 157.35,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "been",
+      "start": 157.42,
+      "end": 157.84,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "begging",
+      "start": 157.91,
+      "end": 158.33,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "for",
+      "start": 158.4,
+      "end": 158.82,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "is",
+      "start": 158.89,
+      "end": 159.31,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 159.38,
+      "end": 159.8,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "breakthrough",
+      "start": 159.87,
+      "end": 160.29,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 160.36,
+      "end": 160.78,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "already",
+      "start": 160.85,
+      "end": 161.27,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "carry.",
+      "start": 161.34,
+      "end": 161.76,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Grace",
+      "start": 162.43,
+      "end": 162.85,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "did",
+      "start": 162.92,
+      "end": 163.34,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "not",
+      "start": 163.41,
+      "end": 163.83,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "bring",
+      "start": 163.9,
+      "end": 164.32,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 164.39,
+      "end": 164.81,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "this",
+      "start": 164.88,
+      "end": 165.3,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "far",
+      "start": 165.37,
+      "end": 165.79,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "just",
+      "start": 165.86,
+      "end": 166.28,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "to",
+      "start": 166.35,
+      "end": 166.77,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "abandon",
+      "start": 166.84,
+      "end": 167.26,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 167.33,
+      "end": 167.75,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "at",
+      "start": 167.82,
+      "end": 168.24,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 168.31,
+      "end": 168.73,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "edge",
+      "start": 168.8,
+      "end": 169.22,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "of",
+      "start": 169.29,
+      "end": 169.71,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "your",
+      "start": 169.78,
+      "end": 170.2,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "miracle.",
+      "start": 170.27,
+      "end": 170.69,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "So",
+      "start": 171.36,
+      "end": 171.78,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "here",
+      "start": 171.85,
+      "end": 172.27,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "is",
+      "start": 172.34,
+      "end": 172.76,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "your",
+      "start": 172.83,
+      "end": 173.25,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "assignment,",
+      "start": 173.32,
+      "end": 173.74,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "church,",
+      "start": 173.81,
+      "end": 174.23,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "before",
+      "start": 174.3,
+      "end": 174.72,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 174.79,
+      "end": 175.21,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "leave",
+      "start": 175.28,
+      "end": 175.7,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "this",
+      "start": 175.77,
+      "end": 176.19,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "place",
+      "start": 176.26,
+      "end": 176.68,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "today.",
+      "start": 176.75,
+      "end": 177.17,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Stop",
+      "start": 177.84,
+      "end": 178.26,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "negotiating",
+      "start": 178.33,
+      "end": 178.75,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "with",
+      "start": 178.82,
+      "end": 179.24,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 179.31,
+      "end": 179.73,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "storm,",
+      "start": 179.8,
+      "end": 180.22,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "and",
+      "start": 180.29,
+      "end": 180.71,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "stop",
+      "start": 180.78,
+      "end": 181.2,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "rehearsing",
+      "start": 181.27,
+      "end": 181.69,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 181.76,
+      "end": 182.18,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "fear",
+      "start": 182.25,
+      "end": 182.67,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "over",
+      "start": 182.74,
+      "end": 183.16,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "and",
+      "start": 183.23,
+      "end": 183.65,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "over",
+      "start": 183.72,
+      "end": 184.14,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "again.",
+      "start": 184.21,
+      "end": 184.63,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Open",
+      "start": 185.3,
+      "end": 185.72,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "your",
+      "start": 185.79,
+      "end": 186.21,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "mouth",
+      "start": 186.28,
+      "end": 186.7,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "and",
+      "start": 186.77,
+      "end": 187.19,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "speak",
+      "start": 187.26,
+      "end": 187.68,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "to",
+      "start": 187.75,
+      "end": 188.17,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "it",
+      "start": 188.24,
+      "end": 188.66,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 188.73,
+      "end": 189.15,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "way",
+      "start": 189.22,
+      "end": 189.64,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Jesus",
+      "start": 189.71,
+      "end": 190.13,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "did,",
+      "start": 190.2,
+      "end": 190.62,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "with",
+      "start": 190.69,
+      "end": 191.11,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 191.18,
+      "end": 191.6,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "authority",
+      "start": 191.67,
+      "end": 192.09,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you've",
+      "start": 192.16,
+      "end": 192.58,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "been",
+      "start": 192.65,
+      "end": 193.07,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "given.",
+      "start": 193.14,
+      "end": 193.56,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Say",
+      "start": 194.23,
+      "end": 194.65,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "to",
+      "start": 194.72,
+      "end": 195.14,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "that",
+      "start": 195.21,
+      "end": 195.63,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "situation,",
+      "start": 195.7,
+      "end": 196.12,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "peace,",
+      "start": 196.19,
+      "end": 196.61,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "be",
+      "start": 196.68,
+      "end": 197.1,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "still,",
+      "start": 197.17,
+      "end": 197.59,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "and",
+      "start": 197.66,
+      "end": 198.08,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "then",
+      "start": 198.15,
+      "end": 198.57,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "watch",
+      "start": 198.64,
+      "end": 199.06,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "how",
+      "start": 199.13,
+      "end": 199.55,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "fast",
+      "start": 199.62,
+      "end": 200.04,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "heaven",
+      "start": 200.11,
+      "end": 200.53,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "backs",
+      "start": 200.6,
+      "end": 201.02,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 201.09,
+      "end": 201.51,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "up.",
+      "start": 201.58,
+      "end": 202.0,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "And",
+      "start": 202.67,
+      "end": 203.09,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "listen,",
+      "start": 203.16,
+      "end": 203.58,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "if",
+      "start": 203.65,
+      "end": 204.07,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "this",
+      "start": 204.14,
+      "end": 204.56,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "word",
+      "start": 204.63,
+      "end": 205.05,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "found",
+      "start": 205.12,
+      "end": 205.54,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 205.61,
+      "end": 206.03,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "in",
+      "start": 206.1,
+      "end": 206.52,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "the",
+      "start": 206.59,
+      "end": 207.01,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "right",
+      "start": 207.08,
+      "end": 207.5,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "place",
+      "start": 207.57,
+      "end": 207.99,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "today,",
+      "start": 208.06,
+      "end": 208.48,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "do",
+      "start": 208.55,
+      "end": 208.97,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "not",
+      "start": 209.04,
+      "end": 209.46,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "keep",
+      "start": 209.53,
+      "end": 209.95,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "it",
+      "start": 210.02,
+      "end": 210.44,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "to",
+      "start": 210.51,
+      "end": 210.93,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "yourself.",
+      "start": 211.0,
+      "end": 211.42,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Somebody",
+      "start": 212.09,
+      "end": 212.51,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 212.58,
+      "end": 213.0,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "love",
+      "start": 213.07,
+      "end": 213.49,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "is",
+      "start": 213.56,
+      "end": 213.98,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "in",
+      "start": 214.05,
+      "end": 214.47,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "a",
+      "start": 214.54,
+      "end": 214.96,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "storm",
+      "start": 215.03,
+      "end": 215.45,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "right",
+      "start": 215.52,
+      "end": 215.94,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "now",
+      "start": 216.01,
+      "end": 216.43,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "and",
+      "start": 216.5,
+      "end": 216.92,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "they",
+      "start": 216.99,
+      "end": 217.41,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "are",
+      "start": 217.48,
+      "end": 217.9,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "waiting",
+      "start": 217.97,
+      "end": 218.39,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "on",
+      "start": 218.46,
+      "end": 218.88,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "your",
+      "start": 218.95,
+      "end": 219.37,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "invitation.",
+      "start": 219.44,
+      "end": 219.86,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Bring",
+      "start": 220.53,
+      "end": 220.95,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "them",
+      "start": 221.02,
+      "end": 221.44,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "with",
+      "start": 221.51,
+      "end": 221.93,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "you",
+      "start": 222.0,
+      "end": 222.42,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "next",
+      "start": 222.49,
+      "end": 222.91,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "Sunday,",
+      "start": 222.98,
+      "end": 223.4,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "and",
+      "start": 223.47,
+      "end": 223.89,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "let's",
+      "start": 223.96,
+      "end": 224.38,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "grow",
+      "start": 224.45,
+      "end": 224.87,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "together",
+      "start": 224.94,
+      "end": 225.36,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "as",
+      "start": 225.43,
+      "end": 225.85,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "a",
+      "start": 225.92,
+      "end": 226.34,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "family",
+      "start": 226.41,
+      "end": 226.83,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "in",
+      "start": 226.9,
+      "end": 227.32,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "this",
+      "start": 227.39,
+      "end": 227.81,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    },
+    {
+      "text": "faith.",
+      "start": 227.88,
+      "end": 228.3,
+      "confidence": 0.92,
+      "speaker": "SPEAKER_00"
+    }
+  ],
+  "low_confidence_ratio": 0.0
+}

@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+
+# Pipeline artifacts (regenerable; can be large media)
+output/*
+!output/.gitkeep
+inbox/*
+!inbox/.gitkeep
+
+# Downloaded / probed media + model caches
+*.mp4
+*.mov
+*.mkv
+*.m4v
+*.ts
+*.webm
+*.wav
+
+# The logo is provided out-of-band (Facebook blocks automated fetch)
+assets/kbcf-logo.png
+
+# Local env
+.env
+.env.local

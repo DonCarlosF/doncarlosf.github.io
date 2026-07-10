@@ -1,0 +1,35 @@
+{
+  "index": 4,
+  "hook_text": "Say to that situation, peace, be still, and then watch how fast heaven backs you up.",
+  "caption": "Say to that situation, peace, be still, and then watch how fast heaven backs you up. Join us Sunday 9AM in Oakland \u2014 kingdombuilderscf.org",
+  "hashtags": [
+    "kbcf",
+    "oakland",
+    "sermonclip",
+    "faith",
+    "quote"
+  ],
+  "scripture_refs": [],
+  "moment_type": "quote",
+  "scores": {
+    "cliffhanger": 2,
+    "common": 3,
+    "care": 3,
+    "total_3c": 8
+  },
+  "virality_score": 42.7,
+  "rationale": "Heuristic pick: emotional/scriptural density and direct address.",
+  "source": {
+    "start": 194.23,
+    "end": 228.3,
+    "duration": 34.07
+  },
+  "aspect_ratio": "9:16",
+  "low_confidence_transcription": false,
+  "files": {
+    "video": null,
+    "thumbnail": null,
+    "captions": "clip_04.ass"
+  },
+  "generated_at": "2026-06-14T04:05:59Z"
+}

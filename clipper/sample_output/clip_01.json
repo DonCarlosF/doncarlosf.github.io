@@ -1,0 +1,35 @@
+{
+  "index": 1,
+  "hook_text": "Can I talk to somebody who's been holding on by a thread this week?",
+  "caption": "Can I talk to somebody who's been holding on by a thread this week. Join us Sunday 9AM in Oakland \u2014 kingdombuilderscf.org",
+  "hashtags": [
+    "kbcf",
+    "oakland",
+    "sermonclip",
+    "faith",
+    "hook"
+  ],
+  "scripture_refs": [],
+  "moment_type": "hook",
+  "scores": {
+    "cliffhanger": 5,
+    "common": 5,
+    "care": 3,
+    "total_3c": 13
+  },
+  "virality_score": 69.3,
+  "rationale": "Heuristic pick: emotional/scriptural density and direct address.",
+  "source": {
+    "start": 0.49,
+    "end": 62.44,
+    "duration": 61.95
+  },
+  "aspect_ratio": "9:16",
+  "low_confidence_transcription": false,
+  "files": {
+    "video": null,
+    "thumbnail": null,
+    "captions": "clip_01.ass"
+  },
+  "generated_at": "2026-06-14T04:05:59Z"
+}
