@@ -1,0 +1,12 @@
+{
+  "cleverDistrictUrl": "https://clever.com/in/ousd",
+  "students": [
+    "STUDENT NAME EXACTLY AS SHOWN IN VIEW STUDENTS LIST",
+    "SECOND STUDENT",
+    "THIRD STUDENT"
+  ],
+  "targetActivity": null,
+  "mode": "activity",
+  "afterRotation": "stop",
+  "profileDir": "~/.teachtown-runner/profile"
+}
