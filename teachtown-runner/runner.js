@@ -37,10 +37,16 @@ const NAV_TIMEOUT = 60_000;
 const OUTER_IFRAME = 'iframe[src*="SocialSkills/Client/AppHost/AppHost.aspx"]';
 const INNER_IFRAME = 'iframe[src*="AppHost/app"]';
 
-// Candidates for the per-student dropdown caret (▾), tried in order from the
-// student's name outward. If this ever fails repeatedly, capture the exact
-// selector with `npx playwright codegen` and put it first in this list.
+// Verified on the live app (devtools recon, 2026-07):
+const STUDENT_ROW = 'div.tt-list-item.sli_studentHolder'; // row text = the student's name
+const ROW_SELECTED_CLASS = 'picker_selected'; // on the row when selected ("picker_unselected" otherwise)
+const CONTEXT_BTN = '.context-btn'; // caret/menu button, child of the row (holds i.fa.fa-caret-down)
+const LOGIN_AS_ITEM = 'li:text("Login as..")'; // menu items are bare Angular <li>s — match by text (two dots, no space)
+
+// Fallback caret candidates, used only if STUDENT_ROW stops matching (app
+// update). Tried in order from the student's name outward.
 const CARET_SELECTORS = [
+  '.context-btn', // verified live selector — first even in the fallback
   '.caret',
   '[class*="caret"]',
   '[class*="dropdown-toggle"]',
@@ -142,9 +148,8 @@ function loadConfig() {
   }
   cfg.afterRotation = cfg.afterRotation || 'stop';
   if (!['stop', 'repeat'].includes(cfg.afterRotation)) {
-    // TODO(afterRotation): future mode — teacher-led / group session started
-    // from the teacher view. That UI is not mapped yet; capture it with
-    // `npx playwright codegen` first, then implement here.
+    // TODO(afterRotation): future teacher-led / group session mode — see the
+    // recon notes at the rotation loop in main() before building.
     console.warn(
       `afterRotation="${cfg.afterRotation}" is not implemented yet — treating it as "stop".`
     );
@@ -167,6 +172,10 @@ function fmtScore(score) {
 
 function norm(s) {
   return s.toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function escapeRe(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 async function visibleSoon(locator, timeout) {
@@ -448,11 +457,121 @@ async function verifyStudentHeader(tt, name) {
   }
 }
 
+// Dismiss the red "Login unsuccessful." toast (it has an x); if we can't
+// find its close button, wait for it to auto-hide so it can't block retries.
+async function dismissLoginToast(inner) {
+  const candidates = [
+    inner.locator('.toast-close-button'),
+    inner.locator('[class*="toast"] [class*="close"]'),
+    inner.locator('[class*="toast"] button'),
+  ];
+  for (const c of candidates) {
+    try {
+      const btn = c.first();
+      if (await btn.isVisible()) {
+        await btn.click({ timeout: 2_000 });
+        return;
+      }
+    } catch {}
+  }
+  await inner
+    .getByText(/login unsuccessful/i)
+    .first()
+    .waitFor({ state: 'hidden', timeout: 8_000 })
+    .catch(() => {});
+}
+
 // Returns true on success, false if the student isn't in the list.
-// Throws after 3 failed caret→menu attempts (the menus are hover-fragile).
+// Throws after 3 failed attempts.
+//
+// Verified sequence (recon'd on the live app): select the row FIRST and wait
+// for its picker_selected class, then open the caret menu, then click
+// "Login as..". Clicking "Login as.." on an unselected row fails with a red
+// "Login unsuccessful." toast and stays in teacher view.
+//
+// NOTE: every step here must stay a real (trusted) Playwright click.
+// Synthetic clicks via page.evaluate() are rejected by this app — reproduced
+// twice on the live site: they produce the "Login unsuccessful." toast.
+// Never convert this sequence to evaluate().
 async function loginAsStudent(tt, name, logger) {
   const inner = innerLocator(tt);
   await inner.getByText('View Students').first().waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+
+  if ((await inner.locator(STUDENT_ROW).count()) === 0) {
+    // DOM drifted from the recon — fall back to the text-based heuristics.
+    logger.event(`WARN student rows (${STUDENT_ROW}) not found — using text-based fallback`);
+    return loginAsStudentLegacy(tt, name, logger);
+  }
+
+  // Row text is exactly the student's name: prefer an exact match (tolerating
+  // surrounding whitespace), fall back to substring.
+  const exact = new RegExp(`^\\s*${escapeRe(name)}\\s*$`);
+  let row = inner.locator(STUDENT_ROW).filter({ hasText: exact }).first();
+  let rowFilter = exact;
+  if (!(await visibleSoon(row, 8_000))) {
+    row = inner.locator(STUDENT_ROW).filter({ hasText: name }).first();
+    rowFilter = name;
+    if (!(await visibleSoon(row, 2_000))) return false;
+  }
+
+  let lastErr = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      // 1. Select the row; wait for the app to mark it picker_selected
+      //    (state wait, not a fixed sleep — the menu is timing-sensitive).
+      const selectedRow = inner
+        .locator(`${STUDENT_ROW}.${ROW_SELECTED_CLASS}`)
+        .filter({ hasText: rowFilter })
+        .first();
+      if (!(await selectedRow.isVisible().catch(() => false))) {
+        await row.scrollIntoViewIfNeeded().catch(() => {});
+        await row.click({ timeout: 5_000 });
+      }
+      await selectedRow.waitFor({ state: 'visible', timeout: 10_000 });
+
+      // 2. Open the caret menu (child of the row) unless a previous attempt
+      //    left it open already.
+      const openItem = inner.locator(LOGIN_AS_ITEM).filter({ visible: true }).first();
+      if (!(await openItem.isVisible().catch(() => false))) {
+        await row.locator(CONTEXT_BTN).first().click({ timeout: 5_000 });
+      }
+
+      // 3. Click the menu item (auto-waits for visibility).
+      await inner.locator(LOGIN_AS_ITEM).filter({ visible: true }).first().click({ timeout: 4_000 });
+
+      // 4. Either the student view appears, or the app rejects the login.
+      const swapTimeout = attempt === 3 ? NAV_TIMEOUT : 15_000;
+      const outcome = await Promise.race([
+        inner.getByText('My Activities').first()
+          .waitFor({ state: 'visible', timeout: swapTimeout })
+          .then(() => 'ok', () => 'timeout'),
+        inner.getByText(/login unsuccessful/i).first()
+          .waitFor({ state: 'visible', timeout: swapTimeout })
+          .then(() => 'toast', () => 'timeout'),
+      ]);
+      if (outcome === 'toast') {
+        await dismissLoginToast(inner);
+        throw new Error('app rejected "Login as.." (Login unsuccessful toast)');
+      }
+      if (outcome === 'timeout') throw new Error('student view ("My Activities") did not appear');
+      await verifyStudentHeader(tt, name);
+      return true;
+    } catch (err) {
+      lastErr = err;
+      if (attempt < 3) {
+        logger.event(`WARN ${name} — login-as attempt ${attempt} failed, retrying (${err.message.split('\n')[0]})`);
+      }
+      await tt.keyboard.press('Escape').catch(() => {});
+      await sleep(700);
+    }
+  }
+  throw new Error(`row → caret → "Login as.." failed after 3 attempts for "${name}": ${lastErr?.message}`);
+}
+
+// Pre-recon fallback: text-based row/caret discovery. Only used if
+// STUDENT_ROW stops matching after a TeachTown update.
+async function loginAsStudentLegacy(tt, name, logger) {
+  const inner = innerLocator(tt);
 
   const nameEl = await findFirstVisible(
     [inner.getByText(name, { exact: true }), inner.getByText(name)],
@@ -849,7 +968,14 @@ async function shutdown(code) {
       logger.event(`ROTATION ${pass} COMPLETE — repeating group`);
     } while (!state.shuttingDown);
     // TODO(afterRotation): a future value will kick off a teacher-led/group
-    // session here instead of stopping — UI not mapped yet (codegen first).
+    // session here instead of stopping. Recon (2026-07): lives in the teacher
+    // view under the Assessments tab (top nav) or "Start an Assessment" →
+    // "View Assessments" screen → pick Behavioral Domain (Following Rules /
+    // Interpersonal Skills / Self-Regulation & Coping / Good Communication /
+    // Friendship; Elementary–Middle School toggle) → pick Targeted Behavior →
+    // right panel lists students with progress bars and per-student
+    // Begin/Resume buttons + All/In-Progress filters. Same inner-frame DOM
+    // patterns as the rest of the app. Codegen exact selectors when building.
 
     if (state.shuttingDown) return; // Ctrl+C owns the exit from here
     if (dryRun) printDryRunTable(results, logger);
