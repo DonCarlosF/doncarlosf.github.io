@@ -166,7 +166,7 @@ function loadConfig() {
 
   // Teacher-Led (enCORE) settings.
   const tl = Object.assign(
-    { encoreAppHash: '#/apps/enms', group: '', students: [], sessionLengthMin: 15, autoBegin: false },
+    { encoreAppHash: '#/apps/encr', group: '', students: [], sessionLengthMin: 15, autoBegin: false },
     cfg.teacherLed || {}
   );
   if (!Array.isArray(tl.students)) tl.students = [];
@@ -819,7 +819,7 @@ function pickActivity(activities, config) {
   return { activity: found };
 }
 
-async function launchActivity(tt, activity, mode) {
+async function launchActivity(tt, activity, mode, logger) {
   const inner = innerLocator(tt);
 
   const tagged = inner.locator(`[data-ttrunner-row="${activity.idx}"]`).first();
@@ -837,30 +837,90 @@ async function launchActivity(tt, activity, mode) {
     .first();
   await btn.waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
 
+  if (mode === 'movie') {
+    // Instrumented, not assumed: the movie player's surface is unverified.
+    // Race popup vs in-frame <video> vs neither, log which one actually
+    // happened, and handle both — the first live run documents reality.
+    const popupPromise = tt.context().waitForEvent('page', { timeout: 15_000 }).catch(() => null);
+    await btn.click();
+    const outcome = await new Promise((resolve) => {
+      let settled = false;
+      const settle = (v) => {
+        if (!settled && v) {
+          settled = true;
+          clearTimeout(noneTimer);
+          resolve(v);
+        }
+      };
+      const noneTimer = setTimeout(() => settle({ kind: 'none' }), 16_000);
+      popupPromise.then((p) => settle(p ? { kind: 'popup', popup: p } : null));
+      inner
+        .locator('video')
+        .first()
+        .waitFor({ state: 'visible', timeout: 15_000 })
+        .then(() => settle({ kind: 'inframe' }), () => {});
+    });
+    logger.event(
+      `MOVIE-MODE OBSERVED: ${
+        outcome.kind === 'popup'
+          ? 'popup player window'
+          : outcome.kind === 'inframe'
+            ? 'in-frame video player'
+            : 'no popup and no in-frame video within 15s'
+      }`
+    );
+    if (outcome.kind === 'none') {
+      throw new Error('clicked "Watch the Movie" but saw neither a popup nor an in-frame video within 15s');
+    }
+    if (outcome.kind === 'popup') {
+      state.popup = outcome.popup;
+      await outcome.popup.bringToFront().catch(() => {});
+    }
+    return outcome;
+  }
+
   const popupPromise = tt.context().waitForEvent('page', { timeout: NAV_TIMEOUT }).catch(() => null);
   await btn.click();
   const popup = await popupPromise;
   if (!popup) {
-    throw new Error(`clicked "${mode === 'movie' ? 'Watch the Movie' : 'Do the Activity!'}" but no player window opened`);
+    throw new Error('clicked "Do the Activity!" but no player window opened');
   }
   state.popup = popup;
   await popup.bringToFront().catch(() => {});
-  return popup;
+  return { kind: 'popup', popup };
 }
 
 // The group answers live on the touchscreen — the script only waits.
-// Resolves when the player window closes (primary, no timeout), or when the
-// main window's list shows the activity's Last Attempted/score changed.
-async function waitForCompletion(popup, tt, activity, logger) {
+// Popup players resolve on the window's close event (primary, no timeout);
+// in-frame players resolve on the video's `ended` event (or the element
+// going away). Both also resolve when the main window's list shows the
+// activity's Last Attempted/score changed.
+async function waitForCompletion(launch, tt, activity, logger) {
   logger.event('WAITING (activity live)');
+  const isPopup = launch.kind === 'popup';
 
-  const closed = popup
-    .waitForEvent('close', { timeout: 0 })
-    .catch(() => {})
-    .then(() => 'player closed');
+  const primary = isPopup
+    ? launch.popup
+        .waitForEvent('close', { timeout: 0 })
+        .catch(() => {})
+        .then(() => 'player closed')
+    : innerLocator(tt)
+        .locator('video')
+        .first()
+        .evaluate(
+          (v) =>
+            v.ended
+              ? true
+              : new Promise((res) => v.addEventListener('ended', () => res(true), { once: true })),
+          undefined,
+          { timeout: 0 }
+        )
+        .then(() => 'video ended', () => 'video gone'); // detached video = player closed
 
+  let raceDone = false;
   const updated = (async () => {
-    while (!popup.isClosed() && !state.shuttingDown) {
+    while (!state.shuttingDown && !raceDone) {
+      if (isPopup && launch.popup.isClosed()) break;
       await sleep(10_000);
       try {
         const list = await parseActivities(tt);
@@ -881,8 +941,9 @@ async function waitForCompletion(popup, tt, activity, logger) {
     return 'player closed';
   })();
 
-  const how = await Promise.race([closed, updated]);
-  if (!popup.isClosed()) await popup.close().catch(() => {});
+  const how = await Promise.race([primary, updated]);
+  raceDone = true;
+  if (isPopup && !launch.popup.isClosed()) await launch.popup.close().catch(() => {});
   state.popup = null;
   return how;
 }
@@ -923,9 +984,9 @@ async function runStudent(tt, name, config, dryRun, logger) {
         result.status = 'READY';
         result.wouldRun = pick.activity.name;
       } else {
-        const popup = await launchActivity(tt, pick.activity, config.mode);
+        const launch = await launchActivity(tt, pick.activity, config.mode, logger);
         logger.event(`START ${pick.activity.name}`);
-        const how = await waitForCompletion(popup, tt, pick.activity, logger);
+        const how = await waitForCompletion(launch, tt, pick.activity, logger);
         if (state.shuttingDown) return result;
         logger.event(`DONE (${how})`);
         result.status = 'RAN';
@@ -963,11 +1024,20 @@ async function runStudent(tt, name, config, dryRun, logger) {
 //
 // Verified flow (live-clicked 2026-07-17): hub → enCORE card → Login.aspx
 // ("Login with Clever") → Clever OAuth (district button) → role picker
-// ("Log in as a teacher") → enCORE home (#/apps/enms) → Start a Session →
-// Teacher-Led "Get started" → student/group setup → Begin Session.
-// The OAuth return lands on the ACCOUNT-DEFAULT app regardless of which
-// enCORE card was clicked — config teacherLed.encoreAppHash is enforced
-// afterwards and a mismatch is warned (open item).
+// ("Log in as a teacher") → enCORE home → Start a Session → Teacher-Led
+// "Get started" → student/group setup → Begin Session.
+// Routing (RESOLVED): the OAuth return lands on the ACCOUNT-DEFAULT app
+// regardless of which enCORE card was clicked; a direct hash goto then works
+// for any entitled app (the classroom app is enCORE Elementary, #/apps/encr),
+// while unknown hashes bounce back silently. So the runner enforces
+// config teacherLed.encoreAppHash after auth and warns on CONTENT mismatch
+// (app header), not navigation failure.
+
+// Known app headers per hash, for the content-mismatch check.
+const ENCORE_APP_LABELS = {
+  '#/apps/encr': /encore elementary/i,
+  '#/apps/enms': /encore middle school/i,
+};
 
 // Best-effort close button near a text anchor (banner X, quick-tip x).
 async function closeNear(frame, textRe) {
@@ -1080,8 +1150,9 @@ async function enterEncore(tt, config, logger) {
     await sleep(750);
   }
 
-  // Land on the configured enCORE app (routing may use the account default).
-  const wantHash = config.teacherLed.encoreAppHash || '#/apps/enms';
+  // Land on the configured enCORE app (the OAuth return uses the account
+  // default; a direct hash goto reaches any entitled app).
+  const wantHash = config.teacherLed.encoreAppHash || '#/apps/encr';
   if (!tt.url().includes(wantHash)) {
     await tt.goto(state.ttNavBase + wantHash, { timeout: NAV_TIMEOUT }).catch(() => {});
   }
@@ -1091,7 +1162,15 @@ async function enterEncore(tt, config, logger) {
     .waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
   if (!tt.url().includes(wantHash)) {
     logger.event(
-      `WARN enCORE landed at "${tt.url().split('#')[1] || tt.url()}" instead of ${wantHash} — continuing (open item: Elementary vs Middle School routing)`
+      `WARN enCORE landed at "${tt.url().split('#')[1] || tt.url()}" instead of ${wantHash} — an unknown hash bounces back to the current app; check encoreAppHash`
+    );
+  }
+  // Unknown hashes bounce silently, so verify by content: the app header
+  // should match the configured app (e.g. "enCORE Elementary" for encr).
+  const appLabel = ENCORE_APP_LABELS[wantHash];
+  if (appLabel && !(await visibleSoon(encoreLocator(tt).getByText(appLabel).first(), 5_000))) {
+    logger.event(
+      `WARN enCORE header doesn't look like ${wantHash} (expected ${appLabel}) — landed at "${tt.url().split('#')[1] || tt.url()}"`
     );
   }
   await dismissOnboarding(tt, logger);
