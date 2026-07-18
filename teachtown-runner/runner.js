@@ -11,8 +11,13 @@
  * Setup:
  *   1) npm install            (Google Chrome must be installed — this drives channel "chrome")
  *   2) cp config.template.json config.json   → fill in your students
- *   3) npm start              full session
- *      npm start -- --dry-run login + parse roster/eligibility only, launch nothing
+ *   3) npm start                     full session
+ *      npm start -- --dry-run       login + parse roster/eligibility only, launch nothing
+ *      npm start -- --teacher-led   skip Social Skills, set up an enCORE Teacher-Led
+ *                                   session (stops at Begin Session unless
+ *                                   teacherLed.autoBegin is true — autoBegin
+ *                                   starts a REAL logged session)
+ *      npm start -- --student-led   not implemented yet (prints the recon notes)
  *
  * Privacy: config.json, logs/ and the browser profile are gitignored.
  * Student names exist only on this machine (console + local log file).
@@ -32,10 +37,13 @@ const LOGS_DIR = path.join(PROJECT_DIR, 'logs');
 // Generous timeout for navigation / UI waits. Activity waits are unbounded.
 const NAV_TIMEOUT = 60_000;
 
-// Verified frame chain (recon'd via devtools):
+// Verified frame chain for Social Skills (devtools recon):
 //   outer: legacy ASP.NET shell, inner: the AngularJS app. Same-origin.
 const OUTER_IFRAME = 'iframe[src*="SocialSkills/Client/AppHost/AppHost.aspx"]';
 const INNER_IFRAME = 'iframe[src*="AppHost/app"]';
+
+// enCORE (Teacher-Led sessions) uses a SINGLE same-origin iframe.
+const ENCORE_IFRAME = 'iframe[src*="WorkGroup/Client/AppHost/app"]';
 
 // Verified on the live app (devtools recon, 2026-07):
 const STUDENT_ROW = 'div.tt-list-item.sli_studentHolder'; // row text = the student's name
@@ -62,6 +70,7 @@ const CARET_SELECTORS = [
 const state = {
   context: null,
   ttPage: null,
+  ttNavBase: null, // TeachTown nav document URL (before the #hash) — for direct goto resets
   popup: null,
   logger: null,
   shuttingDown: false,
@@ -147,15 +156,33 @@ function loadConfig() {
     fail(`config.mode must be "activity" or "movie" (got "${cfg.mode}").`);
   }
   cfg.afterRotation = cfg.afterRotation || 'stop';
-  if (!['stop', 'repeat'].includes(cfg.afterRotation)) {
-    // TODO(afterRotation): future teacher-led / group session mode — see the
-    // recon notes at the rotation loop in main() before building.
+  if (!['stop', 'repeat', 'teacherLed'].includes(cfg.afterRotation)) {
     console.warn(
-      `afterRotation="${cfg.afterRotation}" is not implemented yet — treating it as "stop".`
+      `afterRotation="${cfg.afterRotation}" is not implemented — treating it as "stop".`
     );
     cfg.afterRotation = 'stop';
   }
   cfg.profileDir = cfg.profileDir || '~/.teachtown-runner/profile';
+
+  // Teacher-Led (enCORE) settings.
+  const tl = Object.assign(
+    { encoreAppHash: '#/apps/enms', group: '', students: [], sessionLengthMin: 15, autoBegin: false },
+    cfg.teacherLed || {}
+  );
+  if (!Array.isArray(tl.students)) tl.students = [];
+  tl.students = tl.students.filter((s) => typeof s === 'string' && s.trim()).map((s) => s.trim());
+  tl.group = typeof tl.group === 'string' ? tl.group.trim() : '';
+  if (typeof tl.sessionLengthMin !== 'number' || tl.sessionLengthMin <= 0) tl.sessionLengthMin = 15;
+  if (tl.group && tl.students.length) {
+    console.warn('teacherLed: both "group" and "students" are set — the group takes precedence.');
+  }
+  cfg.teacherLed = tl;
+
+  const teacherLedActive =
+    process.argv.includes('--teacher-led') || cfg.afterRotation === 'teacherLed';
+  if (teacherLedActive && !tl.group && tl.students.length === 0) {
+    fail('teacherLed needs either "group" or a non-empty "students" list in config.json.');
+  }
   return cfg;
 }
 
@@ -203,6 +230,21 @@ async function findFirstVisible(locators, timeoutMs) {
   return null;
 }
 
+// Buttons can be disabled via the attribute or a "disabled" class.
+async function waitForEnabled(locator, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      if (await locator.isEnabled()) {
+        const cls = (await locator.getAttribute('class')) || '';
+        if (!/\bdisabled\b/i.test(cls)) return true;
+      }
+    } catch {}
+    await sleep(400);
+  }
+  return false;
+}
+
 function waitForEnter(promptText) {
   return new Promise((resolve) => {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -243,6 +285,10 @@ function getInnerFrame(tt) {
       return u.includes('apphost/app') && !u.includes('.aspx');
     }) || null
   );
+}
+
+function encoreLocator(tt) {
+  return tt.frameLocator(ENCORE_IFRAME);
 }
 
 /* --------------------------- browser/login ------------------------- */
@@ -395,6 +441,7 @@ async function openTeachTown(context, portal, logger) {
   await tt.waitForLoadState('domcontentloaded', { timeout: NAV_TIMEOUT }).catch(() => {});
   await tt.waitForURL(/#\/home/, { timeout: NAV_TIMEOUT });
   await tt.bringToFront().catch(() => {});
+  state.ttNavBase = tt.url().split('#')[0]; // e.g. https://www.teachtown.com/nav/
   logger.event('TeachTown home loaded (#/home)');
   return tt;
 }
@@ -413,6 +460,48 @@ async function gotoSocialSkills(tt) {
     .getByText('View Students')
     .first()
     .waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+}
+
+// Per-student cycle reset. Verified live: a direct goto of #/apps/ssms lands
+// back on the teacher View Students screen with FRESH module state — and that
+// fresh state is also what makes "Login as.." reliable. Hash-only
+// navigations are same-document (no reload), so force a reload whenever the
+// document part of the URL doesn't change. Fallback: the original student
+// Log out → hub → Social Skills card chain. Never uses browser back.
+async function resetSocialSkills(tt, logger) {
+  const target = state.ttNavBase + '#/apps/ssms';
+  try {
+    const beforeDoc = tt.url().split('#')[0];
+    await tt.goto(target, { timeout: NAV_TIMEOUT });
+    if (beforeDoc === state.ttNavBase) {
+      await tt.reload({ timeout: NAV_TIMEOUT });
+    }
+    await innerLocator(tt)
+      .getByText('View Students')
+      .first()
+      .waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+    return;
+  } catch (err) {
+    logger.event(
+      `WARN direct #/apps/ssms reset failed (${err.message.split('\n')[0]}) — falling back to hub → Social Skills`
+    );
+  }
+  // Fallback chain: log out of any student view, then hub → card.
+  try {
+    const inner = innerLocator(tt);
+    // Only log out of a *student* view — never a facilitator-level Log out.
+    if (await inner.getByText('My Activities').first().isVisible().catch(() => false)) {
+      const logout = inner.getByText(/log ?out/i).first();
+      if (await logout.isVisible().catch(() => false)) {
+        await logout.click({ timeout: 5_000 }).catch(() => {});
+        await tt.waitForURL(/#\/home/, { timeout: 15_000 }).catch(() => {});
+      }
+    }
+  } catch {}
+  if (!/#\/home/.test(tt.url())) {
+    await tt.goto(state.ttNavBase + '#/home', { timeout: NAV_TIMEOUT }).catch(() => {});
+  }
+  await gotoSocialSkills(tt);
 }
 
 /* -------------------------- student flow --------------------------- */
@@ -457,8 +546,10 @@ async function verifyStudentHeader(tt, name) {
   }
 }
 
-// Dismiss the red "Login unsuccessful." toast (it has an x); if we can't
-// find its close button, wait for it to auto-hide so it can't block retries.
+// Dismiss the red "Login unsuccessful." toast. The x's exact selector is
+// unverified (the toast can't be reproduced on fresh state), so try common
+// close buttons and ALWAYS fall through to waiting for it to hide — a toast
+// left visible would spoof the next attempt's outcome race.
 async function dismissLoginToast(inner) {
   const candidates = [
     inner.locator('.toast-close-button'),
@@ -470,7 +561,7 @@ async function dismissLoginToast(inner) {
       const btn = c.first();
       if (await btn.isVisible()) {
         await btn.click({ timeout: 2_000 });
-        return;
+        break;
       }
     } catch {}
   }
@@ -481,24 +572,39 @@ async function dismissLoginToast(inner) {
     .catch(() => {});
 }
 
+// If a failed/misfired login left us inside a student view, retrying the
+// row → caret dance is pointless — reset to the teacher list first.
+async function recoverIfStranded(tt, logger) {
+  try {
+    if (await innerLocator(tt).getByText('My Activities').first().isVisible().catch(() => false)) {
+      logger.event('Stranded in a student view mid-retry — resetting to the teacher list');
+      await resetSocialSkills(tt, logger);
+    }
+  } catch {}
+}
+
 // Returns true on success, false if the student isn't in the list.
 // Throws after 3 failed attempts.
 //
 // Verified sequence (recon'd on the live app): select the row FIRST and wait
 // for its picker_selected class, then open the caret menu, then click
-// "Login as..". Clicking "Login as.." on an unselected row fails with a red
-// "Login unsuccessful." toast and stays in teacher view.
+// "Login as..". Clicking "Login as.." on an unselected row can fail with a
+// red "Login unsuccessful." toast (kept: the row-select is free and the
+// toast is real).
 //
-// NOTE: every step here must stay a real (trusted) Playwright click.
-// Synthetic clicks via page.evaluate() are rejected by this app — reproduced
-// twice on the live site: they produce the "Login unsuccessful." toast.
-// Never convert this sequence to evaluate().
+// Practice note: keep these as real Playwright clicks. An earlier live test
+// blamed "Login unsuccessful" on synthetic (untrusted) clicks; a re-test
+// overturned that — the failures correlate with stale module state after
+// heavy in-app navigation, which the fresh-load reset in resetSocialSkills
+// addresses. Trusted clicks remain the safe default regardless.
 async function loginAsStudent(tt, name, logger) {
   const inner = innerLocator(tt);
   await inner.getByText('View Students').first().waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
 
-  if ((await inner.locator(STUDENT_ROW).count()) === 0) {
-    // DOM drifted from the recon — fall back to the text-based heuristics.
+  // The roster rows render after the view chrome — give them time before
+  // concluding the verified selector has drifted (instant count() here would
+  // misroute healthy-but-slow loads to the legacy fallback).
+  if (!(await visibleSoon(inner.locator(STUDENT_ROW).first(), 10_000))) {
     logger.event(`WARN student rows (${STUDENT_ROW}) not found — using text-based fallback`);
     return loginAsStudentLegacy(tt, name, logger);
   }
@@ -517,6 +623,12 @@ async function loginAsStudent(tt, name, logger) {
   let lastErr = null;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
+      // Clear any stale toast first — a leftover would win this attempt's
+      // outcome race and spoof a failure.
+      if (await inner.getByText(/login unsuccessful/i).first().isVisible().catch(() => false)) {
+        await dismissLoginToast(inner);
+      }
+
       // 1. Select the row; wait for the app to mark it picker_selected
       //    (state wait, not a fixed sleep — the menu is timing-sensitive).
       const selectedRow = inner
@@ -562,6 +674,7 @@ async function loginAsStudent(tt, name, logger) {
         logger.event(`WARN ${name} — login-as attempt ${attempt} failed, retrying (${err.message.split('\n')[0]})`);
       }
       await tt.keyboard.press('Escape').catch(() => {});
+      await recoverIfStranded(tt, logger); // e.g. wrong-student login — retry needs the teacher list
       await sleep(700);
     }
   }
@@ -569,7 +682,9 @@ async function loginAsStudent(tt, name, logger) {
 }
 
 // Pre-recon fallback: text-based row/caret discovery. Only used if
-// STUDENT_ROW stops matching after a TeachTown update.
+// STUDENT_ROW stops matching after a TeachTown update. Mirrors the verified
+// sequence as closely as the unknown DOM allows: click the name (row) first,
+// then the caret, then the menu item — and watch for the failure toast.
 async function loginAsStudentLegacy(tt, name, logger) {
   const inner = innerLocator(tt);
 
@@ -582,20 +697,38 @@ async function loginAsStudentLegacy(tt, name, logger) {
   let lastErr = null;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
+      if (await inner.getByText(/login unsuccessful/i).first().isVisible().catch(() => false)) {
+        await dismissLoginToast(inner);
+      }
+
       // A previous attempt may have left the menu open — use it directly.
       const already = menuItem(inner, /log ?in as/i);
       if (await already.isVisible().catch(() => false)) {
         await already.click({ timeout: 3_000 });
       } else {
         await nameEl.scrollIntoViewIfNeeded().catch(() => {});
+        // Select the row first (click the name), matching the verified flow.
+        await nameEl.click({ timeout: 5_000 }).catch(() => {});
+        await sleep(500);
         const caret = await findCaretNear(nameEl, name);
         await caret.click({ timeout: 5_000 });
         // Click the menu item immediately — these jQuery menus close easily.
         await menuItem(inner, /log ?in as/i).click({ timeout: 4_000 });
       }
-      // The view swap is normally instant; give the last attempt extra room.
       const swapTimeout = attempt === 3 ? NAV_TIMEOUT : 15_000;
-      await inner.getByText('My Activities').first().waitFor({ state: 'visible', timeout: swapTimeout });
+      const outcome = await Promise.race([
+        inner.getByText('My Activities').first()
+          .waitFor({ state: 'visible', timeout: swapTimeout })
+          .then(() => 'ok', () => 'timeout'),
+        inner.getByText(/login unsuccessful/i).first()
+          .waitFor({ state: 'visible', timeout: swapTimeout })
+          .then(() => 'toast', () => 'timeout'),
+      ]);
+      if (outcome === 'toast') {
+        await dismissLoginToast(inner);
+        throw new Error('app rejected "Login as.." (Login unsuccessful toast)');
+      }
+      if (outcome === 'timeout') throw new Error('student view ("My Activities") did not appear');
       await verifyStudentHeader(tt, name);
       return true;
     } catch (err) {
@@ -604,6 +737,7 @@ async function loginAsStudentLegacy(tt, name, logger) {
         logger.event(`WARN ${name} — login-as attempt ${attempt} failed, retrying (${err.message.split('\n')[0]})`);
       }
       await tt.keyboard.press('Escape').catch(() => {});
+      await recoverIfStranded(tt, logger);
       await sleep(700);
     }
   }
@@ -753,47 +887,6 @@ async function waitForCompletion(popup, tt, activity, logger) {
   return how;
 }
 
-async function logoutStudent(tt) {
-  const inner = innerLocator(tt);
-  const btn = inner
-    .getByRole('button', { name: /log ?out/i })
-    .or(inner.getByRole('link', { name: /log ?out/i }))
-    .or(inner.getByText(/log ?out/i))
-    .first();
-  try {
-    await btn.click({ timeout: 15_000 });
-  } catch {
-    /* the frame can detach mid-click as the app navigates — URL check below decides */
-  }
-  await tt.waitForURL(/#\/home/, { timeout: NAV_TIMEOUT });
-}
-
-// Step-8 reset (verified to fully reset state): student Log out (if we're in
-// a student view) → hub #/home → Social Skills → fresh View Students.
-// Never uses browser back.
-async function recoverToTeacherList(tt) {
-  try {
-    const inner = innerLocator(tt);
-    // Only log out of a *student* view — never click a facilitator-level
-    // "Log out" (that would end the teacher's TeachTown session).
-    if (await inner.getByText('My Activities').first().isVisible().catch(() => false)) {
-      const logout = inner.getByText(/log ?out/i).first();
-      if (await logout.isVisible().catch(() => false)) {
-        await logout.click({ timeout: 5_000 }).catch(() => {});
-      }
-    }
-  } catch {}
-  try {
-    await tt.waitForURL(/#\/home/, { timeout: 10_000 });
-  } catch {
-    const u = new URL(tt.url());
-    u.hash = '#/home';
-    await tt.goto(u.toString(), { timeout: NAV_TIMEOUT }).catch(() => {});
-    await tt.waitForURL(/#\/home/, { timeout: NAV_TIMEOUT });
-  }
-  await gotoSocialSkills(tt);
-}
-
 /* ---------------------------- main loop ---------------------------- */
 
 async function runStudent(tt, name, config, dryRun, logger) {
@@ -840,8 +933,8 @@ async function runStudent(tt, name, config, dryRun, logger) {
         result.launched = true;
       }
 
-      await logoutStudent(tt);
-      await gotoSocialSkills(tt); // fresh teacher list for the next student
+      // Verified rotation reset: direct #/apps/ssms load → fresh teacher list.
+      await resetSocialSkills(tt, logger);
       logger.event('NEXT');
       return result;
     } catch (err) {
@@ -850,21 +943,315 @@ async function runStudent(tt, name, config, dryRun, logger) {
       await screenshot(tt, `student-attempt${attempt}`);
       result.reason = err.message.split('\n')[0];
       if (attempt < 2) {
-        logger.event('Recovering: resetting to student list (hub → Social Skills)');
+        logger.event('Recovering: resetting to the student list');
         try {
-          await recoverToTeacherList(tt);
+          await resetSocialSkills(tt, logger);
         } catch (recErr) {
           logger.event(`Recovery failed: ${recErr.message.split('\n')[0]}`);
           throw err; // can't get back to a known state — bail out to main
         }
       } else {
         logger.event(`ERROR ${name} — giving up after retries; moving to next student`);
-        await recoverToTeacherList(tt).catch(() => {});
+        await resetSocialSkills(tt, logger).catch(() => {});
       }
     }
   }
   return result;
 }
+
+/* ---------------------- enCORE (Teacher-Led) ----------------------- */
+//
+// Verified flow (live-clicked 2026-07-17): hub → enCORE card → Login.aspx
+// ("Login with Clever") → Clever OAuth (district button) → role picker
+// ("Log in as a teacher") → enCORE home (#/apps/enms) → Start a Session →
+// Teacher-Led "Get started" → student/group setup → Begin Session.
+// The OAuth return lands on the ACCOUNT-DEFAULT app regardless of which
+// enCORE card was clicked — config teacherLed.encoreAppHash is enforced
+// afterwards and a mismatch is warned (open item).
+
+// Best-effort close button near a text anchor (banner X, quick-tip x).
+async function closeNear(frame, textRe) {
+  try {
+    const anchor = frame.getByText(textRe).first();
+    if (!(await anchor.isVisible().catch(() => false))) return;
+    let scope = anchor;
+    for (let up = 0; up <= 4; up++) {
+      for (const cand of [
+        scope.locator('[class*="close"]').first(),
+        scope.locator('[aria-label*="close" i]').first(),
+        scope.getByText(/^[x×✕]$/i).first(),
+      ]) {
+        if (await cand.isVisible().catch(() => false)) {
+          await cand.click({ timeout: 2_000 }).catch(() => {});
+          return;
+        }
+      }
+      scope = scope.locator('xpath=..');
+    }
+  } catch {}
+}
+
+// enCORE greets you with onboarding chrome. Clear it in the recon'd order:
+// "Customize Your Curriculum" modal → Not now; gold banner → its X;
+// "Quick tip" card → its x. Best-effort; run after every enCORE navigation.
+async function dismissOnboarding(tt, logger) {
+  const frame = encoreLocator(tt);
+  for (let pass = 0; pass < 2; pass++) {
+    try {
+      if (await frame.getByText(/customize your curriculum/i).first().isVisible()) {
+        const notNow = frame
+          .getByRole('button', { name: /not now/i })
+          .or(frame.getByText(/not now/i))
+          .first();
+        if (await notNow.isVisible().catch(() => false)) {
+          await notNow.click({ timeout: 3_000 }).catch(() => {});
+          await sleep(400);
+        }
+      }
+    } catch {}
+    await closeNear(frame, /customize your curriculum experience/i);
+    await closeNear(frame, /quick tip/i);
+  }
+}
+
+// From the hub, enter enCORE and ride its auth chain. Every hop is
+// click-if-present / skip-if-absent — a cookied session skips them all.
+// Never touches the Login.aspx username/password fields.
+async function enterEncore(tt, config, logger) {
+  await tt.goto(state.ttNavBase + '#/home', { timeout: NAV_TIMEOUT });
+  const card = tt.getByText(/enCORE/i).first(); // OAuth return uses the account default app regardless of card
+  await card.waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+  await card.click();
+
+  const deadline = Date.now() + NAV_TIMEOUT * 2;
+  let lastManualPrompt = 0;
+  while (Date.now() < deadline) {
+    if (state.shuttingDown) throw new Error('interrupted');
+
+    // Success: the enCORE app frame is up (its top nav always shows Start a Session).
+    if (await encoreLocator(tt).getByText(/start a session/i).first().isVisible().catch(() => false)) {
+      break;
+    }
+
+    // teachtown.com/Login.aspx → "Login with Clever" (never the credential form).
+    if (/login\.aspx/i.test(tt.url())) {
+      const btn = tt
+        .getByRole('button', { name: /login with clever/i })
+        .or(tt.getByRole('link', { name: /login with clever/i }))
+        .or(tt.getByText(/login with clever/i))
+        .first();
+      if (await btn.isVisible().catch(() => false)) {
+        await btn.click().catch(() => {});
+        await sleep(1200);
+        continue;
+      }
+    }
+
+    // Clever OAuth page → district sign-in button (guard out the TeachTown
+    // nav app and Login.aspx so this can't press an unrelated "Sign In").
+    if (!/\/nav\/|login\.aspx/i.test(tt.url())) {
+      const sso = tt
+        .getByRole('button', { name: /sign ?in|log ?in with/i })
+        .or(tt.getByRole('link', { name: /sign ?in|log ?in with/i }))
+        .first();
+      if (await sso.isVisible().catch(() => false)) {
+        await sso.click().catch(() => {});
+        await sleep(1200);
+        continue;
+      }
+    }
+
+    // Role picker ("Select user") → teacher.
+    const teacherRole = tt.getByText(/log ?in as a teacher/i).first();
+    if (await teacherRole.isVisible().catch(() => false)) {
+      await teacherRole.click().catch(() => {});
+      await sleep(1200);
+      continue;
+    }
+
+    // Fresh profile: Microsoft may want a human (same stance as the portal).
+    if ((await microsoftWantsInput(tt)) && Date.now() - lastManualPrompt > 20_000) {
+      lastManualPrompt = Date.now();
+      logger.event('Microsoft sign-in needs input — waiting for manual login.');
+      await waitForEnter('>>> Log in manually in the browser window, then press Enter here to continue... ');
+      continue;
+    }
+
+    await sleep(750);
+  }
+
+  // Land on the configured enCORE app (routing may use the account default).
+  const wantHash = config.teacherLed.encoreAppHash || '#/apps/enms';
+  if (!tt.url().includes(wantHash)) {
+    await tt.goto(state.ttNavBase + wantHash, { timeout: NAV_TIMEOUT }).catch(() => {});
+  }
+  await encoreLocator(tt)
+    .getByText(/start a session/i)
+    .first()
+    .waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+  if (!tt.url().includes(wantHash)) {
+    logger.event(
+      `WARN enCORE landed at "${tt.url().split('#')[1] || tt.url()}" instead of ${wantHash} — continuing (open item: Elementary vs Middle School routing)`
+    );
+  }
+  await dismissOnboarding(tt, logger);
+}
+
+// Slider mechanics are an open item. Native range inputs are handled
+// (track-click + arrow-key nudge to the exact value); custom [role=slider]
+// widgets get a best-effort drag. Failure never blocks the session.
+async function setSessionLength(tt, target, logger) {
+  try {
+    const frame = encoreLocator(tt);
+    const range = frame.locator('input[type="range"]').first();
+    if (await range.isVisible().catch(() => false)) {
+      const meta = await range.evaluate((el) => ({
+        min: +el.min || 0,
+        max: +el.max || 100,
+        value: +el.value,
+      }));
+      if (meta.value !== target) {
+        const box = await range.boundingBox();
+        if (box) {
+          const frac = Math.min(1, Math.max(0, (target - meta.min) / (meta.max - meta.min)));
+          await tt.mouse.click(box.x + frac * box.width, box.y + box.height / 2);
+        }
+        for (let i = 0; i < 30; i++) {
+          const v = await range.evaluate((el) => +el.value);
+          if (v === target) break;
+          await range.press(v < target ? 'ArrowRight' : 'ArrowLeft');
+        }
+      }
+      const finalV = await range.evaluate((el) => +el.value);
+      logger.event(`Session length: ${finalV} min${finalV === target ? '' : ` (wanted ${target})`}`);
+      return;
+    }
+    const slider = frame.locator('[role="slider"]').first();
+    if (await slider.isVisible().catch(() => false)) {
+      const vmin = +((await slider.getAttribute('aria-valuemin')) || 0);
+      const vmax = +((await slider.getAttribute('aria-valuemax')) || 60);
+      const track = slider.locator('xpath=..');
+      const box = (await track.boundingBox()) || (await slider.boundingBox());
+      const thumb = await slider.boundingBox();
+      if (box && thumb) {
+        const frac = Math.min(1, Math.max(0, (target - vmin) / (vmax - vmin)));
+        await tt.mouse.move(thumb.x + thumb.width / 2, thumb.y + thumb.height / 2);
+        await tt.mouse.down();
+        await tt.mouse.move(box.x + frac * box.width, thumb.y + thumb.height / 2, { steps: 10 });
+        await tt.mouse.up();
+        const nowV = await slider.getAttribute('aria-valuenow');
+        logger.event(`Session length: ${nowV ?? '?'} min (custom slider, best effort)`);
+        return;
+      }
+    }
+    logger.event('WARN no session-length slider found — leaving the default');
+  } catch (err) {
+    logger.event(`WARN could not set session length (${err.message.split('\n')[0]}) — leaving the default`);
+  }
+}
+
+// Start a Session → Teacher-Led → add group/students → set length → stop at
+// Begin Session (autoBegin clicks it — that creates a REAL logged session).
+async function teacherLedSetup(tt, tl, dryRun, logger) {
+  const frame = encoreLocator(tt);
+
+  await frame
+    .getByRole('button', { name: /start a session/i })
+    .or(frame.getByText(/start a session/i))
+    .first()
+    .click({ timeout: NAV_TIMEOUT });
+  await frame.getByText(/select a format/i).first().waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+  await dismissOnboarding(tt, logger);
+
+  // "Get started" under the Teacher-Led card specifically.
+  const tlCard = frame
+    .locator('div, section, article')
+    .filter({ hasText: /teacher-led/i })
+    .filter({ has: frame.getByRole('button', { name: /get started/i }) })
+    .last();
+  try {
+    await tlCard.getByRole('button', { name: /get started/i }).first().click({ timeout: 10_000 });
+  } catch {
+    logger.event('WARN could not scope "Get started" to the Teacher-Led card — clicking the first one');
+    await frame.getByRole('button', { name: /get started/i }).first().click({ timeout: 10_000 });
+  }
+  await frame
+    .getByText(/select one or more students/i)
+    .first()
+    .waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+  await dismissOnboarding(tt, logger);
+
+  // Group takes precedence (validated at config load).
+  if (tl.group) {
+    await frame.getByText(/my groups/i).first().click({ timeout: 10_000 });
+    await frame.getByText(tl.group).first().click({ timeout: 10_000 });
+    logger.event(`Added group "${tl.group}"`);
+  } else {
+    const tab = frame.getByText(/my students/i).first();
+    if (await tab.isVisible().catch(() => false)) await tab.click({ timeout: 5_000 }).catch(() => {});
+    for (const name of tl.students) {
+      try {
+        await frame.getByText(name).first().click({ timeout: 10_000 });
+        logger.event(`Added ${name}`);
+      } catch (err) {
+        logger.event(`WARN could not add ${name} — ${err.message.split('\n')[0]}`);
+      }
+    }
+  }
+
+  if (tl.sessionLengthMin && tl.sessionLengthMin !== 15) {
+    await setSessionLength(tt, tl.sessionLengthMin, logger);
+  }
+
+  const begin = frame
+    .getByRole('button', { name: /begin session/i })
+    .or(frame.getByText(/begin session/i))
+    .first();
+  await begin.waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+  if (!(await waitForEnabled(begin, 15_000))) {
+    logger.event('WARN Begin Session still looks disabled — check the student list on screen');
+  }
+
+  if (tl.autoBegin && !dryRun) {
+    await begin.click({ timeout: 10_000 });
+    logger.event('BEGIN SESSION clicked — teacher-led session is live (this is a real logged session)');
+  } else {
+    logger.event('READY — press Begin Session on screen');
+  }
+  logger.event('Idling — the session is in your hands (Ctrl+C here or close the browser when done)');
+  await new Promise(() => {}); // hold the screen; Ctrl+C / window close end the run
+}
+
+async function runTeacherLed(tt, config, dryRun, logger) {
+  logger.event('TEACHER-LED — entering enCORE');
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      await enterEncore(tt, config, logger);
+      await teacherLedSetup(tt, config.teacherLed, dryRun, logger);
+      return; // unreachable (setup idles) — kept for shape
+    } catch (err) {
+      if (state.shuttingDown) return;
+      logger.event(`WARN teacher-led — ${err.message.split('\n')[0]}`);
+      await screenshot(tt, `teacherled-attempt${attempt}`);
+      if (attempt >= 2) throw err;
+      // Recovery reset: hub → re-enter enCORE (cookied SSO skips the hops).
+      // enterEncore starts from the hub, so looping is the reset. Never back.
+      logger.event('Recovering: hub → re-enter enCORE');
+    }
+  }
+}
+
+// TODO(--student-led): recon'd 2026-07-17, unbuilt. Start a Session →
+// Student-Led "Get started" → 3-step wizard: 1) Select Student (single,
+// Next) → 2) Select Session Mode — lesson-source radios: IEP Goals /
+// Facilitator-Selected Lessons / Recommended Lessons (default) / Benchmark
+// Assessments; right panel: subject checkboxes (ELA, Math, Science, Social
+// Studies) + lesson checklist → 3) Prepare Session (NOT entered — assumed
+// confirm-and-launch; codegen it first). Config stub "studentLed" ships in
+// config.template.json. Same never-past-the-launch-button rule as
+// Teacher-Led: stop at step 3 unless studentLed.autoBegin.
+
+/* ------------------------------ misc -------------------------------- */
 
 function printDryRunTable(results, logger) {
   logger.consoleOnly('\nDRY RUN — parsed roster & eligibility (console only, not written to the log file):');
@@ -914,6 +1301,22 @@ async function shutdown(code) {
 
 (async function main() {
   const dryRun = process.argv.includes('--dry-run');
+  const teacherLedOnly = process.argv.includes('--teacher-led');
+
+  if (process.argv.includes('--student-led')) {
+    console.error(
+      '--student-led is not implemented yet.\n' +
+        'Recon (2026-07-17): Start a Session → Student-Led "Get started" → wizard:\n' +
+        '  1) Select Student (single-select, Next)\n' +
+        '  2) Select Session Mode — lesson source: IEP Goals / Facilitator-Selected /\n' +
+        '     Recommended (default) / Benchmark Assessments; subjects: ELA, Math,\n' +
+        '     Science, Social Studies; lesson checklist\n' +
+        '  3) Prepare Session (unverified — codegen before building)\n' +
+        'The "studentLed" config stub is already in config.template.json.'
+    );
+    process.exit(1);
+  }
+
   const config = loadConfig();
 
   fs.mkdirSync(LOGS_DIR, { recursive: true });
@@ -924,9 +1327,12 @@ async function shutdown(code) {
   process.on('SIGTERM', () => shutdown(143));
 
   logger.event(
-    `SESSION START${dryRun ? ' (dry run)' : ''} — ${config.students.length} student(s), ` +
-      `mode=${config.mode}, target=${config.targetActivity || '(first activity not at 100%)'}, ` +
-      `afterRotation=${config.afterRotation}`
+    `SESSION START${dryRun ? ' (dry run)' : ''}${teacherLedOnly ? ' (teacher-led only)' : ''} — ` +
+      (teacherLedOnly
+        ? `enCORE ${config.teacherLed.group ? `group "${config.teacherLed.group}"` : `${config.teacherLed.students.length} student(s)`}, ` +
+          `length=${config.teacherLed.sessionLengthMin}min, autoBegin=${config.teacherLed.autoBegin}`
+        : `${config.students.length} student(s), mode=${config.mode}, ` +
+          `target=${config.targetActivity || '(first activity not at 100%)'}, afterRotation=${config.afterRotation}`)
   );
 
   const profileDir = resolveProfileDir(config.profileDir);
@@ -947,6 +1353,12 @@ async function shutdown(code) {
 
     const tt = await openTeachTown(context, portal, logger);
     state.ttPage = tt;
+
+    if (teacherLedOnly) {
+      await runTeacherLed(tt, config, dryRun, logger); // idles until Ctrl+C / window close
+      return;
+    }
+
     await gotoSocialSkills(tt);
 
     const results = [];
@@ -967,17 +1379,18 @@ async function shutdown(code) {
       }
       logger.event(`ROTATION ${pass} COMPLETE — repeating group`);
     } while (!state.shuttingDown);
-    // TODO(afterRotation): a future value will kick off a teacher-led/group
-    // session here instead of stopping. Recon (2026-07): lives in the teacher
-    // view under the Assessments tab (top nav) or "Start an Assessment" →
-    // "View Assessments" screen → pick Behavioral Domain (Following Rules /
-    // Interpersonal Skills / Self-Regulation & Coping / Good Communication /
-    // Friendship; Elementary–Middle School toggle) → pick Targeted Behavior →
-    // right panel lists students with progress bars and per-student
-    // Begin/Resume buttons + All/In-Progress filters. Same inner-frame DOM
-    // patterns as the rest of the app. Codegen exact selectors when building.
 
     if (state.shuttingDown) return; // Ctrl+C owns the exit from here
+
+    if (config.afterRotation === 'teacherLed') {
+      if (dryRun) {
+        logger.event('Dry run — skipping the teacher-led handoff.');
+      } else {
+        await runTeacherLed(tt, config, dryRun, logger); // idles until Ctrl+C / window close
+        return;
+      }
+    }
+
     if (dryRun) printDryRunTable(results, logger);
     logger.event('SESSION COMPLETE');
   } catch (err) {
