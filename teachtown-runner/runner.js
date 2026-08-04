@@ -410,22 +410,54 @@ function ssoCandidatesRe(config) {
   return c.length ? new RegExp(c.map(escapeRe).join('|'), 'i') : null;
 }
 
+function hostnameOf(u) {
+  try {
+    return new URL(u).hostname;
+  } catch {
+    return '';
+  }
+}
+
+// The runner's own app (the TeachTown nav shell) can boot slowly with no URL
+// change — never "unrecognized", the outer deadline governs it instead.
+function onOwnApp(page) {
+  return !!(state.ttNavBase && page.url().startsWith(state.ttNavBase));
+}
+
 // Tracks auth-chain progress: screenshots each new page (hop) in recon mode
-// BEFORE anything is clicked on it, and measures how long we've been stuck
-// with nothing recognizable to click.
+// BEFORE anything is clicked on it, and measures how long we've been stuck.
+// "Stuck" means no navigation AND no rendering progress — a cheap DOM
+// fingerprint (text length + interactive element count) resets the clock, so
+// a slow-but-loading page (SPA hydration, cold cache on school wifi) is not
+// mistaken for an unrecognized one.
 function makeHopTracker(page, chain) {
   let lastUrl = null;
+  let lastFp = null;
   let lastProgress = Date.now();
   let hopN = 0;
   return {
     async tick() {
+      let fp = lastFp;
+      try {
+        fp = await page.evaluate(() =>
+          document.body
+            ? document.body.innerText.length + ':' + document.querySelectorAll('button,a,input,iframe').length
+            : '0'
+        );
+      } catch {
+        /* mid-navigation — keep the previous fingerprint */
+      }
       if (page.url() !== lastUrl) {
         lastUrl = page.url();
+        lastFp = fp;
         lastProgress = Date.now();
         if (state.reconMode) {
           hopN += 1;
           await reconShot(page, `${chain}-hop${hopN}`);
         }
+      } else if (fp !== lastFp) {
+        lastFp = fp;
+        lastProgress = Date.now();
       }
     },
     progress() {
@@ -603,7 +635,9 @@ async function ensureCleverPortal(page, config, logger) {
           .first();
         if (await cand.isVisible().catch(() => false)) btn = cand;
       }
-      if (!btn && /clever/i.test(page.url())) {
+      // Hostname, not full URL: an unknown IdP carrying redirect_uri=...clever.com
+      // in its query string must NOT pass as a clever page.
+      if (!btn && /clever/i.test(hostnameOf(page.url()))) {
         const gen = page
           .getByRole('button', { name: /sign ?in|log ?in with/i })
           .or(page.getByRole('link', { name: /sign ?in|log ?in with/i }))
@@ -622,7 +656,9 @@ async function ensureCleverPortal(page, config, logger) {
       }
     }
 
-    if (state.reconMode && tracker.stalledFor() > 20_000) {
+    // Mode-independent: an unrecognized page deserves a stop-and-report even
+    // in steady state (e.g. the district changes IdP mid-year).
+    if (!onOwnApp(page) && tracker.stalledFor() > 20_000) {
       await unknownAuthStop(page, 'Clever portal chain');
     }
     await sleep(750);
@@ -1301,6 +1337,7 @@ async function enterEncore(tt, config, logger) {
   const ssoRe = ssoCandidatesRe(config);
   const deadline = Date.now() + NAV_TIMEOUT * 2;
   let lastManualPrompt = 0;
+  let ssoClicks = 0; // shared cap across Login-with-Clever + district/generic buttons
   while (Date.now() < deadline) {
     if (state.shuttingDown) throw new Error('interrupted');
     await tracker.tick();
@@ -1311,7 +1348,7 @@ async function enterEncore(tt, config, logger) {
     }
 
     // teachtown.com/Login.aspx → "Login with Clever" (never the credential form).
-    if (/login\.aspx/i.test(tt.url())) {
+    if (ssoClicks < 3 && /login\.aspx/i.test(tt.url())) {
       const btn = tt
         .getByRole('button', { name: /login with clever/i })
         .or(tt.getByRole('link', { name: /login with clever/i }))
@@ -1319,6 +1356,7 @@ async function enterEncore(tt, config, logger) {
         .first();
       if (await btn.isVisible().catch(() => false)) {
         if (state.reconMode) await reconShot(tt, 'encore-before-clever-click');
+        ssoClicks += 1;
         await btn.click().catch(() => {});
         logger.event('SSO hop: clicked "Login with Clever"');
         tracker.progress();
@@ -1327,31 +1365,15 @@ async function enterEncore(tt, config, logger) {
       }
     }
 
-    // OAuth provider page → district sign-in button: profile candidates
-    // first, then generic (guard out the TeachTown nav app and Login.aspx so
-    // this can't press an unrelated "Sign In").
-    if (!/\/nav\/|login\.aspx/i.test(tt.url())) {
-      let btn = null;
-      if (ssoRe) {
-        const cand = tt.getByRole('button', { name: ssoRe }).or(tt.getByRole('link', { name: ssoRe })).first();
-        if (await cand.isVisible().catch(() => false)) btn = cand;
-      }
-      if (!btn) {
-        const gen = tt
-          .getByRole('button', { name: /sign ?in|log ?in with/i })
-          .or(tt.getByRole('link', { name: /sign ?in|log ?in with/i }))
-          .first();
-        if (await gen.isVisible().catch(() => false)) btn = gen;
-      }
-      if (btn) {
-        const label = ((await btn.textContent().catch(() => '')) || 'sign-in button').trim();
-        if (state.reconMode) await reconShot(tt, 'encore-before-sso-click');
-        await btn.click().catch(() => {});
-        logger.event(`SSO hop: clicked "${label}"`);
-        tracker.progress();
-        await sleep(1200);
-        continue;
-      }
+    // Microsoft wants a human (credential form / account picker) — checked
+    // BEFORE any generic button matching so a credential form's "Sign in"
+    // submit can never be clicked by the matcher below.
+    if ((await microsoftWantsInput(tt)) && Date.now() - lastManualPrompt > 20_000) {
+      lastManualPrompt = Date.now();
+      logger.event('Microsoft sign-in needs input — waiting for manual login.');
+      await waitForEnter('>>> Log in manually in the browser window, then press Enter here to continue... ');
+      tracker.progress();
+      continue;
     }
 
     // Role picker ("Select user") → teacher.
@@ -1365,16 +1387,40 @@ async function enterEncore(tt, config, logger) {
       continue;
     }
 
-    // Fresh profile: Microsoft may want a human (same stance as the portal).
-    if ((await microsoftWantsInput(tt)) && Date.now() - lastManualPrompt > 20_000) {
-      lastManualPrompt = Date.now();
-      logger.event('Microsoft sign-in needs input — waiting for manual login.');
-      await waitForEnter('>>> Log in manually in the browser window, then press Enter here to continue... ');
-      tracker.progress();
-      continue;
+    // OAuth provider page → district sign-in button: profile candidates
+    // first, then generic. Capped and gated like the portal chain — the
+    // generic matcher fires only on real clever hostnames, so an unknown
+    // provider's buttons are never blind-clicked (that would also keep
+    // resetting the stall clock and make the unrecognized-page stop
+    // unreachable on exactly the pages it exists for).
+    if (ssoClicks < 3 && !/\/nav\/|login\.aspx/i.test(tt.url())) {
+      let btn = null;
+      if (ssoRe) {
+        const cand = tt.getByRole('button', { name: ssoRe }).or(tt.getByRole('link', { name: ssoRe })).first();
+        if (await cand.isVisible().catch(() => false)) btn = cand;
+      }
+      if (!btn && /clever/i.test(hostnameOf(tt.url()))) {
+        const gen = tt
+          .getByRole('button', { name: /sign ?in|log ?in with/i })
+          .or(tt.getByRole('link', { name: /sign ?in|log ?in with/i }))
+          .first();
+        if (await gen.isVisible().catch(() => false)) btn = gen;
+      }
+      if (btn) {
+        const label = ((await btn.textContent().catch(() => '')) || 'sign-in button').trim();
+        if (state.reconMode) await reconShot(tt, 'encore-before-sso-click');
+        ssoClicks += 1;
+        await btn.click().catch(() => {});
+        logger.event(`SSO hop: clicked "${label}"`);
+        tracker.progress();
+        await sleep(1200);
+        continue;
+      }
     }
 
-    if (state.reconMode && tracker.stalledFor() > 20_000) {
+    // Mode-independent stop on a page with nothing recognizable (the runner's
+    // own slow-booting app is exempt — the outer deadline governs it).
+    if (!onOwnApp(tt) && tracker.stalledFor() > 20_000) {
       await unknownAuthStop(tt, 'enCORE auth chain');
     }
     await sleep(750);
@@ -1552,6 +1598,7 @@ async function runTeacherLed(tt, config, dryRun, logger) {
       return; // unreachable (setup idles) — kept for shape
     } catch (err) {
       if (state.shuttingDown) return;
+      if (err instanceof ReconStopError) throw err; // retrying an unrecognized-page stop just repeats it
       logger.event(`WARN teacher-led — ${err.message.split('\n')[0]}`);
       await screenshot(tt, `teacherled-attempt${attempt}`);
       if (attempt >= 2) throw err;
@@ -1606,7 +1653,10 @@ async function collectEncoreStudents(tt) {
 function diffRoster(found, roster) {
   const usedIdx = new Set();
   const nfound = found.map(norm);
-  const tok = (s) => new Set(norm(s).split(' ').filter((w) => w.length >= 3));
+  // Split on non-alphanumerics so a "Last, First" display tokens cleanly
+  // (e.g. "Doe, Jane" → {doe, jane}) — a comma glued to a word must not
+  // defeat the match.
+  const tok = (s) => new Set(norm(s).split(/[^a-z0-9]+/).filter((w) => w.length >= 3));
   const rows = roster.map((r) => ({ entry: r, matchedTo: null, tier: null }));
 
   for (const row of rows) {
@@ -1738,6 +1788,7 @@ async function reconRoster(tt, config, logger) {
     // Back out without touching Begin Session.
     await tt.goto(state.ttNavBase + '#/home', { timeout: NAV_TIMEOUT }).catch(() => {});
   } catch (err) {
+    if (err instanceof ReconStopError) throw err; // exit-2 stop must surface, never a one-line footnote
     const msg = `enCORE student list unavailable: ${err.message.split('\n')[0]}`;
     logger.event(`RECON ${msg}`);
     report.push(msg);
@@ -1967,6 +2018,15 @@ async function shutdown(code) {
 
   const profileDir = resolveProfileDir(config.profileDir);
   fs.mkdirSync(profileDir, { recursive: true });
+  if (
+    profileDir.startsWith(PROJECT_DIR + path.sep) &&
+    !/[\\/](\.profiles|profile|\.teachtown-runner)([\\/]|$)/.test(profileDir)
+  ) {
+    logger.event(
+      `WARN profileDir "${profileDir}" is inside the project but not a gitignored path — ` +
+        'browser cookies/session data could get committed. Use .profiles/<name> or move it outside the repo.'
+    );
+  }
 
   // Recon mode = any recon flag, or the first run on this browser profile
   // (fresh district → the SSO chain is unverified; screenshot every hop and
@@ -1990,8 +2050,10 @@ async function shutdown(code) {
     const portal = context.pages()[0] || (await context.newPage());
     await ensureCleverPortal(portal, config, logger);
     try {
-      fs.writeFileSync(firstRunMarker, ts() + '\n'); // SSO chain verified for this profile
-    } catch {}
+      fs.writeFileSync(firstRunMarker, ts() + '\n'); // Clever portal chain verified for this profile
+    } catch (err) {
+      logger.event(`WARN could not write the first-run marker (${err.message}) — recon mode will stay on every run until it can be written`);
+    }
 
     const tt = await openTeachTown(context, portal, logger);
     state.ttPage = tt;
