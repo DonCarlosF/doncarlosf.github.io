@@ -1,7 +1,11 @@
 # Local-only files. Real student data must never be committed.
 config.json
 logs/
+recon/
 node_modules/
+
+# Per-district persistent browser profiles (cookies/sessions)
+.profiles/
 
 # In case profileDir is ever pointed inside the project folder
 profile/

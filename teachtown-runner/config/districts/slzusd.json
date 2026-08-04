@@ -1,0 +1,12 @@
+{
+  "_note": "ACTIVE district profile — San Lorenzo USD (from 8/2026). cleverEntryUrl is UNVERIFIED until the first live run: the district could use Clever, ClassLink, or direct login — recon mode screenshots every auth hop and stops cleanly on anything unrecognized. ssoButtonText are case-insensitive candidates for the district button, clicked-if-present. encoreAppHash targets enCORE Elementary (caseload grades 2-5); first run verifies where the OAuth return actually lands. groups is empty until new ones are created in the TeachTown UI. The roster lives ONLY in the local gitignored config.json — never in this file.",
+  "active": true,
+  "district": "slzusd",
+  "cleverEntryUrl": "https://clever.com/in/slzusd",
+  "cleverEntryUrlVerified": false,
+  "ssoButtonText": ["San Lorenzo", "SLZUSD", "San Lorenzo Unified"],
+  "encoreAppHash": "#/apps/encr",
+  "browserProfileDir": ".profiles/slzusd",
+  "groups": [],
+  "roster": []
+}

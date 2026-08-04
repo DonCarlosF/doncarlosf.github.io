@@ -1,24 +1,25 @@
 {
-  "cleverDistrictUrl": "https://clever.com/in/ousd",
+  "_note": "Copy to config.json (gitignored) and fill in. district picks a profile from config/districts/; any field set here overrides the profile. roster + students are real names — they belong ONLY in the local config.json, never in committed files.",
+  "district": "slzusd",
   "students": [
-    "STUDENT NAME EXACTLY AS SHOWN IN VIEW STUDENTS LIST",
-    "SECOND STUDENT",
-    "THIRD STUDENT"
+    "ROTATION STUDENT NAMES — EXACTLY AS SHOWN IN VIEW STUDENTS"
+  ],
+  "roster": [
+    { "name": "SEIS LEGAL NAME", "aka": ["NICKNAME OR DISPLAY VARIANT"], "grade": 0, "school": "SCHOOL", "expected": true },
+    { "name": "STUDENT WHO MAY NOT APPEAR (other school)", "aka": [], "grade": 0, "school": "OTHER SCHOOL", "expected": false }
   ],
   "targetActivity": null,
   "mode": "activity",
   "afterRotation": "stop",
-  "profileDir": "~/.teachtown-runner/profile",
   "teacherLed": {
     "_note": "enCORE Teacher-Led session setup. Runs via afterRotation:\"teacherLed\" or `npm start -- --teacher-led`. group takes precedence over students; empty group uses the students list. autoBegin:true clicks Begin Session itself — that starts a REAL logged session; false stops at the button and waits for you.",
-    "encoreAppHash": "#/apps/encr",
     "group": "",
     "students": [],
     "sessionLengthMin": 15,
     "autoBegin": false
   },
   "studentLed": {
-    "_note": "Not implemented yet — `npm start -- --student-led` prints the recon notes. Stub config for the 3-step wizard.",
+    "_note": "Not implemented yet — `npm start -- --student-led` prints the recon notes. --recon-goals walks to step 2 to check the IEP Goals lesson source.",
     "student": "NAME AS SHOWN",
     "lessonSource": "recommended",
     "subjects": ["ELA", "Math", "Science", "Social Studies"],

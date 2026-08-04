@@ -18,9 +18,27 @@
  *                                   teacherLed.autoBegin is true — autoBegin
  *                                   starts a REAL logged session)
  *      npm start -- --student-led   not implemented yet (prints the recon notes)
+ *      npm start -- --recon-roster  day-one recon: SSO chain + list every student
+ *                                   in Social Skills AND enCORE, diff against the
+ *                                   config roster, write recon/roster-report-*.txt.
+ *                                   Zero clicks on any student.
+ *      npm start -- --recon-goals   walk Student-Led setup to step 2 for one
+ *                                   student and log whether "IEP Goals" is
+ *                                   selectable and what it lists. Backs out —
+ *                                   never enters step 3, never launches.
+ *      npm start -- --report NAME   Phase-3 scaffold: open enCORE Reporting
+ *                                   (for NAME if given), screenshot + extract
+ *                                   text to recon/. Read-only.
  *
- * Privacy: config.json, logs/ and the browser profile are gitignored.
- * Student names exist only on this machine (console + local log file).
+ * District profiles: config/districts/<district>.json holds district-level
+ * values (Clever entry URL, SSO button candidates, enCORE hash, browser
+ * profile dir). config.json picks one via "district" and can override any
+ * field. Browser profiles are PER DISTRICT — never share cookies across SSO
+ * tenants.
+ *
+ * Privacy: config.json, logs/, recon/ and the browser profiles are
+ * gitignored. Student names (roster, reports, logs) exist only on this
+ * machine — never in committed files.
  */
 'use strict';
 
@@ -32,7 +50,9 @@ const { chromium } = require('playwright');
 
 const PROJECT_DIR = __dirname;
 const CONFIG_PATH = path.join(PROJECT_DIR, 'config.json');
+const DISTRICTS_DIR = path.join(PROJECT_DIR, 'config', 'districts');
 const LOGS_DIR = path.join(PROJECT_DIR, 'logs');
+const RECON_DIR = path.join(PROJECT_DIR, 'recon'); // gitignored — screenshots + reports with student data stay local
 
 // Generous timeout for navigation / UI waits. Activity waits are unbounded.
 const NAV_TIMEOUT = 60_000;
@@ -75,6 +95,7 @@ const state = {
   logger: null,
   shuttingDown: false,
   finished: false,
+  reconMode: false, // recon flag set OR first run on this browser profile
 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -127,29 +148,99 @@ function fail(msg) {
   process.exit(1);
 }
 
-function loadConfig() {
+function readJson(p, what) {
+  try {
+    return JSON.parse(fs.readFileSync(p, 'utf8'));
+  } catch (err) {
+    fail(`${what} is not valid JSON (${p}): ${err.message}`);
+  }
+}
+
+function loadConfig(flags) {
   if (!fs.existsSync(CONFIG_PATH)) {
     fail(
       'config.json not found.\n' +
         '  1) cp config.template.json config.json\n' +
-        '  2) fill in your students exactly as shown in the View Students list\n' +
+        '  2) set "district" and fill in your roster/students\n' +
         'config.json is gitignored — real names never leave this machine.'
     );
   }
-  let cfg;
-  try {
-    cfg = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-  } catch (err) {
-    fail(`config.json is not valid JSON: ${err.message}`);
+  const cfg = readJson(CONFIG_PATH, 'config.json');
+
+  // District profile layer: committed per-district defaults live in
+  // config/districts/<district>.json; anything set directly in the local
+  // config.json overrides them. The roster lives ONLY in config.json
+  // (gitignored) — never in the committed district files.
+  let profile = {};
+  if (cfg.district) {
+    const p = path.join(DISTRICTS_DIR, `${cfg.district}.json`);
+    if (!fs.existsSync(p)) {
+      const known = fs.existsSync(DISTRICTS_DIR)
+        ? fs.readdirSync(DISTRICTS_DIR).filter((f) => f.endsWith('.json')).map((f) => f.replace(/\.json$/, '')).join(', ')
+        : '(none)';
+      fail(`district profile not found: ${p}\nKnown districts: ${known}`);
+    }
+    profile = readJson(p, `district profile "${cfg.district}"`);
+    if (profile.active === false) {
+      console.warn(`District profile "${cfg.district}" is marked inactive (archive) — proceeding anyway.`);
+    }
   }
-  if (!cfg.cleverDistrictUrl || !/^https?:\/\//i.test(cfg.cleverDistrictUrl)) {
-    fail('config.cleverDistrictUrl must be an http(s) URL, e.g. "https://clever.com/in/ousd".');
+
+  // Entry URL: config override > legacy cleverDistrictUrl > district profile.
+  cfg.cleverEntryUrl = cfg.cleverEntryUrl || cfg.cleverDistrictUrl || profile.cleverEntryUrl || null;
+  if (!cfg.cleverEntryUrl || !/^https?:\/\//i.test(cfg.cleverEntryUrl)) {
+    fail('No Clever entry URL. Set "district" (see config/districts/) or "cleverEntryUrl" in config.json.');
   }
-  if (!Array.isArray(cfg.students) || cfg.students.length === 0 ||
-      cfg.students.some((s) => typeof s !== 'string' || !s.trim())) {
-    fail('config.students must be a non-empty array of student names (exactly as shown in View Students).');
+  if (profile.cleverEntryUrlVerified === false && !cfg.cleverEntryUrl.startsWith('http://localhost')) {
+    console.warn(
+      `Heads up: ${cfg.cleverEntryUrl} is UNVERIFIED for "${cfg.district}". First run is a guided recon — ` +
+        'auth hops are screenshotted to recon/ and an unrecognized page stops the run cleanly.'
+    );
   }
-  cfg.students = cfg.students.map((s) => s.trim());
+
+  cfg.ssoButtonText = (
+    Array.isArray(cfg.ssoButtonText) ? cfg.ssoButtonText
+    : Array.isArray(profile.ssoButtonText) ? profile.ssoButtonText
+    : []
+  ).filter((s) => typeof s === 'string' && s.trim());
+  cfg.districtGroups = Array.isArray(profile.groups) ? profile.groups : [];
+
+  // Per-district browser profile — NEVER share one across districts: the old
+  // tenant's cookies will fight the new SSO.
+  cfg.profileDir =
+    cfg.profileDir || profile.browserProfileDir || (cfg.district ? `.profiles/${cfg.district}` : '~/.teachtown-runner/profile');
+
+  // Roster (for recon diffing). Entries: "Name" or
+  // { name, aka: ["nickname"], grade, school, expected } — expected:false
+  // marks a student who may legitimately be absent (e.g. other school).
+  cfg.roster = (Array.isArray(cfg.roster) ? cfg.roster : [])
+    .map((r) =>
+      typeof r === 'string'
+        ? { name: r.trim(), aka: [], expected: true }
+        : {
+            name: String(r.name || '').trim(),
+            aka: (Array.isArray(r.aka) ? r.aka : []).filter((a) => typeof a === 'string' && a.trim()).map((a) => a.trim()),
+            grade: r.grade,
+            school: r.school,
+            expected: r.expected !== false,
+          }
+    )
+    .filter((r) => r.name);
+
+  // The rotation students list is only required when the rotation will run.
+  const rotationRun = !flags.teacherLedOnly && !flags.reconRoster && !flags.reconGoals && flags.report == null;
+  if (rotationRun) {
+    if (!Array.isArray(cfg.students) || cfg.students.length === 0 ||
+        cfg.students.some((s) => typeof s !== 'string' || !s.trim())) {
+      fail('config.students must be a non-empty array of student names (exactly as shown in View Students).');
+    }
+    cfg.students = cfg.students.map((s) => s.trim());
+  } else {
+    cfg.students = (Array.isArray(cfg.students) ? cfg.students : [])
+      .filter((s) => typeof s === 'string' && s.trim())
+      .map((s) => s.trim());
+  }
+
   cfg.targetActivity = cfg.targetActivity || null;
   cfg.mode = cfg.mode || 'activity';
   if (!['activity', 'movie'].includes(cfg.mode)) {
@@ -162,13 +253,13 @@ function loadConfig() {
     );
     cfg.afterRotation = 'stop';
   }
-  cfg.profileDir = cfg.profileDir || '~/.teachtown-runner/profile';
 
-  // Teacher-Led (enCORE) settings.
+  // Teacher-Led (enCORE) settings; district profile supplies the app hash.
   const tl = Object.assign(
-    { encoreAppHash: '#/apps/encr', group: '', students: [], sessionLengthMin: 15, autoBegin: false },
+    { encoreAppHash: profile.encoreAppHash || '#/apps/encr', group: '', students: [], sessionLengthMin: 15, autoBegin: false },
     cfg.teacherLed || {}
   );
+  if (!tl.encoreAppHash) tl.encoreAppHash = profile.encoreAppHash || '#/apps/encr';
   if (!Array.isArray(tl.students)) tl.students = [];
   tl.students = tl.students.filter((s) => typeof s === 'string' && s.trim()).map((s) => s.trim());
   tl.group = typeof tl.group === 'string' ? tl.group.trim() : '';
@@ -176,11 +267,16 @@ function loadConfig() {
   if (tl.group && tl.students.length) {
     console.warn('teacherLed: both "group" and "students" are set — the group takes precedence.');
   }
+  if (tl.group && cfg.districtGroups.length &&
+      !cfg.districtGroups.some((g) => norm(g) === norm(tl.group))) {
+    console.warn(
+      `teacherLed.group "${tl.group}" isn't among the ${cfg.district || 'district'} profile's known groups (${cfg.districtGroups.join(', ')}).`
+    );
+  }
   cfg.teacherLed = tl;
 
-  const teacherLedActive =
-    process.argv.includes('--teacher-led') || cfg.afterRotation === 'teacherLed';
-  if (teacherLedActive && !tl.group && tl.students.length === 0) {
+  const willRunTeacherLed = flags.teacherLedOnly || (rotationRun && cfg.afterRotation === 'teacherLed');
+  if (willRunTeacherLed && !tl.group && tl.students.length === 0) {
     fail('teacherLed needs either "group" or a non-empty "students" list in config.json.');
   }
   return cfg;
@@ -291,6 +387,88 @@ function encoreLocator(tt) {
   return tt.frameLocator(ENCORE_IFRAME);
 }
 
+/* ---------------------------- recon infra --------------------------- */
+
+// Raised when an auth chain hits a page the runner doesn't recognize while
+// in recon mode — the human takes over (exit code 2, screenshot saved).
+class ReconStopError extends Error {}
+
+async function reconShot(page, label) {
+  try {
+    fs.mkdirSync(RECON_DIR, { recursive: true });
+    const file = path.join(RECON_DIR, `${label}-${Date.now()}.png`);
+    await page.screenshot({ path: file, fullPage: false });
+    state.logger?.event(`Recon screenshot: ${file}`);
+    return file;
+  } catch {
+    return null;
+  }
+}
+
+function ssoCandidatesRe(config) {
+  const c = (config.ssoButtonText || []).filter(Boolean);
+  return c.length ? new RegExp(c.map(escapeRe).join('|'), 'i') : null;
+}
+
+// Tracks auth-chain progress: screenshots each new page (hop) in recon mode
+// BEFORE anything is clicked on it, and measures how long we've been stuck
+// with nothing recognizable to click.
+function makeHopTracker(page, chain) {
+  let lastUrl = null;
+  let lastProgress = Date.now();
+  let hopN = 0;
+  return {
+    async tick() {
+      if (page.url() !== lastUrl) {
+        lastUrl = page.url();
+        lastProgress = Date.now();
+        if (state.reconMode) {
+          hopN += 1;
+          await reconShot(page, `${chain}-hop${hopN}`);
+        }
+      }
+    },
+    progress() {
+      lastProgress = Date.now();
+    },
+    stalledFor() {
+      return Date.now() - lastProgress;
+    },
+  };
+}
+
+// Recon-mode hard stop on an unrecognized auth page: report what's on it
+// (never touching any field) and hand control back to the human.
+async function unknownAuthStop(page, chain) {
+  const info = await page
+    .evaluate(() => ({
+      title: document.title,
+      buttons: Array.from(document.querySelectorAll('button, a, input[type="submit"]'))
+        .map((e) => (e.innerText || e.value || '').trim())
+        .filter(Boolean)
+        .slice(0, 25),
+    }))
+    .catch(() => ({ title: '(unreadable)', buttons: [] }));
+  await reconShot(page, 'unrecognized');
+  const hint = /classlink/i.test(page.url())
+    ? '\n  This looks like ClassLink — the runner only knows the Clever flow. Capture it with `npx playwright codegen` and send the recording.'
+    : '';
+  throw new ReconStopError(
+    `UNRECOGNIZED AUTH PAGE during ${chain}\n` +
+      `  url: ${page.url()}\n` +
+      `  title: ${info.title}\n` +
+      `  visible buttons/links: ${info.buttons.join(' | ') || '(none)'}${hint}\n` +
+      '  Screenshot saved to recon/. No credentials were touched.'
+  );
+}
+
+function writeReconReport(lines, prefix) {
+  fs.mkdirSync(RECON_DIR, { recursive: true });
+  const file = path.join(RECON_DIR, `${prefix}-${fileStamp()}.txt`);
+  fs.writeFileSync(file, lines.join('\n') + '\n');
+  return file;
+}
+
 /* --------------------------- browser/login ------------------------- */
 
 async function launchBrowser(profileDir) {
@@ -361,22 +539,27 @@ async function microsoftWantsInput(page) {
   return false;
 }
 
-// goto the Clever district URL and get to the logged-in portal (the page with
-// the TeachTown tile). Cached Microsoft session → fully automatic. If a
+// goto the district's Clever entry URL and get to the logged-in portal (the
+// page with the TeachTown tile). Cached session → fully automatic. If a
 // credential form shows up, hand control to the human. Never touch fields.
+// In recon mode every hop is screenshotted before clicking, and an
+// unrecognized page stops the run instead of guessing.
 async function ensureCleverPortal(page, config, logger) {
-  logger.event(`Opening Clever portal: ${config.cleverDistrictUrl}`);
-  await page.goto(config.cleverDistrictUrl, {
+  logger.event(`Opening Clever portal: ${config.cleverEntryUrl}`);
+  await page.goto(config.cleverEntryUrl, {
     waitUntil: 'domcontentloaded',
     timeout: NAV_TIMEOUT,
   });
 
+  const tracker = makeHopTracker(page, 'clever');
+  const ssoRe = ssoCandidatesRe(config);
   let deadline = Date.now() + NAV_TIMEOUT * 2;
   let lastManualPrompt = 0;
   let ssoClicks = 0;
 
   while (Date.now() < deadline) {
     if (state.shuttingDown) throw new Error('interrupted');
+    await tracker.tick();
 
     if (await findTeachTownTile(page)) {
       logger.event('Clever portal ready (TeachTown tile visible)');
@@ -392,6 +575,7 @@ async function ensureCleverPortal(page, config, logger) {
           .or(page.locator('input[type="submit"][value="Yes"]'))
           .first()
           .click({ timeout: 2000 });
+        tracker.progress();
         await sleep(1000);
         continue;
       }
@@ -403,24 +587,44 @@ async function ensureCleverPortal(page, config, logger) {
       logger.event('Microsoft sign-in needs input — waiting for manual login.');
       await waitForEnter('>>> Log in manually in the browser window, then press Enter here to continue... ');
       deadline = Date.now() + NAV_TIMEOUT * 2;
+      tracker.progress();
       continue;
     }
 
-    // Clever district page may show an SSO button (e.g. "OUSD Sign in").
-    // Clicking it with a cached Microsoft session completes silently.
-    if (ssoClicks < 2 && /clever\.com/i.test(page.url())) {
-      const sso = page
-        .getByRole('button', { name: /sign ?in|log ?in with/i })
-        .or(page.getByRole('link', { name: /sign ?in|log ?in with/i }))
-        .first();
-      if (await sso.isVisible().catch(() => false)) {
+    // District SSO button: profile candidates first (e.g. "San Lorenzo"),
+    // then a generic sign-in-looking button — but the generic fallback only
+    // fires on clever-ish pages so an unknown provider is never blind-clicked.
+    if (ssoClicks < 3) {
+      let btn = null;
+      if (ssoRe) {
+        const cand = page
+          .getByRole('button', { name: ssoRe })
+          .or(page.getByRole('link', { name: ssoRe }))
+          .first();
+        if (await cand.isVisible().catch(() => false)) btn = cand;
+      }
+      if (!btn && /clever/i.test(page.url())) {
+        const gen = page
+          .getByRole('button', { name: /sign ?in|log ?in with/i })
+          .or(page.getByRole('link', { name: /sign ?in|log ?in with/i }))
+          .first();
+        if (await gen.isVisible().catch(() => false)) btn = gen;
+      }
+      if (btn) {
+        const label = ((await btn.textContent().catch(() => '')) || 'sign-in button').trim();
+        if (state.reconMode) await reconShot(page, 'clever-before-sso-click');
         ssoClicks += 1;
-        await sso.click().catch(() => {});
+        await btn.click().catch(() => {});
+        logger.event(`SSO hop: clicked "${label}"`);
+        tracker.progress();
         await sleep(1500);
         continue;
       }
     }
 
+    if (state.reconMode && tracker.stalledFor() > 20_000) {
+      await unknownAuthStop(page, 'Clever portal chain');
+    }
     await sleep(750);
   }
   throw new Error('timed out waiting for the Clever portal (TeachTown tile never appeared)');
@@ -1093,10 +1297,13 @@ async function enterEncore(tt, config, logger) {
   await card.waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
   await card.click();
 
+  const tracker = makeHopTracker(tt, 'encore');
+  const ssoRe = ssoCandidatesRe(config);
   const deadline = Date.now() + NAV_TIMEOUT * 2;
   let lastManualPrompt = 0;
   while (Date.now() < deadline) {
     if (state.shuttingDown) throw new Error('interrupted');
+    await tracker.tick();
 
     // Success: the enCORE app frame is up (its top nav always shows Start a Session).
     if (await encoreLocator(tt).getByText(/start a session/i).first().isVisible().catch(() => false)) {
@@ -1111,21 +1318,37 @@ async function enterEncore(tt, config, logger) {
         .or(tt.getByText(/login with clever/i))
         .first();
       if (await btn.isVisible().catch(() => false)) {
+        if (state.reconMode) await reconShot(tt, 'encore-before-clever-click');
         await btn.click().catch(() => {});
+        logger.event('SSO hop: clicked "Login with Clever"');
+        tracker.progress();
         await sleep(1200);
         continue;
       }
     }
 
-    // Clever OAuth page → district sign-in button (guard out the TeachTown
-    // nav app and Login.aspx so this can't press an unrelated "Sign In").
+    // OAuth provider page → district sign-in button: profile candidates
+    // first, then generic (guard out the TeachTown nav app and Login.aspx so
+    // this can't press an unrelated "Sign In").
     if (!/\/nav\/|login\.aspx/i.test(tt.url())) {
-      const sso = tt
-        .getByRole('button', { name: /sign ?in|log ?in with/i })
-        .or(tt.getByRole('link', { name: /sign ?in|log ?in with/i }))
-        .first();
-      if (await sso.isVisible().catch(() => false)) {
-        await sso.click().catch(() => {});
+      let btn = null;
+      if (ssoRe) {
+        const cand = tt.getByRole('button', { name: ssoRe }).or(tt.getByRole('link', { name: ssoRe })).first();
+        if (await cand.isVisible().catch(() => false)) btn = cand;
+      }
+      if (!btn) {
+        const gen = tt
+          .getByRole('button', { name: /sign ?in|log ?in with/i })
+          .or(tt.getByRole('link', { name: /sign ?in|log ?in with/i }))
+          .first();
+        if (await gen.isVisible().catch(() => false)) btn = gen;
+      }
+      if (btn) {
+        const label = ((await btn.textContent().catch(() => '')) || 'sign-in button').trim();
+        if (state.reconMode) await reconShot(tt, 'encore-before-sso-click');
+        await btn.click().catch(() => {});
+        logger.event(`SSO hop: clicked "${label}"`);
+        tracker.progress();
         await sleep(1200);
         continue;
       }
@@ -1134,7 +1357,10 @@ async function enterEncore(tt, config, logger) {
     // Role picker ("Select user") → teacher.
     const teacherRole = tt.getByText(/log ?in as a teacher/i).first();
     if (await teacherRole.isVisible().catch(() => false)) {
+      if (state.reconMode) await reconShot(tt, 'encore-before-role-click');
       await teacherRole.click().catch(() => {});
+      logger.event('SSO hop: clicked "Log in as a teacher"');
+      tracker.progress();
       await sleep(1200);
       continue;
     }
@@ -1144,9 +1370,13 @@ async function enterEncore(tt, config, logger) {
       lastManualPrompt = Date.now();
       logger.event('Microsoft sign-in needs input — waiting for manual login.');
       await waitForEnter('>>> Log in manually in the browser window, then press Enter here to continue... ');
+      tracker.progress();
       continue;
     }
 
+    if (state.reconMode && tracker.stalledFor() > 20_000) {
+      await unknownAuthStop(tt, 'enCORE auth chain');
+    }
     await sleep(750);
   }
 
@@ -1229,11 +1459,9 @@ async function setSessionLength(tt, target, logger) {
   }
 }
 
-// Start a Session → Teacher-Led → add group/students → set length → stop at
-// Begin Session (autoBegin clicks it — that creates a REAL logged session).
-async function teacherLedSetup(tt, tl, dryRun, logger) {
+// Start a Session → the "Select a format" screen.
+async function openSessionFormat(tt, logger) {
   const frame = encoreLocator(tt);
-
   await frame
     .getByRole('button', { name: /start a session/i })
     .or(frame.getByText(/start a session/i))
@@ -1241,19 +1469,33 @@ async function teacherLedSetup(tt, tl, dryRun, logger) {
     .click({ timeout: NAV_TIMEOUT });
   await frame.getByText(/select a format/i).first().waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
   await dismissOnboarding(tt, logger);
+}
 
-  // "Get started" under the Teacher-Led card specifically.
-  const tlCard = frame
+// "Get started" under a specific format card. fallbackNth = the card's
+// position on the screen (Teacher-Led first, Student-Led second) if scoping
+// to the card fails.
+async function clickGetStarted(tt, formatRe, fallbackNth, label, logger) {
+  const frame = encoreLocator(tt);
+  const card = frame
     .locator('div, section, article')
-    .filter({ hasText: /teacher-led/i })
+    .filter({ hasText: formatRe })
     .filter({ has: frame.getByRole('button', { name: /get started/i }) })
     .last();
   try {
-    await tlCard.getByRole('button', { name: /get started/i }).first().click({ timeout: 10_000 });
+    await card.getByRole('button', { name: /get started/i }).first().click({ timeout: 10_000 });
   } catch {
-    logger.event('WARN could not scope "Get started" to the Teacher-Led card — clicking the first one');
-    await frame.getByRole('button', { name: /get started/i }).first().click({ timeout: 10_000 });
+    logger.event(`WARN could not scope "Get started" to the ${label} card — using position ${fallbackNth + 1}`);
+    await frame.getByRole('button', { name: /get started/i }).nth(fallbackNth).click({ timeout: 10_000 });
   }
+}
+
+// Start a Session → Teacher-Led → add group/students → set length → stop at
+// Begin Session (autoBegin clicks it — that creates a REAL logged session).
+async function teacherLedSetup(tt, tl, dryRun, logger) {
+  const frame = encoreLocator(tt);
+
+  await openSessionFormat(tt, logger);
+  await clickGetStarted(tt, /teacher-led/i, 0, 'Teacher-Led', logger);
   await frame
     .getByText(/select one or more students/i)
     .first()
@@ -1330,6 +1572,297 @@ async function runTeacherLed(tt, config, dryRun, logger) {
 // config.template.json. Same never-past-the-launch-button rule as
 // Teacher-Led: stop at step 3 unless studentLed.autoBegin.
 
+/* ------------------------------ recon ------------------------------- */
+
+function getEncoreFrame(tt) {
+  return tt.frames().find((f) => f.url().toLowerCase().includes('workgroup/client/apphost/app')) || null;
+}
+
+// Best-effort extraction of student rows on the enCORE "My Students" list
+// (row DOM unverified live — the screenshot is the authoritative capture).
+async function collectEncoreStudents(tt) {
+  const frame = getEncoreFrame(tt);
+  if (!frame) return [];
+  return await frame
+    .evaluate(() => {
+      const chrome = /^(my students|my groups|students in session|begin session|remove all|session settings|view previous sessions|back|next|session length|select a format|get started)$/i;
+      const out = [];
+      for (const el of document.querySelectorAll('.stu-row, [class*="student-row"], [class*="stu-"], [class*="list-item"]')) {
+        if (!el.getClientRects || el.getClientRects().length === 0) continue;
+        const t = (el.innerText || '').replace(/\s+/g, ' ').trim();
+        if (!t || t.length > 60 || chrome.test(t)) continue;
+        if (!out.includes(t)) out.push(t);
+      }
+      return out;
+    })
+    .catch(() => []);
+}
+
+// Three-tier roster diff: exact (name or aka) → substring → name tokens
+// (catches "Last, First" / order swaps). Whatever's left is unmatched.
+// Tier passes run GLOBALLY (every exact match claims its display name before
+// any substring/token match is attempted) so a weaker match for one roster
+// entry can never consume a display name another entry matches exactly.
+function diffRoster(found, roster) {
+  const usedIdx = new Set();
+  const nfound = found.map(norm);
+  const tok = (s) => new Set(norm(s).split(' ').filter((w) => w.length >= 3));
+  const rows = roster.map((r) => ({ entry: r, matchedTo: null, tier: null }));
+
+  for (const row of rows) {
+    for (const cand of [row.entry.name, ...(row.entry.aka || [])]) {
+      const i = nfound.findIndex((f, ix) => !usedIdx.has(ix) && f === norm(cand));
+      if (i >= 0) {
+        row.matchedTo = found[i];
+        row.tier = norm(cand) === norm(row.entry.name) ? 'exact' : 'aka';
+        usedIdx.add(i);
+        break;
+      }
+    }
+  }
+  for (const row of rows) {
+    if (row.matchedTo) continue;
+    for (const cand of [row.entry.name, ...(row.entry.aka || [])]) {
+      const i = nfound.findIndex(
+        (f, ix) => !usedIdx.has(ix) && (f.includes(norm(cand)) || norm(cand).includes(f))
+      );
+      if (i >= 0) {
+        row.matchedTo = found[i];
+        row.tier = 'substring';
+        usedIdx.add(i);
+        break;
+      }
+    }
+  }
+  for (const row of rows) {
+    if (row.matchedTo) continue;
+    const rt = tok(row.entry.name + ' ' + (row.entry.aka || []).join(' '));
+    const i = nfound.findIndex((f, ix) => {
+      if (usedIdx.has(ix)) return false;
+      const ft = tok(found[ix]);
+      let overlap = 0;
+      rt.forEach((t) => {
+        if (ft.has(t)) overlap += 1;
+      });
+      return overlap >= 2;
+    });
+    if (i >= 0) {
+      row.matchedTo = found[i];
+      row.tier = 'tokens';
+      usedIdx.add(i);
+    }
+  }
+  const extras = found.filter((_, ix) => !usedIdx.has(ix));
+  return { rows, extras };
+}
+
+function reportDiff(diff, surface, logger, report) {
+  report.push(`Roster diff (config roster vs ${surface}):`);
+  for (const { entry, matchedTo, tier } of diff.rows) {
+    let line;
+    if (tier === 'exact') line = `RECON MATCH (exact): "${entry.name}"`;
+    else if (tier === 'aka') line = `RECON MATCH (aka): "${entry.name}" ↔ "${matchedTo}"`;
+    else if (tier === 'substring') line = `RECON MATCH (substring): "${entry.name}" ↔ "${matchedTo}"`;
+    else if (tier === 'tokens') line = `RECON POSSIBLE (name tokens): "${entry.name}" ↔ "${matchedTo}"`;
+    else line = `RECON NOT FOUND: "${entry.name}"${entry.expected === false ? ' (expected-maybe — OK)' : ''}`;
+    logger.event(line);
+    report.push('  ' + line);
+  }
+  for (const extra of diff.extras) {
+    const line = `RECON IN APP, NOT IN CONFIG: "${extra}"`;
+    logger.event(line);
+    report.push('  ' + line);
+  }
+  report.push('');
+}
+
+// Day-one recon: list every student visible in Social Skills AND enCORE,
+// diff against the config roster, write a plain-text report. ZERO clicks on
+// any student row.
+async function reconRoster(tt, config, logger) {
+  const report = [];
+  report.push(`TeachTown roster recon — ${ts()}`);
+  report.push(`District: ${config.district || '(legacy config)'}`);
+  report.push('');
+
+  // --- Social Skills / View Students ---
+  await gotoSocialSkills(tt);
+  const inner = innerLocator(tt);
+  await visibleSoon(inner.locator(STUDENT_ROW).first(), 10_000); // roster rows may render after the chrome
+  const ssNames = (await inner.locator(STUDENT_ROW).allTextContents().catch(() => []))
+    .map((t) => t.replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
+  await reconShot(tt, 'ss-view-students');
+  logger.event(`RECON Social Skills: ${ssNames.length} student(s) found`);
+  report.push(`Social Skills / View Students — ${ssNames.length} student(s):`);
+  for (const n of ssNames) {
+    logger.event(`  SS: ${n}`);
+    report.push(`  - ${n}`);
+  }
+  if (ssNames.length === 0) {
+    const msg =
+      'Zero students in Social Skills. Most likely district rostering has not synced to TeachTown yet — ' +
+      'a timing fact, not a runner bug. Re-run --recon-roster in a few days.';
+    logger.event(`RECON ${msg}`);
+    report.push('  ' + msg);
+  }
+  report.push('');
+
+  // --- enCORE / My Students (Teacher-Led setup screen is state-free; we
+  //     never go near Begin Session) ---
+  let enNames = [];
+  try {
+    await enterEncore(tt, config, logger);
+    await openSessionFormat(tt, logger);
+    await clickGetStarted(tt, /teacher-led/i, 0, 'Teacher-Led', logger);
+    const frame = encoreLocator(tt);
+    await frame.getByText(/select one or more students/i).first().waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+    await dismissOnboarding(tt, logger);
+    const tab = frame.getByText(/my students/i).first();
+    if (await tab.isVisible().catch(() => false)) await tab.click({ timeout: 5_000 }).catch(() => {});
+    await visibleSoon(frame.locator('.stu-row, [class*="student-row"], [class*="list-item"]').first(), 5_000);
+    enNames = await collectEncoreStudents(tt);
+    await reconShot(tt, 'encore-my-students');
+    logger.event(`RECON enCORE: ${enNames.length} student(s) found`);
+    report.push(`enCORE / My Students — ${enNames.length} student(s):`);
+    for (const n of enNames) {
+      logger.event(`  EN: ${n}`);
+      report.push(`  - ${n}`);
+    }
+    if (enNames.length === 0) {
+      const msg = 'Zero students in enCORE My Students (see the screenshot — extraction is best-effort on this screen).';
+      logger.event(`RECON ${msg}`);
+      report.push('  ' + msg);
+    }
+    report.push('');
+    // Back out without touching Begin Session.
+    await tt.goto(state.ttNavBase + '#/home', { timeout: NAV_TIMEOUT }).catch(() => {});
+  } catch (err) {
+    const msg = `enCORE student list unavailable: ${err.message.split('\n')[0]}`;
+    logger.event(`RECON ${msg}`);
+    report.push(msg);
+    report.push('');
+  }
+
+  // --- diff against the config roster ---
+  if (config.roster.length) {
+    reportDiff(diffRoster(ssNames, config.roster), 'Social Skills', logger, report);
+    if (enNames.length || ssNames.length) {
+      reportDiff(diffRoster(enNames, config.roster), 'enCORE', logger, report);
+    }
+  } else {
+    report.push('No roster in config.json — nothing to diff (found lists above are still valid).');
+    logger.event('RECON no roster configured — skipping the diff');
+  }
+
+  const file = writeReconReport(report, 'roster-report');
+  logger.event(`RECON report written: ${file}`);
+}
+
+// IEP-goals bridge check: walk Student-Led setup to step 2 for ONE student,
+// log whether "IEP Goals" is selectable and what it lists, then back out.
+// Never enters step 3 ("Prepare Session" — unexplored), never launches.
+async function reconGoals(tt, config, logger) {
+  const report = [`Student-Led IEP Goals recon — ${ts()}`, ''];
+  await enterEncore(tt, config, logger);
+  await openSessionFormat(tt, logger);
+  await clickGetStarted(tt, /student-led/i, 1, 'Student-Led', logger);
+  const frame = encoreLocator(tt);
+  await frame.getByText(/select student/i).first().waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+  await reconShot(tt, 'student-led-step1');
+
+  // Step 1: pick the FIRST student (required to reach step 2; nothing launches).
+  const row = frame.locator('.sl-stu, [class*="student-row"], [class*="stu-"], [class*="list-item"]').first();
+  if (!(await visibleSoon(row, 8_000))) {
+    const msg = 'No student rows on Student-Led step 1 (empty roster?) — cannot check IEP Goals yet.';
+    logger.event(`IEP-GOALS: ${msg}`);
+    report.push(msg);
+    writeReconReport(report, 'iep-goals-report');
+    await tt.goto(state.ttNavBase + '#/home', { timeout: NAV_TIMEOUT }).catch(() => {});
+    return;
+  }
+  await row.click({ timeout: 5_000 });
+  await frame.getByRole('button', { name: /^next$/i }).or(frame.getByText(/^Next$/)).first().click({ timeout: 10_000 });
+  await frame.getByText(/select session mode/i).first().waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+  await reconShot(tt, 'student-led-step2');
+
+  // Step 2: is "IEP Goals" present/selectable, and what does it list?
+  const iepText = frame.getByText(/iep goals/i).first();
+  const present = await iepText.isVisible().catch(() => false);
+  let selectable = null;
+  let items = [];
+  if (present) {
+    const radio = frame.locator('label:has-text("IEP Goals") input[type="radio"], input[type="radio"][value*="iep" i]').first();
+    const hasRadio = await radio.count().then((c) => c > 0).catch(() => false);
+    selectable = hasRadio ? await radio.isEnabled().catch(() => false) : null;
+    if (selectable !== false) {
+      await iepText.click({ timeout: 5_000 }).catch(() => {});
+      // Unknown DOM: give the lesson list a moment to swap, then read it.
+      const itemLoc = frame.locator('#lessonlist li, [class*="lesson"] li, [class*="checklist"] li, [class*="goal"] li');
+      const deadline = Date.now() + 3_000;
+      do {
+        items = (await itemLoc.allTextContents().catch(() => [])).map((t) => t.trim()).filter(Boolean);
+        if (items.some((t) => /goal/i.test(t))) break;
+        await sleep(300);
+      } while (Date.now() < deadline);
+      await reconShot(tt, 'student-led-iep-goals');
+    }
+  }
+  const verdict = !present
+    ? 'IEP Goals option NOT FOUND on step 2'
+    : selectable === false
+      ? 'present but DISABLED'
+      : `selectable — ${items.length} item(s) listed`;
+  logger.event(`IEP-GOALS: ${verdict}`);
+  report.push(`IEP Goals: ${verdict}`);
+  for (const i of items) {
+    logger.event(`  GOAL/LESSON: ${i}`);
+    report.push(`  - ${i}`);
+  }
+  const frameObj = getEncoreFrame(tt);
+  if (frameObj) {
+    const dump = await frameObj.evaluate(() => document.body.innerText).catch(() => '');
+    report.push('', '--- step 2 raw text ---', dump);
+  }
+  const file = writeReconReport(report, 'iep-goals-report');
+  logger.event(`RECON report written: ${file}`);
+
+  // Back out — fresh goto, never browser back, never step 3.
+  await tt.goto(state.ttNavBase + '#/home', { timeout: NAV_TIMEOUT }).catch(() => {});
+}
+
+// TODO(--report): Phase-3 scaffold only. Full build after the first live
+// recon shows what Reporting actually renders at SLZUSD (license also
+// covers BE SAFE and Health & Wellness). Read-only: screenshot + text dump.
+async function reportScrape(tt, config, studentName, logger) {
+  await enterEncore(tt, config, logger);
+  const frame = encoreLocator(tt);
+  await frame.getByText(/^Reporting$/i).first().click({ timeout: NAV_TIMEOUT });
+  await frame.getByText(/reporting/i).first().waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+  await dismissOnboarding(tt, logger);
+  if (studentName) {
+    const row = frame.getByText(studentName).first();
+    if (await visibleSoon(row, 8_000)) {
+      await row.click({ timeout: 5_000 }).catch(() => {});
+      await visibleSoon(frame.getByText(/session history|mastery|progress/i).first(), 5_000);
+    } else {
+      logger.event(`WARN --report: "${studentName}" not found in Reporting — capturing the overview instead`);
+    }
+  }
+  const stamp = Date.now();
+  fs.mkdirSync(RECON_DIR, { recursive: true });
+  const png = path.join(RECON_DIR, `reporting-${stamp}.png`);
+  await tt.screenshot({ path: png, fullPage: true }).catch(() => {});
+  const frameObj = getEncoreFrame(tt);
+  const text = frameObj ? await frameObj.evaluate(() => document.body.innerText).catch(() => '') : '';
+  const txt = path.join(RECON_DIR, `reporting-${stamp}.txt`);
+  fs.writeFileSync(
+    txt,
+    `TeachTown Reporting capture — ${ts()}\nStudent: ${studentName || '(overview)'}\n\n${text}\n`
+  );
+  logger.event(`REPORT saved: ${png} + ${txt}`);
+}
+
 /* ------------------------------ misc -------------------------------- */
 
 function printDryRunTable(results, logger) {
@@ -1379,8 +1912,17 @@ async function shutdown(code) {
 }
 
 (async function main() {
-  const dryRun = process.argv.includes('--dry-run');
-  const teacherLedOnly = process.argv.includes('--teacher-led');
+  const argv = process.argv;
+  const flags = {
+    dryRun: argv.includes('--dry-run'),
+    teacherLedOnly: argv.includes('--teacher-led'),
+    reconRoster: argv.includes('--recon-roster'),
+    reconGoals: argv.includes('--recon-goals'),
+    report: argv.includes('--report') ? argv[argv.indexOf('--report') + 1] || '' : null,
+  };
+  const anyRecon = flags.reconRoster || flags.reconGoals || flags.report != null;
+  const dryRun = flags.dryRun;
+  const teacherLedOnly = flags.teacherLedOnly;
 
   if (process.argv.includes('--student-led')) {
     console.error(
@@ -1396,7 +1938,7 @@ async function shutdown(code) {
     process.exit(1);
   }
 
-  const config = loadConfig();
+  const config = loadConfig(flags);
 
   fs.mkdirSync(LOGS_DIR, { recursive: true });
   const logger = new Logger(path.join(LOGS_DIR, `session-${fileStamp()}.txt`));
@@ -1405,17 +1947,35 @@ async function shutdown(code) {
   process.on('SIGINT', () => shutdown(130));
   process.on('SIGTERM', () => shutdown(143));
 
+  const modeTag = anyRecon
+    ? ' (recon)'
+    : `${dryRun ? ' (dry run)' : ''}${teacherLedOnly ? ' (teacher-led only)' : ''}`;
   logger.event(
-    `SESSION START${dryRun ? ' (dry run)' : ''}${teacherLedOnly ? ' (teacher-led only)' : ''} — ` +
-      (teacherLedOnly
-        ? `enCORE ${config.teacherLed.group ? `group "${config.teacherLed.group}"` : `${config.teacherLed.students.length} student(s)`}, ` +
-          `length=${config.teacherLed.sessionLengthMin}min, autoBegin=${config.teacherLed.autoBegin}`
-        : `${config.students.length} student(s), mode=${config.mode}, ` +
-          `target=${config.targetActivity || '(first activity not at 100%)'}, afterRotation=${config.afterRotation}`)
+    `SESSION START${modeTag} — ` +
+      (anyRecon
+        ? `district=${config.district || '(legacy)'}, flags=${[
+            flags.reconRoster && '--recon-roster',
+            flags.reconGoals && '--recon-goals',
+            flags.report != null && '--report',
+          ].filter(Boolean).join(' ')}`
+        : teacherLedOnly
+          ? `enCORE ${config.teacherLed.group ? `group "${config.teacherLed.group}"` : `${config.teacherLed.students.length} student(s)`}, ` +
+            `length=${config.teacherLed.sessionLengthMin}min, autoBegin=${config.teacherLed.autoBegin}`
+          : `${config.students.length} student(s), mode=${config.mode}, ` +
+            `target=${config.targetActivity || '(first activity not at 100%)'}, afterRotation=${config.afterRotation}`)
   );
 
   const profileDir = resolveProfileDir(config.profileDir);
   fs.mkdirSync(profileDir, { recursive: true });
+
+  // Recon mode = any recon flag, or the first run on this browser profile
+  // (fresh district → the SSO chain is unverified; screenshot every hop and
+  // stop on anything unrecognized instead of guessing).
+  const firstRunMarker = path.join(profileDir, 'ttrunner-first-run-done');
+  state.reconMode = anyRecon || !fs.existsSync(firstRunMarker);
+  if (state.reconMode) {
+    logger.event('Recon mode: auth hops are screenshotted to recon/; an unrecognized page stops the run.');
+  }
 
   const context = await launchBrowser(profileDir);
   state.context = context;
@@ -1429,9 +1989,20 @@ async function shutdown(code) {
   try {
     const portal = context.pages()[0] || (await context.newPage());
     await ensureCleverPortal(portal, config, logger);
+    try {
+      fs.writeFileSync(firstRunMarker, ts() + '\n'); // SSO chain verified for this profile
+    } catch {}
 
     const tt = await openTeachTown(context, portal, logger);
     state.ttPage = tt;
+
+    if (anyRecon) {
+      if (flags.reconRoster) await reconRoster(tt, config, logger);
+      if (flags.reconGoals) await reconGoals(tt, config, logger);
+      if (flags.report != null) await reportScrape(tt, config, flags.report, logger);
+      logger.event('RECON COMPLETE');
+      return;
+    }
 
     if (teacherLedOnly) {
       await runTeacherLed(tt, config, dryRun, logger); // idles until Ctrl+C / window close
@@ -1473,9 +2044,15 @@ async function shutdown(code) {
     if (dryRun) printDryRunTable(results, logger);
     logger.event('SESSION COMPLETE');
   } catch (err) {
-    logger.event(`FATAL ${err.message.split('\n')[0]}`);
-    await screenshot(state.ttPage || state.context?.pages()[0], 'fatal');
-    process.exitCode = 1;
+    if (err instanceof ReconStopError) {
+      logger.event('SSO RECON STOP — a human needs to look at this:');
+      for (const line of err.message.split('\n')) logger.event(line);
+      process.exitCode = 2;
+    } else {
+      logger.event(`FATAL ${err.message.split('\n')[0]}`);
+      await screenshot(state.ttPage || state.context?.pages()[0], 'fatal');
+      process.exitCode = 1;
+    }
   } finally {
     if (!state.shuttingDown) {
       state.finished = true;
