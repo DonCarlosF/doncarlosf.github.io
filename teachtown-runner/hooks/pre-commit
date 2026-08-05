@@ -1,4 +1,4 @@
 #!/bin/sh
 # Privacy gate — refuses the commit if any local privacy term appears in
-# staged content. Install once with: npm run install-hooks
-exec node "$(git rev-parse --show-toplevel)/teachtown-runner/privacy-check.js" --staged
+# staged content or staged file paths. Install once with: npm run install-hooks
+exec node "$(git rev-parse --show-toplevel)/teachtown-runner/privacy-check.js" --staged --hook

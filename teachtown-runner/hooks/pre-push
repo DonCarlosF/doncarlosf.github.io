@@ -1,0 +1,6 @@
+#!/bin/sh
+# Privacy gate backstop — scans every OUTGOING commit (message + diff) and
+# the pushed ref names before anything leaves this machine. Catches commits
+# that bypassed the commit hooks (--no-verify, cherry-pick/rebase, GUI
+# clients). Installed via: npm run install-hooks
+exec node "$(git rev-parse --show-toplevel)/teachtown-runner/privacy-check.js" --push --hook

@@ -1,4 +1,4 @@
 #!/bin/sh
 # Privacy gate — refuses the commit if the commit MESSAGE contains a privacy
-# term. Installed together with pre-commit via: npm run install-hooks
-exec node "$(git rev-parse --show-toplevel)/teachtown-runner/privacy-check.js" --message "$1"
+# term. Installed together with the other hooks via: npm run install-hooks
+exec node "$(git rev-parse --show-toplevel)/teachtown-runner/privacy-check.js" --message "$1" --hook
