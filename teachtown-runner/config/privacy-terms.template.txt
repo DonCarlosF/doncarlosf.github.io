@@ -1,0 +1,19 @@
+# privacy-terms.txt — LOCAL ONLY (gitignored). Copy this template to
+# config/privacy-terms.txt and replace the placeholders with real terms.
+#
+# One fragment per line; case-insensitive substring match against everything
+# committable (tracked files, staged content, and untracked-but-unignored
+# files). Include: student first/last name fragments, nicknames, school
+# names, IEP meeting dates — anything that must never appear in the repo.
+#
+# Lines starting with # are comments. Fragments under 3 characters are
+# ignored (too many false positives).
+#
+# Tip: for first names that also appear in ordinary content (common names,
+# words, places), use the full-name form ("FIRST LAST") plus the distinctive
+# surname alone — a bare common first name will block unrelated commits.
+#
+# Replace these placeholders:
+EXAMPLE-SURNAME
+EXAMPLE-NICKNAME
+EXAMPLE-SCHOOL-NAME

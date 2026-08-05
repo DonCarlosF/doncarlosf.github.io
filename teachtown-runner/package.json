@@ -4,7 +4,9 @@
   "private": true,
   "description": "Rotates a TeachTown Social Skills group session: logs each student in, launches their activity on the big screen, waits while the group answers live, then moves to the next student. Humans answer all questions.",
   "scripts": {
-    "start": "node runner.js"
+    "start": "node runner.js",
+    "privacy-check": "node privacy-check.js",
+    "install-hooks": "git config core.hooksPath teachtown-runner/hooks && echo \"privacy pre-commit hook installed\""
   },
   "engines": {
     "node": ">=18"
