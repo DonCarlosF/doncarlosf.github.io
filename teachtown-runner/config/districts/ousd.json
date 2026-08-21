@@ -2,6 +2,7 @@
   "_note": "ARCHIVE — inactive. OUSD account ended 8/2026. These values were live-verified 7/2026 and are kept as reference for what a fully-verified profile looks like. No roster here — rosters live only in the local gitignored config.json.",
   "active": false,
   "district": "ousd",
+  "loginMode": "clever",
   "cleverEntryUrl": "https://clever.com/in/ousd",
   "cleverEntryUrlVerified": true,
   "ssoButtonText": ["OUSD"],

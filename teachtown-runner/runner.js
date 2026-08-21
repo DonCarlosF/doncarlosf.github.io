@@ -186,16 +186,27 @@ function loadConfig(flags) {
     }
   }
 
-  // Entry URL: config override > legacy cleverDistrictUrl > district profile.
-  cfg.cleverEntryUrl = cfg.cleverEntryUrl || cfg.cleverDistrictUrl || profile.cleverEntryUrl || null;
-  if (!cfg.cleverEntryUrl || !/^https?:\/\//i.test(cfg.cleverEntryUrl)) {
-    fail('No Clever entry URL. Set "district" (see config/districts/) or "cleverEntryUrl" in config.json.');
+  // Entry URL + login mode. F1 resolved for SLZUSD (8/2026): TeachTown login
+  // is DIRECT on the TeachTown site — no Clever portal. "clever" mode keeps
+  // the portal→tile flow for districts that front TeachTown with Clever.
+  cfg.loginMode = cfg.loginMode || profile.loginMode || 'clever';
+  if (!['clever', 'direct'].includes(cfg.loginMode)) {
+    fail(`config.loginMode must be "clever" or "direct" (got "${cfg.loginMode}").`);
   }
-  if (profile.cleverEntryUrlVerified === false && !cfg.cleverEntryUrl.startsWith('http://localhost')) {
-    console.warn(
-      `Heads up: ${cfg.cleverEntryUrl} is UNVERIFIED for "${cfg.district}". First run is a guided recon — ` +
-        'auth hops are screenshotted to recon/ and an unrecognized page stops the run cleanly.'
-    );
+  cfg.teachtownEntryUrl = cfg.teachtownEntryUrl || profile.teachtownEntryUrl || 'https://www.teachtown.com/nav/';
+  cfg.cleverEntryUrl = cfg.cleverEntryUrl || cfg.cleverDistrictUrl || profile.cleverEntryUrl || null;
+  if (cfg.loginMode === 'clever') {
+    if (!cfg.cleverEntryUrl || !/^https?:\/\//i.test(cfg.cleverEntryUrl)) {
+      fail('loginMode "clever" needs a Clever entry URL — set "district" (see config/districts/) or "cleverEntryUrl" in config.json.');
+    }
+    if (profile.cleverEntryUrlVerified === false && !cfg.cleverEntryUrl.startsWith('http://localhost')) {
+      console.warn(
+        `Heads up: ${cfg.cleverEntryUrl} is UNVERIFIED for "${cfg.district}". First run is a guided recon — ` +
+          'auth hops are screenshotted to recon/ and an unrecognized page stops the run cleanly.'
+      );
+    }
+  } else if (!/^https?:\/\//i.test(cfg.teachtownEntryUrl)) {
+    fail('loginMode "direct" needs an http(s) "teachtownEntryUrl".');
   }
 
   cfg.ssoButtonText = (
@@ -350,6 +361,10 @@ function waitForEnter(promptText) {
     });
     rl.question(promptText, () => {
       rl.close();
+      // Release stdin, or the process outlives its work: a run that ever
+      // prompted would finish its job and then hang instead of exiting.
+      process.stdin.pause();
+      if (process.stdin.unref) process.stdin.unref();
       resolve();
     });
   });
@@ -664,6 +679,81 @@ async function ensureCleverPortal(page, config, logger) {
     await sleep(750);
   }
   throw new Error('timed out waiting for the Clever portal (TeachTown tile never appeared)');
+}
+
+// A visible password field means a human needs to sign in. The runner NEVER
+// touches credential inputs, in any mode.
+async function credentialFormVisible(page) {
+  try {
+    return await page.locator('input[type="password"]').first().isVisible();
+  } catch {
+    return false;
+  }
+}
+
+// Direct TeachTown login (loginMode "direct"): the district account signs in
+// on the TeachTown site itself — no Clever portal, no tile, same tab.
+// Cookied profile → straight to the hub. A sign-in form hands off to the
+// human; the persistent profile keeps later runs fully automatic.
+async function ensureTeachTownDirect(page, config, logger) {
+  const entry = config.teachtownEntryUrl;
+  const target = entry.includes('#') ? entry : entry + '#/home';
+  logger.event(`Opening TeachTown directly: ${target}`);
+  state.ttNavBase = target.split('#')[0]; // own-app exemption covers the hub boot
+  await page.goto(target, { waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT }).catch(() => {});
+
+  const tracker = makeHopTracker(page, 'teachtown');
+  let deadline = Date.now() + NAV_TIMEOUT * 2;
+  let lastManualPrompt = 0;
+
+  while (Date.now() < deadline) {
+    if (state.shuttingDown) throw new Error('interrupted');
+    await tracker.tick();
+
+    if (
+      /#\/home/.test(page.url()) &&
+      (await page.getByText(/social skills|welcome to teachtown/i).first().isVisible().catch(() => false))
+    ) {
+      state.ttNavBase = page.url().split('#')[0];
+      logger.event('TeachTown home loaded (#/home) — direct session active');
+      return page;
+    }
+
+    // Sign-in form (TeachTown's own or a federated IdP) → human takes over.
+    if (await credentialFormVisible(page)) {
+      tracker.progress(); // recognized page — never the unknown-stop while a human is typing
+      if (Date.now() - lastManualPrompt > 20_000) {
+        lastManualPrompt = Date.now();
+        if (state.reconMode) await reconShot(page, 'teachtown-login-form');
+        logger.event('TeachTown sign-in needs input — waiting for manual login.');
+        await waitForEnter('>>> Log in on the TeachTown page in the browser, then press Enter here to continue... ');
+        deadline = Date.now() + NAV_TIMEOUT * 2;
+        tracker.progress();
+        if (!/#\/home/.test(page.url())) {
+          await page.goto(target, { timeout: NAV_TIMEOUT }).catch(() => {});
+        }
+      }
+      await sleep(750);
+      continue;
+    }
+
+    // Role picker, if the tenant shows one.
+    const teacherRole = page.getByText(/log ?in as a teacher/i).first();
+    if (await teacherRole.isVisible().catch(() => false)) {
+      if (state.reconMode) await reconShot(page, 'teachtown-before-role-click');
+      await teacherRole.click().catch(() => {});
+      logger.event('SSO hop: clicked "Log in as a teacher"');
+      tracker.progress();
+      await sleep(1200);
+      continue;
+    }
+
+    if (!onOwnApp(page) && tracker.stalledFor() > 20_000) {
+      await unknownAuthStop(page, 'TeachTown direct login');
+    }
+    await sleep(750);
+  }
+  throw new Error('timed out waiting for the TeachTown hub (#/home never loaded)');
 }
 
 // Clever opens TeachTown in a new tab; fall back to same-tab just in case.
@@ -1347,21 +1437,38 @@ async function enterEncore(tt, config, logger) {
       break;
     }
 
-    // teachtown.com/Login.aspx → "Login with Clever" (never the credential form).
-    if (ssoClicks < 3 && /login\.aspx/i.test(tt.url())) {
-      const btn = tt
-        .getByRole('button', { name: /login with clever/i })
-        .or(tt.getByRole('link', { name: /login with clever/i }))
-        .or(tt.getByText(/login with clever/i))
-        .first();
-      if (await btn.isVisible().catch(() => false)) {
-        if (state.reconMode) await reconShot(tt, 'encore-before-clever-click');
-        ssoClicks += 1;
-        await btn.click().catch(() => {});
-        logger.event('SSO hop: clicked "Login with Clever"');
-        tracker.progress();
-        await sleep(1200);
-        continue;
+    // teachtown.com/Login.aspx: in clever mode click "Login with Clever"
+    // (never the credential form). In direct mode there is no Clever hop —
+    // a visible credential form hands off to the human instead (usually the
+    // cookied TeachTown session just bounces straight through).
+    if (/login\.aspx/i.test(tt.url())) {
+      if (config.loginMode === 'direct') {
+        if (await credentialFormVisible(tt)) {
+          tracker.progress(); // recognized page — human may be typing
+          if (Date.now() - lastManualPrompt > 20_000) {
+            lastManualPrompt = Date.now();
+            if (state.reconMode) await reconShot(tt, 'encore-login-form');
+            logger.event('TeachTown sign-in needs input — waiting for manual login.');
+            await waitForEnter('>>> Log in on the TeachTown page in the browser, then press Enter here to continue... ');
+          }
+          await sleep(750);
+          continue;
+        }
+      } else if (ssoClicks < 3) {
+        const btn = tt
+          .getByRole('button', { name: /login with clever/i })
+          .or(tt.getByRole('link', { name: /login with clever/i }))
+          .or(tt.getByText(/login with clever/i))
+          .first();
+        if (await btn.isVisible().catch(() => false)) {
+          if (state.reconMode) await reconShot(tt, 'encore-before-clever-click');
+          ssoClicks += 1;
+          await btn.click().catch(() => {});
+          logger.event('SSO hop: clicked "Login with Clever"');
+          tracker.progress();
+          await sleep(1200);
+          continue;
+        }
       }
     }
 
@@ -2048,14 +2155,19 @@ async function shutdown(code) {
 
   try {
     const portal = context.pages()[0] || (await context.newPage());
-    await ensureCleverPortal(portal, config, logger);
+    let tt;
+    if (config.loginMode === 'direct') {
+      tt = await ensureTeachTownDirect(portal, config, logger);
+    } else {
+      await ensureCleverPortal(portal, config, logger);
+      tt = null;
+    }
     try {
-      fs.writeFileSync(firstRunMarker, ts() + '\n'); // Clever portal chain verified for this profile
+      fs.writeFileSync(firstRunMarker, ts() + '\n'); // login chain verified for this profile
     } catch (err) {
       logger.event(`WARN could not write the first-run marker (${err.message}) — recon mode will stay on every run until it can be written`);
     }
-
-    const tt = await openTeachTown(context, portal, logger);
+    if (!tt) tt = await openTeachTown(context, portal, logger);
     state.ttPage = tt;
 
     if (anyRecon) {
