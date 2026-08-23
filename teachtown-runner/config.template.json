@@ -12,7 +12,8 @@
   "mode": "activity",
   "afterRotation": "stop",
   "teacherLed": {
-    "_note": "enCORE Teacher-Led session setup. Runs via afterRotation:\"teacherLed\" or `npm start -- --teacher-led`. group takes precedence over students; empty group uses the students list. autoBegin:true clicks Begin Session itself — that starts a REAL logged session; false stops at the button and waits for you.",
+    "_note": "enCORE Teacher-Led session setup. Runs via afterRotation:\"teacherLed\" or `npm start -- --teacher-led`. group takes precedence over students; empty group uses the students list. autoBegin:true clicks Begin Session itself — that starts a REAL logged session; false stops at the button and waits for you. encoreAppHash normally comes from the district profile; override here only if your tenant differs.",
+    "encoreAppHash": "#/apps/encr",
     "group": "",
     "students": [],
     "sessionLengthMin": 15,

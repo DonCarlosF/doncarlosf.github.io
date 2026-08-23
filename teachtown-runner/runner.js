@@ -17,6 +17,10 @@
  *                                   session (stops at Begin Session unless
  *                                   teacherLed.autoBegin is true — autoBegin
  *                                   starts a REAL logged session)
+ *      npm start -- --login         warm up the browser profile: run the sign-in
+ *                                   chain (manual sign-in in the browser if
+ *                                   needed — never typed by the runner), then
+ *                                   exit. After this, normal runs are zero-touch.
  *      npm start -- --student-led   not implemented yet (prints the recon notes)
  *      npm start -- --recon-roster  day-one recon: SSO chain + list every student
  *                                   in Social Skills AND enCORE, diff against the
@@ -57,6 +61,11 @@ const RECON_DIR = path.join(PROJECT_DIR, 'recon'); // gitignored — screenshots
 // Generous timeout for navigation / UI waits. Activity waits are unbounded.
 const NAV_TIMEOUT = 60_000;
 
+// How long a human gets to finish a manual sign-in (password + MFA) before
+// the run gives up. The chains keep polling and continue on their own the
+// moment sign-in completes — no Enter required.
+const MANUAL_SIGNIN_TIMEOUT = 300_000;
+
 // Verified frame chain for Social Skills (devtools recon):
 //   outer: legacy ASP.NET shell, inner: the AngularJS app. Same-origin.
 const OUTER_IFRAME = 'iframe[src*="SocialSkills/Client/AppHost/AppHost.aspx"]';
@@ -96,6 +105,7 @@ const state = {
   shuttingDown: false,
   finished: false,
   reconMode: false, // recon flag set OR first run on this browser profile
+  manualSignInHappened: false, // a human signed in during this run
 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -239,7 +249,7 @@ function loadConfig(flags) {
     .filter((r) => r.name);
 
   // The rotation students list is only required when the rotation will run.
-  const rotationRun = !flags.teacherLedOnly && !flags.reconRoster && !flags.reconGoals && flags.report == null;
+  const rotationRun = !flags.teacherLedOnly && !flags.reconRoster && !flags.reconGoals && flags.report == null && !flags.loginOnly;
   if (rotationRun) {
     if (!Array.isArray(cfg.students) || cfg.students.length === 0 ||
         cfg.students.some((s) => typeof s !== 'string' || !s.trim())) {
@@ -352,22 +362,31 @@ async function waitForEnabled(locator, timeoutMs) {
   return false;
 }
 
-function waitForEnter(promptText) {
-  return new Promise((resolve) => {
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    rl.on('SIGINT', () => {
-      rl.close();
-      shutdown(130);
-    });
-    rl.question(promptText, () => {
-      rl.close();
-      // Release stdin, or the process outlives its work: a run that ever
-      // prompted would finish its job and then hang instead of exiting.
-      process.stdin.pause();
-      if (process.stdin.unref) process.stdin.unref();
-      resolve();
-    });
+// Non-blocking Enter fallback during a manual sign-in: the chains poll for
+// success on their own, so Enter is never required — pressing it just forces
+// an immediate re-check. The returned disposer MUST run on every chain exit
+// (success or error) or the referenced stdin keeps the process alive after
+// its work is done.
+function armEnterFallback(onEnter) {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  rl.on('line', () => onEnter());
+  rl.on('SIGINT', () => {
+    rl.close();
+    shutdown(130);
   });
+  return () => {
+    try {
+      rl.close();
+    } catch {}
+    process.stdin.pause();
+    if (process.stdin.unref) process.stdin.unref();
+  };
+}
+
+function announceManualSignIn(logger) {
+  state.manualSignInHappened = true;
+  logger.event("MANUAL SIGN-IN NEEDED — sign in in the open browser window; I'll continue automatically.");
+  logger.event('(Waiting up to 5 minutes. Pressing Enter here also re-checks immediately.)');
 }
 
 async function screenshot(page, label) {
@@ -601,84 +620,103 @@ async function ensureCleverPortal(page, config, logger) {
   const tracker = makeHopTracker(page, 'clever');
   const ssoRe = ssoCandidatesRe(config);
   let deadline = Date.now() + NAV_TIMEOUT * 2;
-  let lastManualPrompt = 0;
+  let manualUntil = 0;
   let ssoClicks = 0;
+  let disposeEnter = null;
+  let nudge = false;
 
-  while (Date.now() < deadline) {
-    if (state.shuttingDown) throw new Error('interrupted');
-    await tracker.tick();
-
-    if (await findTeachTownTile(page)) {
-      logger.event('Clever portal ready (TeachTown tile visible)');
-      return;
-    }
-
-    // Microsoft "Stay signed in?" — clicking Yes keeps future runs automatic.
-    // This is not a credential field.
-    try {
-      if (await page.getByText(/stay signed in\?/i).first().isVisible()) {
-        await page
-          .getByRole('button', { name: /^yes$/i })
-          .or(page.locator('input[type="submit"][value="Yes"]'))
-          .first()
-          .click({ timeout: 2000 });
+  try {
+    while (Date.now() < deadline) {
+      if (state.shuttingDown) throw new Error('interrupted');
+      await tracker.tick();
+      if (nudge) {
+        nudge = false;
         tracker.progress();
-        await sleep(1000);
+      }
+
+      if (await findTeachTownTile(page)) {
+        logger.event('Clever portal ready (TeachTown tile visible)');
+        return;
+      }
+
+      // Microsoft "Stay signed in?" — clicking Yes is what makes the profile
+      // durable across runs. This is not a credential field.
+      try {
+        if (await page.getByText(/stay signed in\?/i).first().isVisible()) {
+          await page
+            .getByRole('button', { name: /^yes$/i })
+            .or(page.locator('input[type="submit"][value="Yes"]'))
+            .first()
+            .click({ timeout: 2000 });
+          logger.event('Answered "Stay signed in?" → Yes (keeps future runs zero-touch).');
+          tracker.progress();
+          await sleep(1000);
+          continue;
+        }
+      } catch {}
+
+      // Credential form / account picker / MFA → the human signs in in the
+      // browser while we keep polling; the run continues on its own the
+      // moment the portal loads. Enter is only a force-recheck fallback.
+      if (await microsoftWantsInput(page)) {
+        tracker.progress(); // recognized page — never the unknown-stop mid-MFA
+        if (!manualUntil) {
+          if (state.reconMode) await reconShot(page, 'clever-login-form');
+          announceManualSignIn(logger);
+          manualUntil = Date.now() + MANUAL_SIGNIN_TIMEOUT;
+          deadline = Math.max(deadline, manualUntil + 10_000);
+          disposeEnter = armEnterFallback(() => {
+            nudge = true;
+          });
+        }
+        await sleep(750);
         continue;
       }
-    } catch {}
 
-    // Credential form / account picker → human takes over.
-    if ((await microsoftWantsInput(page)) && Date.now() - lastManualPrompt > 20_000) {
-      lastManualPrompt = Date.now();
-      logger.event('Microsoft sign-in needs input — waiting for manual login.');
-      await waitForEnter('>>> Log in manually in the browser window, then press Enter here to continue... ');
-      deadline = Date.now() + NAV_TIMEOUT * 2;
-      tracker.progress();
-      continue;
-    }
+      // District SSO button: profile candidates first (e.g. "San Lorenzo"),
+      // then a generic sign-in-looking button — but the generic fallback only
+      // fires on clever-ish pages so an unknown provider is never blind-clicked.
+      if (ssoClicks < 3) {
+        let btn = null;
+        if (ssoRe) {
+          const cand = page
+            .getByRole('button', { name: ssoRe })
+            .or(page.getByRole('link', { name: ssoRe }))
+            .first();
+          if (await cand.isVisible().catch(() => false)) btn = cand;
+        }
+        // Hostname, not full URL: an unknown IdP carrying redirect_uri=...clever.com
+        // in its query string must NOT pass as a clever page.
+        if (!btn && /clever/i.test(hostnameOf(page.url()))) {
+          const gen = page
+            .getByRole('button', { name: /sign ?in|log ?in with/i })
+            .or(page.getByRole('link', { name: /sign ?in|log ?in with/i }))
+            .first();
+          if (await gen.isVisible().catch(() => false)) btn = gen;
+        }
+        if (btn) {
+          const label = ((await btn.textContent().catch(() => '')) || 'sign-in button').trim();
+          if (state.reconMode) await reconShot(page, 'clever-before-sso-click');
+          ssoClicks += 1;
+          await btn.click().catch(() => {});
+          logger.event(`SSO hop: clicked "${label}"`);
+          tracker.progress();
+          await sleep(1500);
+          continue;
+        }
+      }
 
-    // District SSO button: profile candidates first (e.g. "San Lorenzo"),
-    // then a generic sign-in-looking button — but the generic fallback only
-    // fires on clever-ish pages so an unknown provider is never blind-clicked.
-    if (ssoClicks < 3) {
-      let btn = null;
-      if (ssoRe) {
-        const cand = page
-          .getByRole('button', { name: ssoRe })
-          .or(page.getByRole('link', { name: ssoRe }))
-          .first();
-        if (await cand.isVisible().catch(() => false)) btn = cand;
+      // Mode-independent: an unrecognized page deserves a stop-and-report even
+      // in steady state — but never while a human is mid-sign-in.
+      if (!onOwnApp(page) && Date.now() > manualUntil && tracker.stalledFor() > 20_000) {
+        await unknownAuthStop(page, 'Clever portal chain');
       }
-      // Hostname, not full URL: an unknown IdP carrying redirect_uri=...clever.com
-      // in its query string must NOT pass as a clever page.
-      if (!btn && /clever/i.test(hostnameOf(page.url()))) {
-        const gen = page
-          .getByRole('button', { name: /sign ?in|log ?in with/i })
-          .or(page.getByRole('link', { name: /sign ?in|log ?in with/i }))
-          .first();
-        if (await gen.isVisible().catch(() => false)) btn = gen;
-      }
-      if (btn) {
-        const label = ((await btn.textContent().catch(() => '')) || 'sign-in button').trim();
-        if (state.reconMode) await reconShot(page, 'clever-before-sso-click');
-        ssoClicks += 1;
-        await btn.click().catch(() => {});
-        logger.event(`SSO hop: clicked "${label}"`);
-        tracker.progress();
-        await sleep(1500);
-        continue;
-      }
+      await sleep(750);
     }
-
-    // Mode-independent: an unrecognized page deserves a stop-and-report even
-    // in steady state (e.g. the district changes IdP mid-year).
-    if (!onOwnApp(page) && tracker.stalledFor() > 20_000) {
-      await unknownAuthStop(page, 'Clever portal chain');
-    }
-    await sleep(750);
+    throw new Error('timed out waiting for the Clever portal (TeachTown tile never appeared)');
+  } finally {
+    if (disposeEnter) disposeEnter();
   }
-  throw new Error('timed out waiting for the Clever portal (TeachTown tile never appeared)');
 }
 
 // A visible password field means a human needs to sign in. The runner NEVER
@@ -704,56 +742,96 @@ async function ensureTeachTownDirect(page, config, logger) {
 
   const tracker = makeHopTracker(page, 'teachtown');
   let deadline = Date.now() + NAV_TIMEOUT * 2;
-  let lastManualPrompt = 0;
+  let manualUntil = 0;
+  let sawCredForm = false;
+  let disposeEnter = null;
+  let nudge = false;
 
-  while (Date.now() < deadline) {
-    if (state.shuttingDown) throw new Error('interrupted');
-    await tracker.tick();
-
-    if (
-      /#\/home/.test(page.url()) &&
-      (await page.getByText(/social skills|welcome to teachtown/i).first().isVisible().catch(() => false))
-    ) {
-      state.ttNavBase = page.url().split('#')[0];
-      logger.event('TeachTown home loaded (#/home) — direct session active');
-      return page;
-    }
-
-    // Sign-in form (TeachTown's own or a federated IdP) → human takes over.
-    if (await credentialFormVisible(page)) {
-      tracker.progress(); // recognized page — never the unknown-stop while a human is typing
-      if (Date.now() - lastManualPrompt > 20_000) {
-        lastManualPrompt = Date.now();
-        if (state.reconMode) await reconShot(page, 'teachtown-login-form');
-        logger.event('TeachTown sign-in needs input — waiting for manual login.');
-        await waitForEnter('>>> Log in on the TeachTown page in the browser, then press Enter here to continue... ');
-        deadline = Date.now() + NAV_TIMEOUT * 2;
+  try {
+    while (Date.now() < deadline) {
+      if (state.shuttingDown) throw new Error('interrupted');
+      await tracker.tick();
+      if (nudge) {
+        nudge = false;
         tracker.progress();
         if (!/#\/home/.test(page.url())) {
           await page.goto(target, { timeout: NAV_TIMEOUT }).catch(() => {});
         }
       }
+
+      if (
+        /#\/home/.test(page.url()) &&
+        (await page.getByText(/social skills|welcome to teachtown/i).first().isVisible().catch(() => false))
+      ) {
+        state.ttNavBase = page.url().split('#')[0];
+        logger.event('TeachTown home loaded (#/home) — direct session active');
+        return page;
+      }
+
+      // "Stay signed in?" (federated IdP) — Yes keeps the profile durable.
+      try {
+        if (await page.getByText(/stay signed in\?/i).first().isVisible()) {
+          await page
+            .getByRole('button', { name: /^yes$/i })
+            .or(page.locator('input[type="submit"][value="Yes"]'))
+            .first()
+            .click({ timeout: 2000 });
+          logger.event('Answered "Stay signed in?" → Yes (keeps future runs zero-touch).');
+          tracker.progress();
+          await sleep(1000);
+          continue;
+        }
+      } catch {}
+
+      // Sign-in form (TeachTown's own or a federated IdP) → the human signs
+      // in in the browser while we keep polling; the run continues on its
+      // own. Enter is only a force-recheck fallback.
+      if (await credentialFormVisible(page)) {
+        sawCredForm = true;
+        tracker.progress(); // recognized page — never the unknown-stop while a human is typing
+        if (!manualUntil) {
+          if (state.reconMode) await reconShot(page, 'teachtown-login-form');
+          announceManualSignIn(logger);
+          manualUntil = Date.now() + MANUAL_SIGNIN_TIMEOUT;
+          deadline = Math.max(deadline, manualUntil + 10_000);
+          disposeEnter = armEnterFallback(() => {
+            nudge = true;
+          });
+        }
+        await sleep(750);
+        continue;
+      }
+
+      // Post-sign-in steer: the form is gone and we landed somewhere on the
+      // TeachTown host that isn't the hub — go there. Host-guarded so a
+      // multi-step MFA flow on the IdP's own domain is never interrupted.
+      if (sawCredForm && hostnameOf(page.url()) === hostnameOf(target) && !/#\/home/.test(page.url())) {
+        sawCredForm = false;
+        await page.goto(target, { timeout: NAV_TIMEOUT }).catch(() => {});
+        tracker.progress();
+        continue;
+      }
+
+      // Role picker, if the tenant shows one.
+      const teacherRole = page.getByText(/log ?in as a teacher/i).first();
+      if (await teacherRole.isVisible().catch(() => false)) {
+        if (state.reconMode) await reconShot(page, 'teachtown-before-role-click');
+        await teacherRole.click().catch(() => {});
+        logger.event('SSO hop: clicked "Log in as a teacher"');
+        tracker.progress();
+        await sleep(1200);
+        continue;
+      }
+
+      if (!onOwnApp(page) && Date.now() > manualUntil && tracker.stalledFor() > 20_000) {
+        await unknownAuthStop(page, 'TeachTown direct login');
+      }
       await sleep(750);
-      continue;
     }
-
-    // Role picker, if the tenant shows one.
-    const teacherRole = page.getByText(/log ?in as a teacher/i).first();
-    if (await teacherRole.isVisible().catch(() => false)) {
-      if (state.reconMode) await reconShot(page, 'teachtown-before-role-click');
-      await teacherRole.click().catch(() => {});
-      logger.event('SSO hop: clicked "Log in as a teacher"');
-      tracker.progress();
-      await sleep(1200);
-      continue;
-    }
-
-    if (!onOwnApp(page) && tracker.stalledFor() > 20_000) {
-      await unknownAuthStop(page, 'TeachTown direct login');
-    }
-    await sleep(750);
+    throw new Error('timed out waiting for the TeachTown hub (#/home never loaded)');
+  } finally {
+    if (disposeEnter) disposeEnter();
   }
-  throw new Error('timed out waiting for the TeachTown hub (#/home never loaded)');
 }
 
 // Clever opens TeachTown in a new tab; fall back to same-tab just in case.
@@ -1425,17 +1503,55 @@ async function enterEncore(tt, config, logger) {
 
   const tracker = makeHopTracker(tt, 'encore');
   const ssoRe = ssoCandidatesRe(config);
-  const deadline = Date.now() + NAV_TIMEOUT * 2;
-  let lastManualPrompt = 0;
+  let deadline = Date.now() + NAV_TIMEOUT * 2;
+  let manualUntil = 0;
   let ssoClicks = 0; // shared cap across Login-with-Clever + district/generic buttons
+  let disposeEnter = null;
+  let nudge = false;
+  // Shared manual-sign-in handling: announce once, then keep polling — the
+  // chain resumes on its own when the human finishes. Enter = force-recheck.
+  const manualPoll = async (shotLabel) => {
+    tracker.progress(); // recognized page — never the unknown-stop mid-sign-in
+    if (!manualUntil) {
+      if (state.reconMode) await reconShot(tt, shotLabel);
+      announceManualSignIn(logger);
+      manualUntil = Date.now() + MANUAL_SIGNIN_TIMEOUT;
+      deadline = Math.max(deadline, manualUntil + 10_000);
+      disposeEnter = armEnterFallback(() => {
+        nudge = true;
+      });
+    }
+    await sleep(750);
+  };
+
+  try {
   while (Date.now() < deadline) {
     if (state.shuttingDown) throw new Error('interrupted');
     await tracker.tick();
+    if (nudge) {
+      nudge = false;
+      tracker.progress();
+    }
 
     // Success: the enCORE app frame is up (its top nav always shows Start a Session).
     if (await encoreLocator(tt).getByText(/start a session/i).first().isVisible().catch(() => false)) {
       break;
     }
+
+    // "Stay signed in?" — clicking Yes is what makes the profile durable.
+    try {
+      if (await tt.getByText(/stay signed in\?/i).first().isVisible()) {
+        await tt
+          .getByRole('button', { name: /^yes$/i })
+          .or(tt.locator('input[type="submit"][value="Yes"]'))
+          .first()
+          .click({ timeout: 2000 });
+        logger.event('Answered "Stay signed in?" → Yes (keeps future runs zero-touch).');
+        tracker.progress();
+        await sleep(1000);
+        continue;
+      }
+    } catch {}
 
     // teachtown.com/Login.aspx: in clever mode click "Login with Clever"
     // (never the credential form). In direct mode there is no Clever hop —
@@ -1444,14 +1560,7 @@ async function enterEncore(tt, config, logger) {
     if (/login\.aspx/i.test(tt.url())) {
       if (config.loginMode === 'direct') {
         if (await credentialFormVisible(tt)) {
-          tracker.progress(); // recognized page — human may be typing
-          if (Date.now() - lastManualPrompt > 20_000) {
-            lastManualPrompt = Date.now();
-            if (state.reconMode) await reconShot(tt, 'encore-login-form');
-            logger.event('TeachTown sign-in needs input — waiting for manual login.');
-            await waitForEnter('>>> Log in on the TeachTown page in the browser, then press Enter here to continue... ');
-          }
-          await sleep(750);
+          await manualPoll('encore-login-form');
           continue;
         }
       } else if (ssoClicks < 3) {
@@ -1472,14 +1581,11 @@ async function enterEncore(tt, config, logger) {
       }
     }
 
-    // Microsoft wants a human (credential form / account picker) — checked
-    // BEFORE any generic button matching so a credential form's "Sign in"
-    // submit can never be clicked by the matcher below.
-    if ((await microsoftWantsInput(tt)) && Date.now() - lastManualPrompt > 20_000) {
-      lastManualPrompt = Date.now();
-      logger.event('Microsoft sign-in needs input — waiting for manual login.');
-      await waitForEnter('>>> Log in manually in the browser window, then press Enter here to continue... ');
-      tracker.progress();
+    // Microsoft wants a human (credential form / account picker / MFA) —
+    // checked BEFORE any generic button matching so a credential form's
+    // "Sign in" submit can never be clicked by the matcher below.
+    if (await microsoftWantsInput(tt)) {
+      await manualPoll('encore-ms-login-form');
       continue;
     }
 
@@ -1526,11 +1632,15 @@ async function enterEncore(tt, config, logger) {
     }
 
     // Mode-independent stop on a page with nothing recognizable (the runner's
-    // own slow-booting app is exempt — the outer deadline governs it).
-    if (!onOwnApp(tt) && tracker.stalledFor() > 20_000) {
+    // own slow-booting app is exempt — the outer deadline governs it, and a
+    // human mid-sign-in is never "unrecognized").
+    if (!onOwnApp(tt) && Date.now() > manualUntil && tracker.stalledFor() > 20_000) {
       await unknownAuthStop(tt, 'enCORE auth chain');
     }
     await sleep(750);
+  }
+  } finally {
+    if (disposeEnter) disposeEnter();
   }
 
   // Land on the configured enCORE app (the OAuth return uses the account
@@ -2077,6 +2187,7 @@ async function shutdown(code) {
     reconRoster: argv.includes('--recon-roster'),
     reconGoals: argv.includes('--recon-goals'),
     report: argv.includes('--report') ? argv[argv.indexOf('--report') + 1] || '' : null,
+    loginOnly: argv.includes('--login'),
   };
   const anyRecon = flags.reconRoster || flags.reconGoals || flags.report != null;
   const dryRun = flags.dryRun;
@@ -2107,7 +2218,9 @@ async function shutdown(code) {
 
   const modeTag = anyRecon
     ? ' (recon)'
-    : `${dryRun ? ' (dry run)' : ''}${teacherLedOnly ? ' (teacher-led only)' : ''}`;
+    : flags.loginOnly
+      ? ' (login only)'
+      : `${dryRun ? ' (dry run)' : ''}${teacherLedOnly ? ' (teacher-led only)' : ''}`;
   logger.event(
     `SESSION START${modeTag} — ` +
       (anyRecon
@@ -2116,7 +2229,9 @@ async function shutdown(code) {
             flags.reconGoals && '--recon-goals',
             flags.report != null && '--report',
           ].filter(Boolean).join(' ')}`
-        : teacherLedOnly
+        : flags.loginOnly
+          ? `district=${config.district || '(legacy)'}, flags=--login`
+          : teacherLedOnly
           ? `enCORE ${config.teacherLed.group ? `group "${config.teacherLed.group}"` : `${config.teacherLed.students.length} student(s)`}, ` +
             `length=${config.teacherLed.sessionLengthMin}min, autoBegin=${config.teacherLed.autoBegin}`
           : `${config.students.length} student(s), mode=${config.mode}, ` +
@@ -2169,6 +2284,18 @@ async function shutdown(code) {
     }
     if (!tt) tt = await openTeachTown(context, portal, logger);
     state.ttPage = tt;
+
+    if (state.manualSignInHappened) {
+      logger.event(`PROFILE AUTHENTICATED — future runs should be zero-touch. Profile: ${profileDir}`);
+    }
+
+    if (flags.loginOnly) {
+      if (!state.manualSignInHappened) {
+        logger.event('Profile already authenticated — zero-touch confirmed (no sign-in was needed).');
+      }
+      logger.event('LOGIN SETUP COMPLETE');
+      return;
+    }
 
     if (anyRecon) {
       if (flags.reconRoster) await reconRoster(tt, config, logger);
