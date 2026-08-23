@@ -36,15 +36,24 @@ by hand **once**, in the browser window the runner opens, and the session
 cookies live in that profile from then on.
 
 - First run (or `npm start -- --login` to warm up the profile without
-  running anything): when a sign-in form appears you'll see
+  running anything — it signs into TeachTown AND the separate enCORE
+  session): when a sign-in form appears you'll see
   `MANUAL SIGN-IN NEEDED — sign in in the open browser window; I'll
   continue automatically.` Type your credentials **into the browser**, not
   the terminal. The runner polls and continues on its own (up to 5
-  minutes); pressing Enter in the terminal just re-checks immediately.
+  minutes); pressing Enter in the terminal just re-checks immediately. If
+  the 5 minutes lapse, the run exits with `SIGN-IN WINDOW EXPIRED` —
+  nothing was typed and nothing is lost; just re-run when you're ready.
 - If Microsoft asks **"Stay signed in?"**, the runner clicks **Yes** for
   you — that's what makes the session stick.
 - On success you'll see `PROFILE AUTHENTICATED — future runs should be
   zero-touch.` and every later run skips sign-in entirely.
+- Sign-in pages are screenshotted to `recon/` on first-run/recon passes for
+  diagnosis. Those images can show your account **email** (never a
+  password — fields are masked and the runner stops screenshotting a page
+  the moment you could be typing). `recon/` and `logs/` are gitignored and
+  local-only; when reporting a problem, send only the specific screenshot
+  asked for.
 
 **If sign-in starts being required every run**, the profile directory is
 being wiped or not written — check permissions on that path (the

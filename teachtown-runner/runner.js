@@ -18,9 +18,12 @@
  *                                   teacherLed.autoBegin is true — autoBegin
  *                                   starts a REAL logged session)
  *      npm start -- --login         warm up the browser profile: run the sign-in
- *                                   chain (manual sign-in in the browser if
- *                                   needed — never typed by the runner), then
- *                                   exit. After this, normal runs are zero-touch.
+ *                                   chain AND the separate enCORE sign-in
+ *                                   (manual sign-in in the browser if needed —
+ *                                   never typed by the runner), then exit.
+ *                                   After this, normal runs are zero-touch.
+ *                                   Combined with any other mode flag, that
+ *                                   mode wins (it signs in first anyway).
  *      npm start -- --student-led   not implemented yet (prints the recon notes)
  *      npm start -- --recon-roster  day-one recon: SSO chain + list every student
  *                                   in Social Skills AND enCORE, diff against the
@@ -106,6 +109,8 @@ const state = {
   finished: false,
   reconMode: false, // recon flag set OR first run on this browser profile
   manualSignInHappened: false, // a human signed in during this run
+  profileAuthAnnounced: false, // PROFILE AUTHENTICATED printed (once per run)
+  profileDir: '',
 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -368,8 +373,14 @@ async function waitForEnabled(locator, timeoutMs) {
 // (success or error) or the referenced stdin keeps the process alive after
 // its work is done.
 function armEnterFallback(onEnter) {
+  const armedAt = Date.now();
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  rl.on('line', () => onEnter());
+  // A newline typed BEFORE arming sits in the stdin buffer and is delivered
+  // the instant readline resumes the stream — it predates the banner and was
+  // not aimed at us, so a line landing immediately after arming is dropped.
+  rl.on('line', () => {
+    if (Date.now() - armedAt > 300) onEnter();
+  });
   rl.on('SIGINT', () => {
     rl.close();
     shutdown(130);
@@ -387,6 +398,16 @@ function announceManualSignIn(logger) {
   state.manualSignInHappened = true;
   logger.event("MANUAL SIGN-IN NEEDED — sign in in the open browser window; I'll continue automatically.");
   logger.event('(Waiting up to 5 minutes. Pressing Enter here also re-checks immediately.)');
+}
+
+// One confirmation per run, no matter which chain the manual sign-in happened
+// in (the enCORE leg signs in separately and can prompt long after main()'s
+// post-login checkpoint).
+function noteProfileAuthenticated(logger) {
+  if (state.manualSignInHappened && !state.profileAuthAnnounced) {
+    state.profileAuthAnnounced = true;
+    logger.event(`PROFILE AUTHENTICATED — future runs should be zero-touch. Profile: ${state.profileDir}`);
+  }
 }
 
 async function screenshot(page, label) {
@@ -426,6 +447,12 @@ function encoreLocator(tt) {
 // Raised when an auth chain hits a page the runner doesn't recognize while
 // in recon mode — the human takes over (exit code 2, screenshot saved).
 class ReconStopError extends Error {}
+
+// The 5-minute manual sign-in window closed without the chain reaching its
+// success state. Distinct so callers can (a) skip the fatal screenshot — the
+// page on screen is a live sign-in form — and (b) not retry into a silent
+// second window.
+class ManualSignInTimeoutError extends Error {}
 
 async function reconShot(page, label) {
   try {
@@ -605,6 +632,29 @@ async function microsoftWantsInput(page) {
   return false;
 }
 
+// A known IdP HOST (Microsoft / federation endpoints) is never an
+// "unrecognized" page — dedicated handlers exist for it, and mid-MFA it can
+// legitimately sit static for minutes (approval pending on a phone) with no
+// visible inputs for microsoftWantsInput to match.
+function onKnownIdpHost(page) {
+  return /login\.microsoftonline|login\.live|login\.microsoft|adfs|sts\./i.test(hostnameOf(page.url()));
+}
+
+// Any visible form field = a human may be mid-flow on this page (step 2 of a
+// login, an OTP box, a security question) — never navigate over it.
+async function anyVisibleFormField(page) {
+  try {
+    return (
+      (await page
+        .locator('input:not([type="hidden"]), textarea, select')
+        .filter({ visible: true })
+        .count()) > 0
+    );
+  } catch {
+    return false;
+  }
+}
+
 // goto the district's Clever entry URL and get to the logged-in portal (the
 // page with the TeachTown tile). Cached session → fully automatic. If a
 // credential form shows up, hand control to the human. Never touch fields.
@@ -621,9 +671,15 @@ async function ensureCleverPortal(page, config, logger) {
   const ssoRe = ssoCandidatesRe(config);
   let deadline = Date.now() + NAV_TIMEOUT * 2;
   let manualUntil = 0;
+  let lastAuthSeen = 0; // last poll that saw a sign-in page (form/picker/MFA)
   let ssoClicks = 0;
+  let kmsiClicks = 0;
   let disposeEnter = null;
   let nudge = false;
+  // The unknown-page stop is suppressed only while a human is plausibly
+  // signing in: inside the 5-minute window AND within 45s of last actually
+  // seeing a sign-in page — not for the whole window on wall-clock alone.
+  const manualActive = () => manualUntil && Date.now() <= manualUntil && Date.now() <= lastAuthSeen + 45_000;
 
   try {
     while (Date.now() < deadline) {
@@ -639,26 +695,11 @@ async function ensureCleverPortal(page, config, logger) {
         return;
       }
 
-      // Microsoft "Stay signed in?" — clicking Yes is what makes the profile
-      // durable across runs. This is not a credential field.
-      try {
-        if (await page.getByText(/stay signed in\?/i).first().isVisible()) {
-          await page
-            .getByRole('button', { name: /^yes$/i })
-            .or(page.locator('input[type="submit"][value="Yes"]'))
-            .first()
-            .click({ timeout: 2000 });
-          logger.event('Answered "Stay signed in?" → Yes (keeps future runs zero-touch).');
-          tracker.progress();
-          await sleep(1000);
-          continue;
-        }
-      } catch {}
-
       // Credential form / account picker / MFA → the human signs in in the
       // browser while we keep polling; the run continues on its own the
       // moment the portal loads. Enter is only a force-recheck fallback.
       if (await microsoftWantsInput(page)) {
+        lastAuthSeen = Date.now();
         tracker.progress(); // recognized page — never the unknown-stop mid-MFA
         if (!manualUntil) {
           if (state.reconMode) await reconShot(page, 'clever-login-form');
@@ -671,6 +712,29 @@ async function ensureCleverPortal(page, config, logger) {
         }
         await sleep(750);
         continue;
+      }
+
+      // Microsoft "Stay signed in?" — clicking Yes is what makes the profile
+      // durable across runs. Checked AFTER the credential branch so a page
+      // that still shows credential inputs is left to the human, and capped
+      // so a lookalike page that never navigates still reaches the
+      // unknown-page stop instead of being clicked forever.
+      try {
+        if (kmsiClicks < 3 && (await page.getByText(/stay signed in\?/i).first().isVisible())) {
+          kmsiClicks += 1;
+          await page
+            .getByRole('button', { name: /^yes$/i })
+            .or(page.locator('input[type="submit"][value="Yes"]'))
+            .first()
+            .click({ timeout: 2000 });
+          logger.event('Answered "Stay signed in?" → Yes (keeps future runs zero-touch).');
+          tracker.progress();
+          deadline = Math.max(deadline, Date.now() + 60_000); // post-auth redirects get real time
+          await sleep(1000);
+          continue;
+        }
+      } catch {
+        logger.event('WARN could not click Yes on "Stay signed in?" — will stop and report if the page stays stuck.');
       }
 
       // District SSO button: profile candidates first (e.g. "San Lorenzo"),
@@ -701,19 +765,25 @@ async function ensureCleverPortal(page, config, logger) {
           await btn.click().catch(() => {});
           logger.event(`SSO hop: clicked "${label}"`);
           tracker.progress();
+          deadline = Math.max(deadline, Date.now() + 60_000);
           await sleep(1500);
           continue;
         }
       }
 
       // Mode-independent: an unrecognized page deserves a stop-and-report even
-      // in steady state — but never while a human is mid-sign-in.
-      if (!onOwnApp(page) && Date.now() > manualUntil && tracker.stalledFor() > 20_000) {
+      // in steady state — but never while a human is mid-sign-in, and never on
+      // a known IdP host (mid-MFA those sit static with nothing to match).
+      if (!onOwnApp(page) && !onKnownIdpHost(page) && !manualActive() && tracker.stalledFor() > 20_000) {
         await unknownAuthStop(page, 'Clever portal chain');
       }
       await sleep(750);
     }
-    throw new Error('timed out waiting for the Clever portal (TeachTown tile never appeared)');
+    throw manualUntil
+      ? new ManualSignInTimeoutError(
+          'SIGN-IN WINDOW EXPIRED — the Clever portal never became ready within the 5-minute manual sign-in window. Nothing was typed by the runner; re-run when ready (npm start -- --login warms up the profile).'
+        )
+      : new Error('timed out waiting for the Clever portal (TeachTown tile never appeared)');
   } finally {
     if (disposeEnter) disposeEnter();
   }
@@ -743,9 +813,28 @@ async function ensureTeachTownDirect(page, config, logger) {
   const tracker = makeHopTracker(page, 'teachtown');
   let deadline = Date.now() + NAV_TIMEOUT * 2;
   let manualUntil = 0;
+  let lastAuthSeen = 0; // last poll that saw a sign-in page
   let sawCredForm = false;
+  let kmsiClicks = 0;
   let disposeEnter = null;
   let nudge = false;
+  const manualActive = () => manualUntil && Date.now() <= manualUntil && Date.now() <= lastAuthSeen + 45_000;
+  // Shared manual-sign-in handling for both the TeachTown form and a
+  // federated IdP's pages: announce once, then keep polling.
+  const armManual = async (shotLabel) => {
+    lastAuthSeen = Date.now();
+    tracker.progress(); // recognized page — never the unknown-stop while a human is typing
+    if (!manualUntil) {
+      if (state.reconMode) await reconShot(page, shotLabel);
+      announceManualSignIn(logger);
+      manualUntil = Date.now() + MANUAL_SIGNIN_TIMEOUT;
+      deadline = Math.max(deadline, manualUntil + 10_000);
+      disposeEnter = armEnterFallback(() => {
+        nudge = true;
+      });
+    }
+    await sleep(750);
+  };
 
   try {
     while (Date.now() < deadline) {
@@ -754,8 +843,17 @@ async function ensureTeachTownDirect(page, config, logger) {
       if (nudge) {
         nudge = false;
         tracker.progress();
-        if (!/#\/home/.test(page.url())) {
+        // Enter's re-goto ONLY when it cannot destroy human work: from the
+        // TeachTown host itself (never an IdP mid-MFA) and with no visible
+        // form fields (never a half-typed sign-in or a step-2 page).
+        if (
+          !/#\/home/.test(page.url()) &&
+          hostnameOf(page.url()) === hostnameOf(target) &&
+          !(await anyVisibleFormField(page))
+        ) {
+          logger.event('Enter → reloading the TeachTown entry page.');
           await page.goto(target, { timeout: NAV_TIMEOUT }).catch(() => {});
+          deadline = Math.max(deadline, Date.now() + 60_000);
         }
       }
 
@@ -768,9 +866,28 @@ async function ensureTeachTownDirect(page, config, logger) {
         return page;
       }
 
+      // Sign-in form (TeachTown's own or a federated IdP's) → the human signs
+      // in in the browser while we keep polling; the run continues on its
+      // own. Enter is only a force-recheck fallback.
+      if (await credentialFormVisible(page)) {
+        sawCredForm = true;
+        await armManual('teachtown-login-form');
+        continue;
+      }
+
+      // A federated IdP asking for something with no password field visible
+      // (email-first page, account picker, MFA) — same manual handling.
+      if (await microsoftWantsInput(page)) {
+        sawCredForm = true;
+        await armManual('teachtown-idp-login-form');
+        continue;
+      }
+
       // "Stay signed in?" (federated IdP) — Yes keeps the profile durable.
+      // Checked AFTER the credential branches and capped (see clever chain).
       try {
-        if (await page.getByText(/stay signed in\?/i).first().isVisible()) {
+        if (kmsiClicks < 3 && (await page.getByText(/stay signed in\?/i).first().isVisible())) {
+          kmsiClicks += 1;
           await page
             .getByRole('button', { name: /^yes$/i })
             .or(page.locator('input[type="submit"][value="Yes"]'))
@@ -778,37 +895,30 @@ async function ensureTeachTownDirect(page, config, logger) {
             .click({ timeout: 2000 });
           logger.event('Answered "Stay signed in?" → Yes (keeps future runs zero-touch).');
           tracker.progress();
+          deadline = Math.max(deadline, Date.now() + 60_000);
           await sleep(1000);
           continue;
         }
-      } catch {}
-
-      // Sign-in form (TeachTown's own or a federated IdP) → the human signs
-      // in in the browser while we keep polling; the run continues on its
-      // own. Enter is only a force-recheck fallback.
-      if (await credentialFormVisible(page)) {
-        sawCredForm = true;
-        tracker.progress(); // recognized page — never the unknown-stop while a human is typing
-        if (!manualUntil) {
-          if (state.reconMode) await reconShot(page, 'teachtown-login-form');
-          announceManualSignIn(logger);
-          manualUntil = Date.now() + MANUAL_SIGNIN_TIMEOUT;
-          deadline = Math.max(deadline, manualUntil + 10_000);
-          disposeEnter = armEnterFallback(() => {
-            nudge = true;
-          });
-        }
-        await sleep(750);
-        continue;
+      } catch {
+        logger.event('WARN could not click Yes on "Stay signed in?" — will stop and report if the page stays stuck.');
       }
 
       // Post-sign-in steer: the form is gone and we landed somewhere on the
       // TeachTown host that isn't the hub — go there. Host-guarded so a
-      // multi-step MFA flow on the IdP's own domain is never interrupted.
-      if (sawCredForm && hostnameOf(page.url()) === hostnameOf(target) && !/#\/home/.test(page.url())) {
+      // multi-step MFA flow on the IdP's own domain is never interrupted;
+      // field-guarded + 3s dwell so a same-host step-2 page (OTP, security
+      // question) or an in-flight submit is never navigated over.
+      if (
+        sawCredForm &&
+        hostnameOf(page.url()) === hostnameOf(target) &&
+        !/#\/home/.test(page.url()) &&
+        !(await anyVisibleFormField(page)) &&
+        tracker.stalledFor() > 3_000
+      ) {
         sawCredForm = false;
         await page.goto(target, { timeout: NAV_TIMEOUT }).catch(() => {});
         tracker.progress();
+        deadline = Math.max(deadline, Date.now() + 60_000);
         continue;
       }
 
@@ -819,16 +929,21 @@ async function ensureTeachTownDirect(page, config, logger) {
         await teacherRole.click().catch(() => {});
         logger.event('SSO hop: clicked "Log in as a teacher"');
         tracker.progress();
+        deadline = Math.max(deadline, Date.now() + 60_000);
         await sleep(1200);
         continue;
       }
 
-      if (!onOwnApp(page) && Date.now() > manualUntil && tracker.stalledFor() > 20_000) {
+      if (!onOwnApp(page) && !onKnownIdpHost(page) && !manualActive() && tracker.stalledFor() > 20_000) {
         await unknownAuthStop(page, 'TeachTown direct login');
       }
       await sleep(750);
     }
-    throw new Error('timed out waiting for the TeachTown hub (#/home never loaded)');
+    throw manualUntil
+      ? new ManualSignInTimeoutError(
+          'SIGN-IN WINDOW EXPIRED — the TeachTown hub (#/home) never loaded within the 5-minute manual sign-in window. Nothing was typed by the runner; re-run when ready (npm start -- --login warms up the profile).'
+        )
+      : new Error('timed out waiting for the TeachTown hub (#/home never loaded)');
   } finally {
     if (disposeEnter) disposeEnter();
   }
@@ -1503,14 +1618,21 @@ async function enterEncore(tt, config, logger) {
 
   const tracker = makeHopTracker(tt, 'encore');
   const ssoRe = ssoCandidatesRe(config);
+  const wantHash = config.teacherLed.encoreAppHash || '#/apps/encr';
   let deadline = Date.now() + NAV_TIMEOUT * 2;
   let manualUntil = 0;
+  let lastAuthSeen = 0; // last poll that saw a sign-in page
   let ssoClicks = 0; // shared cap across Login-with-Clever + district/generic buttons
+  let kmsiClicks = 0;
+  let steered = 0;
+  let succeeded = false;
   let disposeEnter = null;
   let nudge = false;
+  const manualActive = () => manualUntil && Date.now() <= manualUntil && Date.now() <= lastAuthSeen + 45_000;
   // Shared manual-sign-in handling: announce once, then keep polling — the
   // chain resumes on its own when the human finishes. Enter = force-recheck.
   const manualPoll = async (shotLabel) => {
+    lastAuthSeen = Date.now();
     tracker.progress(); // recognized page — never the unknown-stop mid-sign-in
     if (!manualUntil) {
       if (state.reconMode) await reconShot(tt, shotLabel);
@@ -1535,35 +1657,22 @@ async function enterEncore(tt, config, logger) {
 
     // Success: the enCORE app frame is up (its top nav always shows Start a Session).
     if (await encoreLocator(tt).getByText(/start a session/i).first().isVisible().catch(() => false)) {
+      succeeded = true;
       break;
     }
 
-    // "Stay signed in?" — clicking Yes is what makes the profile durable.
-    try {
-      if (await tt.getByText(/stay signed in\?/i).first().isVisible()) {
-        await tt
-          .getByRole('button', { name: /^yes$/i })
-          .or(tt.locator('input[type="submit"][value="Yes"]'))
-          .first()
-          .click({ timeout: 2000 });
-        logger.event('Answered "Stay signed in?" → Yes (keeps future runs zero-touch).');
-        tracker.progress();
-        await sleep(1000);
-        continue;
-      }
-    } catch {}
+    // Direct mode: ANY visible credential form hands off to the human —
+    // URL-agnostic, like the sibling direct chain (where the tenant's form
+    // actually lives is not pinned to Login.aspx).
+    if (config.loginMode === 'direct' && (await credentialFormVisible(tt))) {
+      await manualPoll('encore-login-form');
+      continue;
+    }
 
     // teachtown.com/Login.aspx: in clever mode click "Login with Clever"
-    // (never the credential form). In direct mode there is no Clever hop —
-    // a visible credential form hands off to the human instead (usually the
-    // cookied TeachTown session just bounces straight through).
-    if (/login\.aspx/i.test(tt.url())) {
-      if (config.loginMode === 'direct') {
-        if (await credentialFormVisible(tt)) {
-          await manualPoll('encore-login-form');
-          continue;
-        }
-      } else if (ssoClicks < 3) {
+    // (never the credential form).
+    if (/login\.aspx/i.test(tt.url()) && config.loginMode !== 'direct') {
+      if (ssoClicks < 3) {
         const btn = tt
           .getByRole('button', { name: /login with clever/i })
           .or(tt.getByRole('link', { name: /login with clever/i }))
@@ -1589,6 +1698,26 @@ async function enterEncore(tt, config, logger) {
       continue;
     }
 
+    // "Stay signed in?" — clicking Yes is what makes the profile durable.
+    // Checked AFTER the credential branches and capped (see clever chain).
+    try {
+      if (kmsiClicks < 3 && (await tt.getByText(/stay signed in\?/i).first().isVisible())) {
+        kmsiClicks += 1;
+        await tt
+          .getByRole('button', { name: /^yes$/i })
+          .or(tt.locator('input[type="submit"][value="Yes"]'))
+          .first()
+          .click({ timeout: 2000 });
+        logger.event('Answered "Stay signed in?" → Yes (keeps future runs zero-touch).');
+        tracker.progress();
+        deadline = Math.max(deadline, Date.now() + 60_000);
+        await sleep(1000);
+        continue;
+      }
+    } catch {
+      logger.event('WARN could not click Yes on "Stay signed in?" — will stop and report if the page stays stuck.');
+    }
+
     // Role picker ("Select user") → teacher.
     const teacherRole = tt.getByText(/log ?in as a teacher/i).first();
     if (await teacherRole.isVisible().catch(() => false)) {
@@ -1596,6 +1725,7 @@ async function enterEncore(tt, config, logger) {
       await teacherRole.click().catch(() => {});
       logger.event('SSO hop: clicked "Log in as a teacher"');
       tracker.progress();
+      deadline = Math.max(deadline, Date.now() + 60_000);
       await sleep(1200);
       continue;
     }
@@ -1626,15 +1756,36 @@ async function enterEncore(tt, config, logger) {
         await btn.click().catch(() => {});
         logger.event(`SSO hop: clicked "${label}"`);
         tracker.progress();
+        deadline = Math.max(deadline, Date.now() + 60_000);
         await sleep(1200);
         continue;
       }
     }
 
+    // After a mid-chain sign-in the OAuth return can land on the hub or the
+    // account-default app instead of the configured one — steer so the
+    // success check becomes reachable inside the loop (the post-loop steer
+    // only runs after the deadline).
+    if (
+      manualUntil &&
+      steered < 2 &&
+      onOwnApp(tt) &&
+      !tt.url().includes(wantHash) &&
+      tracker.stalledFor() > 3_000
+    ) {
+      steered += 1;
+      await tt.goto(state.ttNavBase + wantHash, { timeout: NAV_TIMEOUT }).catch(() => {});
+      tracker.progress();
+      deadline = Math.max(deadline, Date.now() + 60_000);
+      await sleep(1000);
+      continue;
+    }
+
     // Mode-independent stop on a page with nothing recognizable (the runner's
-    // own slow-booting app is exempt — the outer deadline governs it, and a
-    // human mid-sign-in is never "unrecognized").
-    if (!onOwnApp(tt) && Date.now() > manualUntil && tracker.stalledFor() > 20_000) {
+    // own slow-booting app is exempt — the outer deadline governs it, a
+    // human mid-sign-in is never "unrecognized", and a known IdP host mid-MFA
+    // can sit static for minutes).
+    if (!onOwnApp(tt) && !onKnownIdpHost(tt) && !manualActive() && tracker.stalledFor() > 20_000) {
       await unknownAuthStop(tt, 'enCORE auth chain');
     }
     await sleep(750);
@@ -1643,9 +1794,19 @@ async function enterEncore(tt, config, logger) {
     if (disposeEnter) disposeEnter();
   }
 
+  // A manual window was open and the app never became ready: say so plainly
+  // instead of navigating away under a possibly-still-typing human and dying
+  // later on a generic Playwright timeout. (Without a manual window the old
+  // fall-through below stays — the post-loop steer gives a slow boot one
+  // more chance under its own 60s wait.)
+  if (!succeeded && manualUntil && Date.now() > manualUntil) {
+    throw new ManualSignInTimeoutError(
+      'SIGN-IN WINDOW EXPIRED — enCORE never became ready within the 5-minute manual sign-in window (a sign-in form may still be open in the browser). Nothing was typed by the runner.'
+    );
+  }
+
   // Land on the configured enCORE app (the OAuth return uses the account
   // default; a direct hash goto reaches any entitled app).
-  const wantHash = config.teacherLed.encoreAppHash || '#/apps/encr';
   if (!tt.url().includes(wantHash)) {
     await tt.goto(state.ttNavBase + wantHash, { timeout: NAV_TIMEOUT }).catch(() => {});
   }
@@ -1811,11 +1972,13 @@ async function runTeacherLed(tt, config, dryRun, logger) {
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
       await enterEncore(tt, config, logger);
+      noteProfileAuthenticated(logger);
       await teacherLedSetup(tt, config.teacherLed, dryRun, logger);
       return; // unreachable (setup idles) — kept for shape
     } catch (err) {
       if (state.shuttingDown) return;
       if (err instanceof ReconStopError) throw err; // retrying an unrecognized-page stop just repeats it
+      if (err instanceof ManualSignInTimeoutError) throw err; // retrying would silently open a second 5-min window
       logger.event(`WARN teacher-led — ${err.message.split('\n')[0]}`);
       await screenshot(tt, `teacherled-attempt${attempt}`);
       if (attempt >= 2) throw err;
@@ -2181,17 +2344,25 @@ async function shutdown(code) {
 
 (async function main() {
   const argv = process.argv;
+  const reportArg = () => {
+    const v = argv[argv.indexOf('--report') + 1];
+    return v && !v.startsWith('-') ? v : ''; // next flag ≠ a student name
+  };
   const flags = {
     dryRun: argv.includes('--dry-run'),
     teacherLedOnly: argv.includes('--teacher-led'),
     reconRoster: argv.includes('--recon-roster'),
     reconGoals: argv.includes('--recon-goals'),
-    report: argv.includes('--report') ? argv[argv.indexOf('--report') + 1] || '' : null,
-    loginOnly: argv.includes('--login'),
+    report: argv.includes('--report') ? reportArg() : null,
   };
   const anyRecon = flags.reconRoster || flags.reconGoals || flags.report != null;
   const dryRun = flags.dryRun;
   const teacherLedOnly = flags.teacherLedOnly;
+  // --login is a warmup other modes subsume (every mode runs the sign-in
+  // chain first) — the more specific mode wins, instead of silently
+  // discarding the mode's actual work.
+  flags.loginOnly = argv.includes('--login') && !anyRecon && !teacherLedOnly && !dryRun;
+  const loginImplied = argv.includes('--login') && !flags.loginOnly;
 
   if (process.argv.includes('--student-led')) {
     console.error(
@@ -2216,6 +2387,9 @@ async function shutdown(code) {
   process.on('SIGINT', () => shutdown(130));
   process.on('SIGTERM', () => shutdown(143));
 
+  if (loginImplied) {
+    logger.event('NOTE --login is implied by this mode — the sign-in chain runs first; continuing with the full run.');
+  }
   const modeTag = anyRecon
     ? ' (recon)'
     : flags.loginOnly
@@ -2239,6 +2413,7 @@ async function shutdown(code) {
   );
 
   const profileDir = resolveProfileDir(config.profileDir);
+  state.profileDir = profileDir;
   fs.mkdirSync(profileDir, { recursive: true });
   if (
     profileDir.startsWith(PROJECT_DIR + path.sep) &&
@@ -2284,12 +2459,24 @@ async function shutdown(code) {
     }
     if (!tt) tt = await openTeachTown(context, portal, logger);
     state.ttPage = tt;
-
-    if (state.manualSignInHappened) {
-      logger.event(`PROFILE AUTHENTICATED — future runs should be zero-touch. Profile: ${profileDir}`);
-    }
+    noteProfileAuthenticated(logger);
 
     if (flags.loginOnly) {
+      // enCORE keeps its own session — warm it too, or "zero-touch later"
+      // would only be true for half the day-one surface.
+      logger.event('Warming the enCORE session (it signs in separately)...');
+      try {
+        await enterEncore(tt, config, logger);
+        logger.event('enCORE session ready.');
+      } catch (err) {
+        if (err instanceof ReconStopError || err instanceof ManualSignInTimeoutError || state.shuttingDown) {
+          throw err;
+        }
+        logger.event(
+          `WARN enCORE warmup failed (${err.message.split('\n')[0]}) — TeachTown itself is authenticated; enCORE may ask to sign in when first used.`
+        );
+      }
+      noteProfileAuthenticated(logger);
       if (!state.manualSignInHappened) {
         logger.event('Profile already authenticated — zero-touch confirmed (no sign-in was needed).');
       }
@@ -2301,6 +2488,7 @@ async function shutdown(code) {
       if (flags.reconRoster) await reconRoster(tt, config, logger);
       if (flags.reconGoals) await reconGoals(tt, config, logger);
       if (flags.report != null) await reportScrape(tt, config, flags.report, logger);
+      noteProfileAuthenticated(logger); // an enCORE-leg sign-in counts too
       logger.event('RECON COMPLETE');
       return;
     }
@@ -2343,12 +2531,19 @@ async function shutdown(code) {
     }
 
     if (dryRun) printDryRunTable(results, logger);
+    noteProfileAuthenticated(logger);
     logger.event('SESSION COMPLETE');
   } catch (err) {
+    if (state.shuttingDown) {
+      return; // Ctrl+C owns the exit — an 'interrupted' throw is not a failure
+    }
     if (err instanceof ReconStopError) {
       logger.event('SSO RECON STOP — a human needs to look at this:');
       for (const line of err.message.split('\n')) logger.event(line);
       process.exitCode = 2;
+    } else if (err instanceof ManualSignInTimeoutError) {
+      logger.event(`FATAL ${err.message.split('\n')[0]}`);
+      process.exitCode = 1; // no screenshot — the page on screen is a live sign-in form
     } else {
       logger.event(`FATAL ${err.message.split('\n')[0]}`);
       await screenshot(state.ttPage || state.context?.pages()[0], 'fatal');

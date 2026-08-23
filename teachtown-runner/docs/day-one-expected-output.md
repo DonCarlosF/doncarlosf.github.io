@@ -14,9 +14,10 @@ real terminal against each block. Expected substitutions on the real run:
   `expected: false` entry for the other-school student who may not appear.
 
 Run the three commands in this order, same terminal, same day. (Optional
-warm-up: `npm start -- --login` runs just the sign-in chain and exits with
-`LOGIN SETUP COMPLETE` — useful the night before. If you do that, command 1
-below simply won't show the sign-in lines.)
+warm-up: `npm start -- --login` runs the sign-in chain plus the separate
+enCORE sign-in and exits with `LOGIN SETUP COMPLETE` — useful the night
+before. If you do that, command 1 below simply won't show the sign-in
+lines.)
 
 ---
 
@@ -90,6 +91,9 @@ report shows.
   `MANUAL SIGN-IN NEEDED` banner appears mid-chain — log in in the browser
   and the recon continues on its own. Usually the TeachTown session
   carries through and you never see this.
+- **You couldn't get to the browser within 5 minutes:** the run exits with
+  `SIGN-IN WINDOW EXPIRED — … Nothing was typed by the runner`. Nothing is
+  broken — re-run the same command when you're ready.
 - **F4 — rostering hasn't synced:** the Social Skills section shows
   `RECON Social Skills: 0 student(s) found` plus
   `Zero students in Social Skills. Most likely district rostering has not synced to TeachTown yet — a timing fact, not a runner bug. Re-run --recon-roster in a few days.`
