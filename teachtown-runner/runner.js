@@ -640,6 +640,51 @@ function onKnownIdpHost(page) {
   return /login\.microsoftonline|login\.live|login\.microsoft|adfs|sts\./i.test(hostnameOf(page.url()));
 }
 
+// A page that belongs to a sign-in flow — never navigate away from one.
+// URL-based (login/sso/auth paths) plus a live password field, so a
+// multi-step login on the app's own host stays protected while an ordinary
+// app page (which may well have a search box) does not.
+async function looksLikeSignInPage(page) {
+  if (/login|signin|sign-in|sso|auth|oauth|saml|adfs/i.test(page.url())) return true;
+  if (await credentialFormVisible(page)) return true;
+  return false;
+}
+
+// Periodic "here is what I'm actually looking at" line. A chain waiting on
+// something it doesn't recognize has to narrate itself — going silent for
+// minutes and then failing with a bare timeout is not a diagnosable failure.
+function makeHeartbeat(logger, everyMs = 15_000) {
+  let last = Date.now();
+  return async (page, what) => {
+    if (Date.now() - last < everyMs) return;
+    last = Date.now();
+    const info = await page
+      .evaluate(() => ({
+        text: (document.body ? document.body.innerText : '').trim().replace(/\s+/g, ' ').slice(0, 160),
+        controls: document.querySelectorAll('button, a, input').length,
+      }))
+      .catch(() => null);
+    logger.event(`Still waiting for ${what} — url: ${page.url()}`);
+    if (info) logger.event(`  the page shows: "${info.text}" (${info.controls} controls)`);
+  };
+}
+
+// Enough structure and text to be a real app screen rather than a blank
+// page, a spinner, or an error stub. Two shapes count: a hub (several
+// cards/links) and an app screen — TeachTown embeds every app in an
+// iframe, so a page whose only top-level content is a heading plus an
+// iframe is a loaded app, not an empty page.
+async function appContentRendered(page) {
+  return await page
+    .evaluate(() => {
+      const controls = document.querySelectorAll('button, a, [class*="card" i], [class*="tile" i]').length;
+      const frames = document.querySelectorAll('iframe').length;
+      const text = (document.body ? document.body.innerText : '').trim().length;
+      return (controls >= 3 && text > 20) || (frames >= 1 && text > 0);
+    })
+    .catch(() => false);
+}
+
 // Any visible form field = a human may be mid-flow on this page (step 2 of a
 // login, an OTP box, a security question) — never navigate over it.
 async function anyVisibleFormField(page) {
@@ -668,6 +713,7 @@ async function ensureCleverPortal(page, config, logger) {
   });
 
   const tracker = makeHopTracker(page, 'clever');
+  const heartbeat = makeHeartbeat(logger);
   const ssoRe = ssoCandidatesRe(config);
   let deadline = Date.now() + NAV_TIMEOUT * 2;
   let manualUntil = 0;
@@ -777,6 +823,7 @@ async function ensureCleverPortal(page, config, logger) {
       if (!onOwnApp(page) && !onKnownIdpHost(page) && !manualActive() && tracker.stalledFor() > 20_000) {
         await unknownAuthStop(page, 'Clever portal chain');
       }
+      if (!manualActive()) await heartbeat(page, 'the Clever portal (TeachTown tile)');
       await sleep(750);
     }
     throw manualUntil
@@ -811,10 +858,11 @@ async function ensureTeachTownDirect(page, config, logger) {
   await page.goto(target, { waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT }).catch(() => {});
 
   const tracker = makeHopTracker(page, 'teachtown');
+  const heartbeat = makeHeartbeat(logger);
   let deadline = Date.now() + NAV_TIMEOUT * 2;
   let manualUntil = 0;
   let lastAuthSeen = 0; // last poll that saw a sign-in page
-  let sawCredForm = false;
+  let steers = 0;
   let kmsiClicks = 0;
   let disposeEnter = null;
   let nudge = false;
@@ -857,8 +905,11 @@ async function ensureTeachTownDirect(page, config, logger) {
         }
       }
 
+      const onNav = hostnameOf(page.url()) === hostnameOf(target);
+      const atHome = /#\/home/.test(page.url());
+
       if (
-        /#\/home/.test(page.url()) &&
+        atHome &&
         (await page.getByText(/social skills|welcome to teachtown/i).first().isVisible().catch(() => false))
       ) {
         state.ttNavBase = page.url().split('#')[0];
@@ -870,7 +921,6 @@ async function ensureTeachTownDirect(page, config, logger) {
       // in in the browser while we keep polling; the run continues on its
       // own. Enter is only a force-recheck fallback.
       if (await credentialFormVisible(page)) {
-        sawCredForm = true;
         await armManual('teachtown-login-form');
         continue;
       }
@@ -878,9 +928,23 @@ async function ensureTeachTownDirect(page, config, logger) {
       // A federated IdP asking for something with no password field visible
       // (email-first page, account picker, MFA) — same manual handling.
       if (await microsoftWantsInput(page)) {
-        sawCredForm = true;
         await armManual('teachtown-idp-login-form');
         continue;
+      }
+
+      // Signed in and at #/home, but the hub's wording isn't one we know —
+      // tenants label it differently. Accept a settled, content-bearing hub
+      // rather than stalling on a text match nobody can predict.
+      if (atHome && onNav && tracker.stalledFor() > 5_000) {
+        const rendered = await appContentRendered(page);
+        if (rendered) {
+          state.ttNavBase = page.url().split('#')[0];
+          logger.event(
+            'TeachTown home loaded (#/home) — direct session active ' +
+              "(matched on rendered content; the hub's wording wasn't one I recognize)"
+          );
+          return page;
+        }
       }
 
       // "Stay signed in?" (federated IdP) — Yes keeps the profile durable.
@@ -903,23 +967,46 @@ async function ensureTeachTownDirect(page, config, logger) {
         logger.event('WARN could not click Yes on "Stay signed in?" — will stop and report if the page stays stuck.');
       }
 
-      // Post-sign-in steer: the form is gone and we landed somewhere on the
-      // TeachTown host that isn't the hub — go there. Host-guarded so a
-      // multi-step MFA flow on the IdP's own domain is never interrupted;
-      // field-guarded + 3s dwell so a same-host step-2 page (OTP, security
-      // question) or an in-flight submit is never navigated over.
+      // On the TeachTown host but not at the hub — steer there. Sign-in
+      // commonly returns you to your account's DEFAULT APP rather than
+      // #/home, and a cookied run lands there having never seen a form, so
+      // this must not depend on having seen one. Host-guarded and
+      // sign-in-page-guarded so a multi-step login is never navigated over;
+      // 4s dwell so an in-flight redirect settles first.
       if (
-        sawCredForm &&
-        hostnameOf(page.url()) === hostnameOf(target) &&
-        !/#\/home/.test(page.url()) &&
-        !(await anyVisibleFormField(page)) &&
-        tracker.stalledFor() > 3_000
+        steers < 3 &&
+        onNav &&
+        !atHome &&
+        !(await looksLikeSignInPage(page)) &&
+        tracker.stalledFor() > 4_000
       ) {
-        sawCredForm = false;
+        steers += 1;
+        logger.event(`Landed at "${page.url()}" instead of the hub — steering to #/home.`);
         await page.goto(target, { timeout: NAV_TIMEOUT }).catch(() => {});
         tracker.progress();
         deadline = Math.max(deadline, Date.now() + 60_000);
+        await sleep(1000);
         continue;
+      }
+
+      // Steering didn't stick: this tenant pins you to an app rather than the
+      // hub. The session is demonstrably live (own host, no sign-in page,
+      // real content), and downstream steps navigate by hash anyway — carry
+      // on from here rather than failing on a cosmetic landing difference.
+      if (
+        steers >= 3 &&
+        onNav &&
+        !atHome &&
+        !(await looksLikeSignInPage(page)) &&
+        tracker.stalledFor() > 4_000 &&
+        (await appContentRendered(page))
+      ) {
+        state.ttNavBase = page.url().split('#')[0];
+        logger.event(
+          `WARN couldn't reach the hub (#/home) — this tenant keeps returning "${page.url()}". ` +
+            'The session is live, so continuing from there.'
+        );
+        return page;
       }
 
       // Role picker, if the tenant shows one.
@@ -937,13 +1024,16 @@ async function ensureTeachTownDirect(page, config, logger) {
       if (!onOwnApp(page) && !onKnownIdpHost(page) && !manualActive() && tracker.stalledFor() > 20_000) {
         await unknownAuthStop(page, 'TeachTown direct login');
       }
+      if (!manualActive()) await heartbeat(page, 'the TeachTown hub (#/home)');
       await sleep(750);
     }
+    if (state.reconMode) await reconShot(page, 'teachtown-timeout');
     throw manualUntil
       ? new ManualSignInTimeoutError(
-          'SIGN-IN WINDOW EXPIRED — the TeachTown hub (#/home) never loaded within the 5-minute manual sign-in window. Nothing was typed by the runner; re-run when ready (npm start -- --login warms up the profile).'
+          'SIGN-IN WINDOW EXPIRED — the TeachTown hub (#/home) never loaded within the 5-minute manual sign-in window. ' +
+            `Nothing was typed by the runner; re-run when ready (npm start -- --login warms up the profile).\n  Last page: ${page.url()}`
         )
-      : new Error('timed out waiting for the TeachTown hub (#/home never loaded)');
+      : new Error(`timed out waiting for the TeachTown hub (#/home never loaded).\n  Last page: ${page.url()}`);
   } finally {
     if (disposeEnter) disposeEnter();
   }
@@ -970,13 +1060,26 @@ async function openTeachTown(context, portal, logger) {
 }
 
 async function gotoSocialSkills(tt) {
+  // The card lives on the hub; a run that came in on another app (some
+  // tenants pin you to your default app) has to go there first.
+  if (state.ttNavBase && !/#\/home/.test(tt.url()) && !/#\/apps\/ssms/i.test(tt.url())) {
+    await tt.goto(state.ttNavBase + '#/home', { timeout: NAV_TIMEOUT }).catch(() => {});
+  }
   const card = tt
     .getByRole('link', { name: /social skills/i })
     .or(tt.getByRole('button', { name: /social skills/i }))
     .or(tt.getByText(/social skills/i))
     .first();
-  await card.waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
-  await card.click();
+  if (await visibleSoon(card, NAV_TIMEOUT)) {
+    await card.click();
+  } else if (state.ttNavBase) {
+    // No card to click (hub wording we don't know, or pinned elsewhere) —
+    // the app has its own hash, so go straight there.
+    state.logger?.event('Social Skills card not found on the hub — opening #/apps/ssms directly.');
+    await tt.goto(state.ttNavBase + '#/apps/ssms', { timeout: NAV_TIMEOUT }).catch(() => {});
+  } else {
+    await card.waitFor({ state: 'visible', timeout: NAV_TIMEOUT }); // legacy: surface the original error
+  }
   // The gate that matters is the teacher list rendering inside the frames.
   await tt.waitForURL(/#\/apps\/ssms/i, { timeout: NAV_TIMEOUT }).catch(() => {});
   await innerLocator(tt)
@@ -1617,6 +1720,7 @@ async function enterEncore(tt, config, logger) {
   await card.click();
 
   const tracker = makeHopTracker(tt, 'encore');
+  const heartbeat = makeHeartbeat(logger);
   const ssoRe = ssoCandidatesRe(config);
   const wantHash = config.teacherLed.encoreAppHash || '#/apps/encr';
   let deadline = Date.now() + NAV_TIMEOUT * 2;
@@ -1788,6 +1892,7 @@ async function enterEncore(tt, config, logger) {
     if (!onOwnApp(tt) && !onKnownIdpHost(tt) && !manualActive() && tracker.stalledFor() > 20_000) {
       await unknownAuthStop(tt, 'enCORE auth chain');
     }
+    if (!manualActive()) await heartbeat(tt, 'the enCORE app (Start a Session)');
     await sleep(750);
   }
   } finally {
@@ -2542,10 +2647,16 @@ async function shutdown(code) {
       for (const line of err.message.split('\n')) logger.event(line);
       process.exitCode = 2;
     } else if (err instanceof ManualSignInTimeoutError) {
-      logger.event(`FATAL ${err.message.split('\n')[0]}`);
+      // Every line — the trailing detail lines name the page we got stuck on,
+      // which is the whole point of the message.
+      const [head, ...rest] = err.message.split('\n');
+      logger.event(`FATAL ${head}`);
+      for (const line of rest) logger.event(line);
       process.exitCode = 1; // no screenshot — the page on screen is a live sign-in form
     } else {
-      logger.event(`FATAL ${err.message.split('\n')[0]}`);
+      const [head, ...rest] = err.message.split('\n');
+      logger.event(`FATAL ${head}`);
+      for (const line of rest) logger.event(line);
       await screenshot(state.ttPage || state.context?.pages()[0], 'fatal');
       process.exitCode = 1;
     }
