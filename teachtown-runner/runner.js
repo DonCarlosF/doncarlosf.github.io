@@ -267,6 +267,11 @@ function loadConfig(flags) {
       .map((s) => s.trim());
   }
 
+  // Press the sign-in button when the BROWSER has already filled the form.
+  // Never types, never stores credentials, never submits an unverified form.
+  // Set false to always hand a sign-in form to a human.
+  cfg.autoSubmitPrefilledLogin = cfg.autoSubmitPrefilledLogin !== false;
+
   cfg.targetActivity = cfg.targetActivity || null;
   cfg.mode = cfg.mode || 'activity';
   if (!['activity', 'movie'].includes(cfg.mode)) {
@@ -759,6 +764,8 @@ async function ensureCleverPortal(page, config, logger) {
   let lastAuthSeen = 0; // last poll that saw a sign-in page (form/picker/MFA)
   let ssoClicks = 0;
   let kmsiClicks = 0;
+  let autoSubmits = 0;
+  let autoBlocked = false;
   let disposeEnter = null;
   let nudge = false;
   // The unknown-page stop is suppressed only while a human is plausibly
@@ -784,6 +791,18 @@ async function ensureCleverPortal(page, config, logger) {
       // browser while we keep polling; the run continues on its own the
       // moment the portal loads. Enter is only a force-recheck fallback.
       if (await microsoftWantsInput(page)) {
+        // Browser-filled form → press its button, but only before the banner
+        // (afterwards a human may be mid-keystroke).
+        if (config.autoSubmitPrefilledLogin && !manualUntil && !autoBlocked && autoSubmits < 3) {
+          const r = await submitPrefilledLogin(page, logger);
+          if (r === 'error') autoBlocked = true;
+          if (r === 'submitted') {
+            autoSubmits += 1;
+            tracker.progress();
+            deadline = Math.max(deadline, Date.now() + 60_000);
+            continue;
+          }
+        }
         lastAuthSeen = Date.now();
         tracker.progress(); // recognized page — never the unknown-stop mid-MFA
         if (!manualUntil) {
@@ -885,6 +904,56 @@ async function credentialFormVisible(page) {
   }
 }
 
+// Chrome's own password manager can pre-fill a sign-in form (the credentials
+// live in the browser profile — never in this repo, never read by the
+// runner). When the fields are demonstrably ALREADY filled, press the form's
+// own submit button so nobody has to click it.
+//
+// The runner still never types, and never submits a form it cannot verify is
+// filled: an empty submit is a failed login attempt, and enough of those lock
+// a district account. A rejected sign-in stops all further attempts.
+async function submitPrefilledLogin(page, logger) {
+  try {
+    const field = page
+      .locator('input[type="password"], input[name="loginfmt"], input[type="email"]')
+      .filter({ visible: true })
+      .first();
+    if ((await field.count()) === 0) return 'none';
+    // Chrome marks autofilled inputs with :-webkit-autofill even when it
+    // withholds the value from page scripts, so check both.
+    const filled = await field.evaluate((el) => {
+      let auto = false;
+      try {
+        auto = el.matches(':-webkit-autofill');
+      } catch {}
+      return auto || String(el.value || '').length > 0;
+    });
+    if (!filled) return 'none';
+
+    const submit = page
+      .getByRole('button', { name: /^\s*(sign in|log ?in|next|continue|submit)\s*$/i })
+      .or(page.locator('input[type="submit"], button[type="submit"]'))
+      .first();
+    if (!(await submit.isVisible().catch(() => false))) return 'none';
+    await submit.click({ timeout: 3_000 });
+    logger.event('Sign-in form was already filled in by the browser — pressed its button for you (nothing was typed).');
+    await sleep(1500);
+
+    const rejected = page
+      .getByText(/incorrect|isn't correct|is not correct|invalid|didn't work|try again|locked/i)
+      .first();
+    if (await rejected.isVisible().catch(() => false)) {
+      logger.event(
+        'WARN the site rejected the saved sign-in — stopping automatic attempts (repeated failures can lock the account). Over to you.'
+      );
+      return 'error';
+    }
+    return 'submitted';
+  } catch {
+    return 'none';
+  }
+}
+
 // Direct TeachTown login (loginMode "direct"): the district account signs in
 // on the TeachTown site itself — no Clever portal, no tile, same tab.
 // Cookied profile → straight to the hub. A sign-in form hands off to the
@@ -903,9 +972,23 @@ async function ensureTeachTownDirect(page, config, logger) {
   let lastAuthSeen = 0; // last poll that saw a sign-in page
   let steers = 0;
   let kmsiClicks = 0;
+  let autoSubmits = 0;
+  let autoBlocked = false;
   let disposeEnter = null;
   let nudge = false;
   const manualActive = () => manualUntil && Date.now() <= manualUntil && Date.now() <= lastAuthSeen + 45_000;
+  // Browser-filled form → press its button. Only before the banner: once a
+  // human has been asked to sign in, they may be mid-keystroke.
+  const tryAuto = async () => {
+    if (!config.autoSubmitPrefilledLogin || manualUntil || autoBlocked || autoSubmits >= 3) return false;
+    const r = await submitPrefilledLogin(page, logger);
+    if (r === 'error') autoBlocked = true;
+    if (r !== 'submitted') return false;
+    autoSubmits += 1;
+    tracker.progress();
+    deadline = Math.max(deadline, Date.now() + 60_000);
+    return true;
+  };
   // Shared manual-sign-in handling for both the TeachTown form and a
   // federated IdP's pages: announce once, then keep polling.
   const armManual = async (shotLabel) => {
@@ -960,6 +1043,7 @@ async function ensureTeachTownDirect(page, config, logger) {
       // in in the browser while we keep polling; the run continues on its
       // own. Enter is only a force-recheck fallback.
       if (await credentialFormVisible(page)) {
+        if (await tryAuto()) continue;
         await armManual('teachtown-login-form');
         continue;
       }
@@ -967,6 +1051,7 @@ async function ensureTeachTownDirect(page, config, logger) {
       // A federated IdP asking for something with no password field visible
       // (email-first page, account picker, MFA) — same manual handling.
       if (await microsoftWantsInput(page)) {
+        if (await tryAuto()) continue;
         await armManual('teachtown-idp-login-form');
         continue;
       }
@@ -1775,6 +1860,8 @@ async function enterEncore(tt, config, logger) {
   let lastAuthSeen = 0; // last poll that saw a sign-in page
   let ssoClicks = 0; // shared cap across Login-with-Clever + district/generic buttons
   let kmsiClicks = 0;
+  let autoSubmits = 0;
+  let autoBlocked = false;
   let steered = 0;
   let succeeded = false;
   let disposeEnter = null;
@@ -1782,6 +1869,17 @@ async function enterEncore(tt, config, logger) {
   const manualActive = () => manualUntil && Date.now() <= manualUntil && Date.now() <= lastAuthSeen + 45_000;
   // Shared manual-sign-in handling: announce once, then keep polling — the
   // chain resumes on its own when the human finishes. Enter = force-recheck.
+  // Browser-filled form → press its button, before any banner is shown.
+  const tryAuto = async () => {
+    if (!config.autoSubmitPrefilledLogin || manualUntil || autoBlocked || autoSubmits >= 3) return false;
+    const r = await submitPrefilledLogin(tt, logger);
+    if (r === 'error') autoBlocked = true;
+    if (r !== 'submitted') return false;
+    autoSubmits += 1;
+    tracker.progress();
+    deadline = Math.max(deadline, Date.now() + 60_000);
+    return true;
+  };
   const manualPoll = async (shotLabel) => {
     lastAuthSeen = Date.now();
     tracker.progress(); // recognized page — never the unknown-stop mid-sign-in
@@ -1816,6 +1914,7 @@ async function enterEncore(tt, config, logger) {
     // URL-agnostic, like the sibling direct chain (where the tenant's form
     // actually lives is not pinned to Login.aspx).
     if (config.loginMode === 'direct' && (await credentialFormVisible(tt))) {
+      if (await tryAuto()) continue;
       await manualPoll('encore-login-form');
       continue;
     }
@@ -1845,6 +1944,7 @@ async function enterEncore(tt, config, logger) {
     // checked BEFORE any generic button matching so a credential form's
     // "Sign in" submit can never be clicked by the matcher below.
     if (await microsoftWantsInput(tt)) {
+      if (await tryAuto()) continue;
       await manualPoll('encore-ms-login-form');
       continue;
     }

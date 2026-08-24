@@ -46,6 +46,14 @@ cookies live in that profile from then on.
   nothing was typed and nothing is lost; just re-run when you're ready.
 - If Microsoft asks **"Stay signed in?"**, the runner clicks **Yes** for
   you — that's what makes the session stick.
+- **If Chrome has saved your password in this profile**, the form comes up
+  already filled and the runner presses the button itself, so a re-auth is
+  hands-off too. It checks the fields really are filled first — it will
+  never submit a blank form, because failed attempts can lock a district
+  account — and if the site rejects the saved password it stops trying and
+  hands it back to you. Set `"autoSubmitPrefilledLogin": false` in
+  `config.json` to always sign in by hand. The password lives in Chrome's
+  own password manager, never in this repo.
 - On success you'll see `PROFILE AUTHENTICATED — future runs should be
   zero-touch.` and every later run skips sign-in entirely.
 - Sign-in pages are screenshotted to `recon/` on first-run/recon passes for

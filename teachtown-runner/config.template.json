@@ -8,6 +8,7 @@
     { "name": "SEIS LEGAL NAME", "aka": ["NICKNAME OR DISPLAY VARIANT"], "grade": 0, "school": "SCHOOL", "expected": true },
     { "name": "STUDENT WHO MAY NOT APPEAR (other school)", "aka": [], "grade": 0, "school": "OTHER SCHOOL", "expected": false }
   ],
+  "autoSubmitPrefilledLogin": true,
   "targetActivity": null,
   "mode": "activity",
   "afterRotation": "stop",
