@@ -650,6 +650,45 @@ async function looksLikeSignInPage(page) {
   return false;
 }
 
+// What does this tenant's hub actually contain? Text lookups on the top
+// document miss anything TeachTown renders inside a frame, so list both.
+// On a new district this is the single most useful thing in the log: it is
+// what tells us how to reach the apps here.
+async function inventoryHub(page, logger) {
+  try {
+    const info = await page.evaluate(() => {
+      const txt = (e) => (e.innerText || e.textContent || '').trim().replace(/\s+/g, ' ');
+      return {
+        title: document.title,
+        url: location.href,
+        headings: Array.from(document.querySelectorAll('h1,h2,h3')).map(txt).filter(Boolean).slice(0, 12),
+        clickable: Array.from(
+          document.querySelectorAll('a, button, [class*="card" i], [class*="tile" i], [role="button"]')
+        )
+          .map(txt)
+          .filter(Boolean)
+          .slice(0, 30),
+        frames: Array.from(document.querySelectorAll('iframe')).map((f) => f.src || '(no src)').slice(0, 10),
+        text: (document.body ? document.body.innerText : '').trim().replace(/\s+/g, ' ').slice(0, 220),
+      };
+    });
+    logger.event(`HUB INVENTORY — "${info.title}" at ${info.url}`);
+    logger.event(`  headings: ${info.headings.join(' | ') || '(none)'}`);
+    logger.event(`  clickable: ${info.clickable.join(' | ') || '(none)'}`);
+    logger.event(`  iframes: ${info.frames.join(' | ') || '(none)'}`);
+    logger.event(`  text: "${info.text}"`);
+    for (const f of page.frames()) {
+      if (f === page.mainFrame()) continue;
+      const t = await f
+        .evaluate(() => (document.body ? document.body.innerText : '').trim().replace(/\s+/g, ' ').slice(0, 160))
+        .catch(() => null);
+      if (t) logger.event(`  frame ${f.url().slice(0, 100)} shows: "${t}"`);
+    }
+  } catch (err) {
+    logger.event(`WARN hub inventory failed: ${err.message.split('\n')[0]}`);
+  }
+}
+
 // Periodic "here is what I'm actually looking at" line. A chain waiting on
 // something it doesn't recognize has to narrate itself — going silent for
 // minutes and then failing with a bare timeout is not a diagnosable failure.
@@ -1714,15 +1753,23 @@ async function dismissOnboarding(tt, logger) {
 // click-if-present / skip-if-absent — a cookied session skips them all.
 // Never touches the Login.aspx username/password fields.
 async function enterEncore(tt, config, logger) {
-  await tt.goto(state.ttNavBase + '#/home', { timeout: NAV_TIMEOUT });
-  const card = tt.getByText(/enCORE/i).first(); // OAuth return uses the account default app regardless of card
-  await card.waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
-  await card.click();
+  const wantHash = config.teacherLed.encoreAppHash || '#/apps/encr';
+  await tt.goto(state.ttNavBase + '#/home', { timeout: NAV_TIMEOUT }).catch(() => {});
+  // OAuth return uses the account default app regardless of which card we
+  // click, so the card is a convenience, not a requirement: if this tenant's
+  // hub doesn't show one we recognize, go to the app's hash directly rather
+  // than failing the whole chain.
+  const card = tt.getByText(/enCORE/i).first();
+  if (await visibleSoon(card, 15_000)) {
+    await card.click().catch(() => {});
+  } else {
+    logger.event(`enCORE card not found on the hub — opening ${wantHash} directly.`);
+    await tt.goto(state.ttNavBase + wantHash, { timeout: NAV_TIMEOUT }).catch(() => {});
+  }
 
   const tracker = makeHopTracker(tt, 'encore');
   const heartbeat = makeHeartbeat(logger);
   const ssoRe = ssoCandidatesRe(config);
-  const wantHash = config.teacherLed.encoreAppHash || '#/apps/encr';
   let deadline = Date.now() + NAV_TIMEOUT * 2;
   let manualUntil = 0;
   let lastAuthSeen = 0; // last poll that saw a sign-in page
@@ -2565,6 +2612,7 @@ async function shutdown(code) {
     if (!tt) tt = await openTeachTown(context, portal, logger);
     state.ttPage = tt;
     noteProfileAuthenticated(logger);
+    if (state.reconMode || flags.loginOnly) await inventoryHub(tt, logger);
 
     if (flags.loginOnly) {
       // enCORE keeps its own session — warm it too, or "zero-touch later"
