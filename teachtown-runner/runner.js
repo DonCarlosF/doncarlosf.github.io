@@ -109,6 +109,7 @@ const state = {
   finished: false,
   reconMode: false, // recon flag set OR first run on this browser profile
   manualSignInHappened: false, // a human signed in during this run
+  autoSubmitHappened: false, // a browser-filled form was submitted this run
   profileAuthAnnounced: false, // PROFILE AUTHENTICATED printed (once per run)
   profileDir: '',
 };
@@ -948,6 +949,7 @@ async function submitPrefilledLogin(page, logger) {
       );
       return 'error';
     }
+    state.autoSubmitHappened = true; // a sign-in DID happen this run — status lines must not claim otherwise
     return 'submitted';
   } catch {
     return 'none';
@@ -2741,7 +2743,11 @@ async function shutdown(code) {
       }
       noteProfileAuthenticated(logger);
       if (!state.manualSignInHappened) {
-        logger.event('Profile already authenticated — zero-touch confirmed (no sign-in was needed).');
+        logger.event(
+          state.autoSubmitHappened
+            ? 'Profile re-authenticated hands-off (the browser had the form filled; nothing was typed).'
+            : 'Profile already authenticated — zero-touch confirmed (no sign-in was needed).'
+        );
       }
       logger.event('LOGIN SETUP COMPLETE');
       return;
