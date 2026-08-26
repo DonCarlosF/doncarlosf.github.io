@@ -1032,7 +1032,12 @@ async function ensureTeachTownDirect(page, config, logger) {
 
       if (
         atHome &&
-        (await page.getByText(/social skills|welcome to teachtown/i).first().isVisible().catch(() => false))
+        (await page
+          .getByText(/social skills|welcome to teachtown/i)
+          .filter({ visible: true }) // hidden "My Curriculum" menu copies come first in the DOM
+          .first()
+          .isVisible()
+          .catch(() => false))
       ) {
         state.ttNavBase = page.url().split('#')[0];
         logger.event('TeachTown home loaded (#/home) — direct session active');
@@ -1189,10 +1194,15 @@ async function gotoSocialSkills(tt) {
   if (state.ttNavBase && !/#\/home/.test(tt.url()) && !/#\/apps\/ssms/i.test(tt.url())) {
     await tt.goto(state.ttNavBase + '#/home', { timeout: NAV_TIMEOUT }).catch(() => {});
   }
+  // filter({visible:true}): the hub carries a hidden "My Curriculum" menu
+  // listing every program, and those copies come FIRST in the DOM — an
+  // unfiltered .first() picks the invisible one and concludes the card is
+  // missing while it sits on screen.
   const card = tt
     .getByRole('link', { name: /social skills/i })
     .or(tt.getByRole('button', { name: /social skills/i }))
     .or(tt.getByText(/social skills/i))
+    .filter({ visible: true })
     .first();
   if (await visibleSoon(card, NAV_TIMEOUT)) {
     await card.click();
@@ -1844,7 +1854,7 @@ async function enterEncore(tt, config, logger) {
   // click, so the card is a convenience, not a requirement: if this tenant's
   // hub doesn't show one we recognize, go to the app's hash directly rather
   // than failing the whole chain.
-  const card = tt.getByText(/enCORE/i).first();
+  const card = tt.getByText(/enCORE/i).filter({ visible: true }).first(); // hidden menu copies come first
   if (await visibleSoon(card, 15_000)) {
     await card.click().catch(() => {});
   } else {
