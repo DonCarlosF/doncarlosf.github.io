@@ -11,7 +11,10 @@
  * Setup:
  *   1) npm install            (Google Chrome must be installed — this drives channel "chrome")
  *   2) cp config.template.json config.json   → fill in your students
- *   3) npm start                     full session
+ *   3) npm start                     full session (one launch per student, or
+ *                                    the config "playlist" — an ordered mix of
+ *                                    movies/activities per student; see
+ *                                    config.template.json's _playlistNote)
  *      npm start -- --dry-run       login + parse roster/eligibility only, launch nothing
  *      npm start -- --teacher-led   skip Social Skills, set up an enCORE Teacher-Led
  *                                   session (stops at Begin Session unless
@@ -110,6 +113,7 @@ const state = {
   reconMode: false, // recon flag set OR first run on this browser profile
   manualSignInHappened: false, // a human signed in during this run
   autoSubmitHappened: false, // a browser-filled form was submitted this run
+  playlistOnceRun: new Set(), // playlist entries (by index) already run this session
   profileAuthAnnounced: false, // PROFILE AUTHENTICATED printed (once per run)
   profileDir: '',
 };
@@ -278,6 +282,26 @@ function loadConfig(flags) {
   if (!['activity', 'movie'].includes(cfg.mode)) {
     fail(`config.mode must be "activity" or "movie" (got "${cfg.mode}").`);
   }
+  // Session playlist: an ordered sequence run for each student, overriding
+  // the single mode/targetActivity launch. Entries:
+  //   { "mode": "movie"|"activity", "target": "Exact Name" }  → that one
+  //   { "mode": "movie", "count": 5 }                         → first 5 listed
+  //   ... plus "once": true                                   → only for the
+  //       FIRST student of the session (e.g. movies the group watches
+  //       together — nobody needs them repeated per student).
+  cfg.playlist = (Array.isArray(cfg.playlist) ? cfg.playlist : []).map((e, i) => {
+    const entry = {
+      mode: e && (e.mode === 'movie' || e.mode === 'activity') ? e.mode : null,
+      target: e && typeof e.target === 'string' && e.target.trim() ? e.target.trim() : null,
+      count: e && Number.isInteger(e.count) && e.count > 0 ? e.count : null,
+      once: !!(e && e.once === true),
+    };
+    if (!entry.mode) fail(`playlist[${i}].mode must be "movie" or "activity".`);
+    if (entry.target && entry.count) fail(`playlist[${i}]: use "target" OR "count", not both.`);
+    if (!entry.target && !entry.count) entry.count = 1;
+    return entry;
+  });
+
   cfg.afterRotation = cfg.afterRotation || 'stop';
   if (!['stop', 'repeat', 'teacherLed'].includes(cfg.afterRotation)) {
     console.warn(
@@ -1563,6 +1587,37 @@ async function parseActivities(tt) {
 
 // Skip logic ("100% usage"). Score of exactly 100 is the only skip;
 // "no data" (null) always runs.
+// Build a student's launch sequence from config.playlist. Named targets use
+// the same fuzzy match as targetActivity; count-entries take the first N in
+// list order (activities also skip anything already at 100% — movies play
+// regardless of score). once-entries are skipped after their first run.
+function planPlaylist(activities, config) {
+  const items = [];
+  const skips = [];
+  config.playlist.forEach((entry, i) => {
+    if (entry.once && state.playlistOnceRun.has(i)) return;
+    if (entry.target) {
+      const target = norm(entry.target);
+      const found =
+        activities.find((a) => norm(a.name) === target) ||
+        activities.find((a) => norm(a.name).includes(target) || target.includes(norm(a.name)));
+      if (!found) {
+        skips.push(`playlist: "${entry.target}" not found in list`);
+        return;
+      }
+      if (entry.mode === 'activity' && found.score === 100) {
+        skips.push(`playlist: "${found.name}" already at 100%`);
+        return;
+      }
+      items.push({ activity: found, mode: entry.mode, entryIdx: i });
+    } else {
+      const pool = entry.mode === 'activity' ? activities.filter((a) => a.score !== 100) : activities;
+      pool.slice(0, entry.count).forEach((a) => items.push({ activity: a, mode: entry.mode, entryIdx: i }));
+    }
+  });
+  return { items, skips };
+}
+
 function pickActivity(activities, config) {
   if (config.targetActivity) {
     const target = norm(config.targetActivity);
@@ -1734,23 +1789,52 @@ async function runStudent(tt, name, config, dryRun, logger) {
       result.activities = activities;
       if (!activities.length) throw new Error('activity list parsed empty');
 
-      const pick = pickActivity(activities, config);
-      if (pick.skip) {
-        logger.event(`SKIP ${name} — ${pick.skip}`);
-        result.status = 'SKIP';
-        result.reason = pick.skip;
-      } else if (dryRun) {
-        result.status = 'READY';
-        result.wouldRun = pick.activity.name;
+      if (config.playlist.length) {
+        const { items, skips } = planPlaylist(activities, config);
+        for (const s of skips) logger.event(`SKIP ${name} — ${s}`);
+        const label = items.map((it) => `${it.activity.name} (${it.mode})`).join(' → ');
+        if (!items.length) {
+          result.status = 'SKIP';
+          result.reason = skips.join('; ') || 'playlist produced nothing to run';
+        } else if (dryRun) {
+          result.status = 'READY';
+          result.wouldRun = label;
+        } else {
+          for (const it of items) {
+            // Re-find the row fresh each launch — the list re-renders after
+            // every completion and stale row tags would miss.
+            const fresh = (await parseActivities(tt).catch(() => null)) || activities;
+            const row = fresh.find((a) => a.name === it.activity.name) || it.activity;
+            const launch = await launchActivity(tt, row, it.mode, logger);
+            logger.event(`START ${row.name}${it.mode === 'movie' ? ' (movie)' : ''}`);
+            const how = await waitForCompletion(launch, tt, row, logger);
+            if (state.shuttingDown) return result;
+            logger.event(`DONE (${how})`);
+            state.playlistOnceRun.add(it.entryIdx);
+            result.launched = true;
+          }
+          result.status = 'RAN';
+          result.wouldRun = label;
+        }
       } else {
-        const launch = await launchActivity(tt, pick.activity, config.mode, logger);
-        logger.event(`START ${pick.activity.name}`);
-        const how = await waitForCompletion(launch, tt, pick.activity, logger);
-        if (state.shuttingDown) return result;
-        logger.event(`DONE (${how})`);
-        result.status = 'RAN';
-        result.wouldRun = pick.activity.name;
-        result.launched = true;
+        const pick = pickActivity(activities, config);
+        if (pick.skip) {
+          logger.event(`SKIP ${name} — ${pick.skip}`);
+          result.status = 'SKIP';
+          result.reason = pick.skip;
+        } else if (dryRun) {
+          result.status = 'READY';
+          result.wouldRun = pick.activity.name;
+        } else {
+          const launch = await launchActivity(tt, pick.activity, config.mode, logger);
+          logger.event(`START ${pick.activity.name}`);
+          const how = await waitForCompletion(launch, tt, pick.activity, logger);
+          if (state.shuttingDown) return result;
+          logger.event(`DONE (${how})`);
+          result.status = 'RAN';
+          result.wouldRun = pick.activity.name;
+          result.launched = true;
+        }
       }
 
       // Verified rotation reset: direct #/apps/ssms load → fresh teacher list.
@@ -2669,8 +2753,11 @@ async function shutdown(code) {
           : teacherLedOnly
           ? `enCORE ${config.teacherLed.group ? `group "${config.teacherLed.group}"` : `${config.teacherLed.students.length} student(s)`}, ` +
             `length=${config.teacherLed.sessionLengthMin}min, autoBegin=${config.teacherLed.autoBegin}`
-          : `${config.students.length} student(s), mode=${config.mode}, ` +
-            `target=${config.targetActivity || '(first activity not at 100%)'}, afterRotation=${config.afterRotation}`)
+          : `${config.students.length} student(s), ` +
+            (config.playlist.length
+              ? `playlist=${config.playlist.length} step(s), `
+              : `mode=${config.mode}, target=${config.targetActivity || '(first activity not at 100%)'}, `) +
+            `afterRotation=${config.afterRotation}`)
   );
 
   const profileDir = resolveProfileDir(config.profileDir);

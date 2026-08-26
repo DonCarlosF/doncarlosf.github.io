@@ -9,6 +9,8 @@
     { "name": "STUDENT WHO MAY NOT APPEAR (other school)", "aka": [], "grade": 0, "school": "OTHER SCHOOL", "expected": false }
   ],
   "autoSubmitPrefilledLogin": true,
+  "playlist": [],
+  "_playlistNote": "Optional ordered sequence per student, overriding mode/targetActivity when non-empty. Entries: {\"mode\":\"movie\"|\"activity\",\"target\":\"Exact Activity Name\"} for one named item, or {\"mode\":\"movie\",\"count\":5} for the first 5 in list order (activity entries skip anything at 100%; movies play regardless). Add \"once\":true to run an entry only for the FIRST student of the session — e.g. movies the whole group watches together. Example: [{\"mode\":\"movie\",\"count\":5,\"once\":true},{\"mode\":\"activity\",\"target\":\"How to Greet Others\"}]",
   "targetActivity": null,
   "mode": "activity",
   "afterRotation": "stop",
