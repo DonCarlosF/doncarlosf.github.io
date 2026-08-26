@@ -1799,6 +1799,9 @@ async function runStudent(tt, name, config, dryRun, logger) {
         } else if (dryRun) {
           result.status = 'READY';
           result.wouldRun = label;
+          // The preview must consume once-entries exactly like the live run,
+          // or every student's row shows the group movies they won't get.
+          items.forEach((it) => state.playlistOnceRun.add(it.entryIdx));
         } else {
           for (const it of items) {
             // Re-find the row fresh each launch — the list re-renders after
