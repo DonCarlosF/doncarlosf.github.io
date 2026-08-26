@@ -1191,37 +1191,34 @@ async function openTeachTown(context, portal, logger) {
 }
 
 async function gotoSocialSkills(tt) {
-  // The card lives on the hub; a run that came in on another app (some
-  // tenants pin you to your default app) has to go there first.
-  if (state.ttNavBase && !/#\/home/.test(tt.url()) && !/#\/apps\/ssms/i.test(tt.url())) {
+  // The app's own address is the reliable entry. The hub's cards are
+  // ambiguous — live SLZUSD shows several visible "Social Skills" matches
+  // (card title, a section heading, favorite-star buttons), and clicking
+  // the wrong one goes nowhere while the runner waits on an app that never
+  // loads. #/apps/ssms is confirmed on the live tenant; the card click is
+  // the fallback now, not the primary.
+  const viewStudents = () => innerLocator(tt).getByText('View Students').first();
+  if (state.ttNavBase) {
+    if (!/#\/apps\/ssms/i.test(tt.url())) {
+      await tt.goto(state.ttNavBase + '#/apps/ssms', { timeout: NAV_TIMEOUT }).catch(() => {});
+    }
+    if (await visibleSoon(viewStudents(), 30_000)) return;
+    state.logger?.event('Direct #/apps/ssms goto did not bring up the app — falling back to the hub card.');
     await tt.goto(state.ttNavBase + '#/home', { timeout: NAV_TIMEOUT }).catch(() => {});
   }
-  // filter({visible:true}): the hub carries a hidden "My Curriculum" menu
-  // listing every program, and those copies come FIRST in the DOM — an
-  // unfiltered .first() picks the invisible one and concludes the card is
-  // missing while it sits on screen.
   const card = tt
     .getByRole('link', { name: /social skills/i })
     .or(tt.getByRole('button', { name: /social skills/i }))
     .or(tt.getByText(/social skills/i))
-    .filter({ visible: true })
+    .filter({ visible: true }) // the hub also carries a hidden "My Curriculum" menu copy
     .first();
-  if (await visibleSoon(card, NAV_TIMEOUT)) {
-    await card.click();
-  } else if (state.ttNavBase) {
-    // No card to click (hub wording we don't know, or pinned elsewhere) —
-    // the app has its own hash, so go straight there.
-    state.logger?.event('Social Skills card not found on the hub — opening #/apps/ssms directly.');
-    await tt.goto(state.ttNavBase + '#/apps/ssms', { timeout: NAV_TIMEOUT }).catch(() => {});
-  } else {
-    await card.waitFor({ state: 'visible', timeout: NAV_TIMEOUT }); // legacy: surface the original error
-  }
+  await card.waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+  await card.click();
   // The gate that matters is the teacher list rendering inside the frames.
   await tt.waitForURL(/#\/apps\/ssms/i, { timeout: NAV_TIMEOUT }).catch(() => {});
-  await innerLocator(tt)
-    .getByText('View Students')
-    .first()
-    .waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+  if (!(await visibleSoon(viewStudents(), NAV_TIMEOUT))) {
+    throw new Error(`Social Skills never showed "View Students" — last page: ${tt.url()}`);
+  }
 }
 
 // Per-student cycle reset. Verified live: a direct goto of #/apps/ssms lands
@@ -1851,17 +1848,17 @@ async function dismissOnboarding(tt, logger) {
 // Never touches the Login.aspx username/password fields.
 async function enterEncore(tt, config, logger) {
   const wantHash = config.teacherLed.encoreAppHash || '#/apps/encr';
-  await tt.goto(state.ttNavBase + '#/home', { timeout: NAV_TIMEOUT }).catch(() => {});
-  // OAuth return uses the account default app regardless of which card we
-  // click, so the card is a convenience, not a requirement: if this tenant's
-  // hub doesn't show one we recognize, go to the app's hash directly rather
-  // than failing the whole chain.
-  const card = tt.getByText(/enCORE/i).filter({ visible: true }).first(); // hidden menu copies come first
-  if (await visibleSoon(card, 15_000)) {
-    await card.click().catch(() => {});
-  } else {
-    logger.event(`enCORE card not found on the hub — opening ${wantHash} directly.`);
-    await tt.goto(state.ttNavBase + wantHash, { timeout: NAV_TIMEOUT }).catch(() => {});
+  // The app's own hash is the reliable entry (confirmed live) — the AppHost
+  // runs its auth on load no matter how you arrive, and the OAuth return
+  // uses the account default app regardless of which card was clicked. The
+  // hub shows THREE enCORE cards plus favorite-star buttons, so a text
+  // click is ambiguous; it's the fallback only if the hash bounces.
+  await tt.goto(state.ttNavBase + wantHash, { timeout: NAV_TIMEOUT }).catch(() => {});
+  await sleep(1500);
+  if (/#\/home/.test(tt.url())) {
+    logger.event(`${wantHash} bounced back to the hub — trying the enCORE card instead.`);
+    const card = tt.getByText(/enCORE/i).filter({ visible: true }).first(); // hidden menu copies come first
+    if (await visibleSoon(card, 10_000)) await card.click().catch(() => {});
   }
 
   const tracker = makeHopTracker(tt, 'encore');
