@@ -1,0 +1,14 @@
+# Committed sources stay LF on every OS. The git hooks are sh scripts whose
+# shebang lines break under CRLF, and privacy-check.js must read its own
+# sources byte-identically across machines — a Windows checkout with
+# core.autocrlf=true must not rewrite any of these.
+#
+# config.json, logs/, recon/, and .profiles/ are gitignored: git never
+# applies any CRLF conversion to untracked files, so local data files are
+# untouched by definition.
+*.js     text eol=lf
+*.json   text eol=lf
+*.md     text eol=lf
+*.txt    text eol=lf
+*.aspx   text eol=lf
+hooks/*  text eol=lf

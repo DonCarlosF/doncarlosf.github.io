@@ -10,7 +10,9 @@
  *
  * Setup:
  *   1) npm install            (Google Chrome must be installed — this drives channel "chrome")
- *   2) cp config.template.json config.json   → fill in your students
+ *   2) npm run init-config       copies the template to config.json (gitignored)
+ *                                and asks for student names locally — names
+ *                                never go in committed files
  *   3) npm start                     full session (one launch per student, or
  *                                    the config "playlist" — an ordered mix of
  *                                    movies/activities per student; see
@@ -239,7 +241,11 @@ function loadConfig(flags) {
   // Per-district browser profile — NEVER share one across districts: the old
   // tenant's cookies will fight the new SSO.
   cfg.profileDir =
-    cfg.profileDir || profile.browserProfileDir || (cfg.district ? `.profiles/${cfg.district}` : '~/.teachtown-runner/profile');
+    cfg.profileDir ||
+    profile.browserProfileDir ||
+    (cfg.district
+      ? path.join('.profiles', cfg.district) // relative → resolved against the project dir
+      : path.join(os.homedir(), '.teachtown-runner', 'profile')); // built from os.homedir(), never a literal "~"
 
   // Roster (for recon diffing). Entries: "Name" or
   // { name, aka: ["nickname"], grade, school, expected } — expected:false
@@ -263,7 +269,11 @@ function loadConfig(flags) {
   if (rotationRun) {
     if (!Array.isArray(cfg.students) || cfg.students.length === 0 ||
         cfg.students.some((s) => typeof s !== 'string' || !s.trim())) {
-      fail('config.students must be a non-empty array of student names (exactly as shown in View Students).');
+      fail(
+        'config.students is empty — a rotation needs student names.\n' +
+          '  Run `npm run init-config` to enter them locally (config.json is\n' +
+          '  gitignored; names never leave this machine), or edit config.json.'
+      );
     }
     cfg.students = cfg.students.map((s) => s.trim());
   } else {
@@ -338,6 +348,9 @@ function loadConfig(flags) {
   return cfg;
 }
 
+// Defaults never contain "~" (they're built with os.homedir()); this
+// expansion is only a convenience for a hand-written config value, and it
+// substitutes os.homedir() so it behaves identically on Windows.
 function resolveProfileDir(p) {
   const expanded = p.replace(/^~(?=$|[\\/])/, os.homedir());
   return path.isAbsolute(expanded) ? expanded : path.resolve(PROJECT_DIR, expanded);
@@ -2734,6 +2747,7 @@ async function shutdown(code) {
 
   process.on('SIGINT', () => shutdown(130));
   process.on('SIGTERM', () => shutdown(143));
+  process.on('SIGBREAK', () => shutdown(130)); // Windows Ctrl+Break; never fires elsewhere
 
   if (loginImplied) {
     logger.event('NOTE --login is implied by this mode — the sign-in chain runs first; continuing with the full run.');
@@ -2765,6 +2779,7 @@ async function shutdown(code) {
 
   const profileDir = resolveProfileDir(config.profileDir);
   state.profileDir = profileDir;
+  logger.event(`Browser profile: ${profileDir}`);
   fs.mkdirSync(profileDir, { recursive: true });
   if (
     profileDir.startsWith(PROJECT_DIR + path.sep) &&

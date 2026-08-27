@@ -4,6 +4,31 @@ Automation for TeachTown Social Skills group rotations, enCORE Teacher-Led
 sessions, and day-one district recon. All flags and behavior are documented
 in the header of `runner.js`.
 
+## Setup on a new machine
+
+1. `npm install` (Google Chrome must be installed — the runner drives it).
+2. `npm run init-config` — copies the committed template (which carries every
+   real setting **except names**) to the gitignored `config.json` and asks
+   for student names right there in the terminal. Names live only in that
+   local file; the privacy gate blocks them from ever reaching a commit.
+3. Set up the privacy gate (next section), then `npm start -- --login` to do
+   the one-time sign-in.
+
+### Windows notes
+
+- Use **Git Bash** (installed with Git for Windows), not PowerShell or cmd —
+  the privacy hooks are shell scripts and every command in these docs is
+  written for a bash prompt.
+- A `.gitattributes` keeps the committed sources LF so a Windows checkout
+  can't break the hook scripts; your local `config.json` and logs are
+  untracked and untouched by git either way.
+- `Ctrl+C` ends a session the same way as on Mac (popup closed, student
+  logged out, browser closed). On the first Windows run, check the runner's
+  browser window actually closed after `Clean exit.` — if a Chrome window
+  ever lingers, close it and tell me; that's a bug report I want.
+- The browser profile lands under your Windows home folder or the project's
+  `.profiles\` — the exact path prints at startup as `Browser profile: …`.
+
 ## Privacy gate — set up FIRST, before any commit
 
 Student data never goes in this repo. The gate enforces it mechanically:
