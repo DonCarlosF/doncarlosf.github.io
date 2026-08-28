@@ -1,5 +1,6 @@
 # Local-only files. Real student data must never be committed.
 config.json
+config.json.bak
 config/privacy-terms.txt
 logs/
 recon/

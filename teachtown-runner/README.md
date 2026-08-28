@@ -4,6 +4,26 @@ Automation for TeachTown Social Skills group rotations, enCORE Teacher-Led
 sessions, and day-one district recon. All flags and behavior are documented
 in the header of `runner.js`.
 
+## Button interface (no typing in front of the class)
+
+`npm run ui` starts a local page with big buttons — Run Playlist, Custom
+Run, Teacher-Led (Set up only vs the visually distinct START LIVE SESSION),
+Sign In, Refresh Roster, a Dry Run toggle, a Settings screen that edits
+config.json with validation + a .bak, and a Run view with the live log and
+a STOP button that does the same clean shutdown as Ctrl+C.
+
+- **Mac (Terminal)**: `cd teachtown-runner && npm run ui`
+- **Windows (PowerShell or Git Bash)**: `cd teachtown-runner; npm run ui`
+- The browser opens by itself; the URL (http://127.0.0.1:4317/) also prints
+  in the terminal. Leave that terminal window open — closing it stops the UI.
+- The page is served on **this machine only** (loopback). It is never
+  reachable from the school network, by design and by test.
+- The footer shows the build version (a content hash — no git needed): two
+  machines showing the same code hash are running the same code.
+- The UI writes only config.json and config.json.bak (both gitignored). It
+  never asks for or stores a password — sign-in stays in the real browser
+  window — and everything it does, the CLI flags still do too.
+
 ## Setup on a new machine
 
 1. `npm install` (Google Chrome must be installed — the runner drives it).

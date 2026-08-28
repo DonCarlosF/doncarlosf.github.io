@@ -5,6 +5,7 @@
   "description": "Rotates a TeachTown Social Skills group session: logs each student in, launches their activity on the big screen, waits while the group answers live, then moves to the next student. Humans answer all questions.",
   "scripts": {
     "start": "node runner.js",
+    "ui": "node ui-server.js",
     "init-config": "node init-config.js",
     "privacy-check": "node privacy-check.js",
     "install-hooks": "git config core.hooksPath teachtown-runner/hooks && echo \"privacy pre-commit hook installed\""

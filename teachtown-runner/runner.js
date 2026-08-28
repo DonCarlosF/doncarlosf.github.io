@@ -13,7 +13,10 @@
  *   2) npm run init-config       copies the template to config.json (gitignored)
  *                                and asks for student names locally — names
  *                                never go in committed files
- *   3) npm start                     full session (one launch per student, or
+ *   3) npm run ui                    button interface (local page, loopback
+ *                                    only) — every button maps to the flags
+ *                                    below; the CLI always works without it
+ *      npm start                     full session (one launch per student, or
  *                                    the config "playlist" — an ordered mix of
  *                                    movies/activities per student; see
  *                                    config.template.json's _playlistNote)
@@ -182,12 +185,32 @@ function loadConfig(flags) {
   if (!fs.existsSync(CONFIG_PATH)) {
     fail(
       'config.json not found.\n' +
-        '  1) cp config.template.json config.json\n' +
-        '  2) set "district" and fill in your roster/students\n' +
-        'config.json is gitignored — real names never leave this machine.'
+        '  Run `npm run init-config` (terminal) or `npm run ui` → Settings\n' +
+        '  to create it. config.json is gitignored — real names never leave\n' +
+        '  this machine.'
     );
   }
   const cfg = readJson(CONFIG_PATH, 'config.json');
+
+  // UI-mode per-run overrides (Custom Run, Set-up-only vs Start-Live). They
+  // arrive in an ENVIRONMENT VARIABLE, deliberately: never argv (process
+  // lists are world-readable on shared machines and these can carry student
+  // names) and never a file (names live in gitignored config.json and
+  // nowhere else on disk). Whitelisted keys only; teacherLed merges per-key
+  // so unspecified fields keep their config values.
+  if (process.env.TT_UI === '1' && process.env.TT_UI_OVERRIDES) {
+    try {
+      const o = JSON.parse(process.env.TT_UI_OVERRIDES);
+      for (const k of ['students', 'playlist', 'mode', 'targetActivity', 'district', 'autoSubmitPrefilledLogin']) {
+        if (k in o) cfg[k] = o[k];
+      }
+      if (o.teacherLed && typeof o.teacherLed === 'object') {
+        cfg.teacherLed = Object.assign({}, cfg.teacherLed || {}, o.teacherLed);
+      }
+    } catch (err) {
+      fail(`TT_UI_OVERRIDES is not valid JSON: ${err.message}`);
+    }
+  }
 
   // District profile layer: committed per-district defaults live in
   // config/districts/<district>.json; anything set directly in the local
@@ -432,7 +455,9 @@ function armEnterFallback(onEnter) {
     try {
       rl.close();
     } catch {}
-    process.stdin.pause();
+    // In UI mode the STOP command also arrives over stdin — pausing the
+    // stream here would deafen that listener for the rest of the run.
+    if (process.env.TT_UI !== '1') process.stdin.pause();
     if (process.stdin.unref) process.stdin.unref();
   };
 }
@@ -2748,6 +2773,22 @@ async function shutdown(code) {
   process.on('SIGINT', () => shutdown(130));
   process.on('SIGTERM', () => shutdown(143));
   process.on('SIGBREAK', () => shutdown(130)); // Windows Ctrl+Break; never fires elsewhere
+
+  // UI mode: the STOP button sends "stop" over stdin — the SAME clean
+  // shutdown as Ctrl+C. A signal can't do this portably: on Windows,
+  // child.kill('SIGINT') terminates without running handlers, which would
+  // orphan the browser mid-session. stdin stays unref'd so a finished run
+  // still exits naturally.
+  if (process.env.TT_UI === '1') {
+    const uiRl = readline.createInterface({ input: process.stdin });
+    uiRl.on('line', (l) => {
+      if (l.trim() === 'stop' && !state.shuttingDown) {
+        logger.event('STOP pressed in the UI — cleaning up');
+        shutdown(130);
+      }
+    });
+    if (process.stdin.unref) process.stdin.unref();
+  }
 
   if (loginImplied) {
     logger.event('NOTE --login is implied by this mode — the sign-in chain runs first; continuing with the full run.');

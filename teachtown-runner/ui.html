@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TeachTown Runner</title>
+<style>
+  :root {
+    --bg: #101418; --panel: #1a2028; --panel2: #232b36; --text: #f2f5f8;
+    --muted: #9fb0c0; --line: #33404e; --accent: #2f81f7; --accentDark: #205ec0;
+    --ok: #2ea06a; --warn: #d29922; --danger: #d9463f; --dangerDark: #a8322c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 18px/1.45 system-ui, "Segoe UI", Helvetica, Arial, sans-serif; }
+  header { display: flex; align-items: center; gap: 16px; padding: 14px 22px;
+           background: var(--panel); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  header h1 { font-size: 24px; margin: 0 12px 0 0; }
+  .tab { min-height: 52px; padding: 8px 22px; font-size: 20px; border-radius: 10px;
+         border: 1px solid var(--line); background: var(--panel2); color: var(--text); cursor: pointer; }
+  .tab.active { background: var(--accent); border-color: var(--accent); }
+  #drywrap { margin-left: auto; display: flex; align-items: center; gap: 10px;
+             background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; }
+  #drywrap input { width: 26px; height: 26px; }
+  #drywrap.on { border-color: var(--warn); box-shadow: 0 0 0 2px var(--warn) inset; }
+  main { max-width: 1080px; margin: 0 auto; padding: 22px; }
+  .screen { display: none; } .screen.active { display: block; }
+  h2 { font-size: 20px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em;
+       margin: 26px 0 10px; }
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .btn { min-height: 64px; font-size: 22px; font-weight: 600; border-radius: 14px; cursor: pointer;
+         border: 1px solid var(--line); background: var(--panel2); color: var(--text);
+         padding: 14px 20px; text-align: left; }
+  .btn small { display: block; font-size: 15px; font-weight: 400; color: var(--muted); margin-top: 4px; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.primary { background: var(--accent); border-color: var(--accentDark); min-height: 110px; font-size: 30px; }
+  .btn.primary small { color: #dbe9ff; font-size: 17px; }
+  .btn.danger { background: var(--danger); border-color: var(--dangerDark); }
+  .btn.danger small { color: #ffd9d6; }
+  .btn.ok { background: var(--ok); border-color: #1d7a4e; }
+  fieldset { border: 1px solid var(--line); border-radius: 12px; margin: 0 0 16px; padding: 14px 16px; }
+  legend { color: var(--muted); padding: 0 8px; }
+  label.row { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 19px; }
+  input[type=checkbox], input[type=radio] { width: 24px; height: 24px; }
+  input[type=text], input[type=number], select {
+    font-size: 19px; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--bg); color: var(--text); min-height: 48px; }
+  input[type=text] { width: 100%; max-width: 460px; }
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  .item { display: flex; align-items: center; gap: 10px; background: var(--panel2);
+          border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
+  .item .grow { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .mini { min-height: 44px; min-width: 52px; font-size: 20px; border-radius: 8px; cursor: pointer;
+          border: 1px solid var(--line); background: var(--panel); color: var(--text); }
+  .mini.danger { background: var(--danger); border-color: var(--dangerDark); }
+  #log { background: #0b0e12; border: 1px solid var(--line); border-radius: 12px; padding: 14px;
+         font: 15px/1.5 ui-monospace, Consolas, monospace; height: 46vh; overflow-y: auto;
+         white-space: pre-wrap; overflow-wrap: anywhere; }
+  #runhead { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .pill { background: var(--panel2); border: 1px solid var(--line); border-radius: 999px;
+          padding: 8px 16px; font-size: 18px; }
+  .pill b { color: var(--text); }
+  #stopbtn { min-height: 84px; font-size: 28px; flex: 1; text-align: center; }
+  #savemsg { margin: 10px 0; font-size: 18px; min-height: 26px; }
+  #savemsg.ok { color: var(--ok); } #savemsg.err { color: #ff8d86; white-space: pre-wrap; }
+  footer { text-align: center; color: var(--muted); font-size: 15px; padding: 18px; }
+  .note { color: var(--muted); font-size: 16px; margin: 6px 0 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>TeachTown Runner</h1>
+  <button class="tab active" data-screen="home">Home</button>
+  <button class="tab" data-screen="run">Run</button>
+  <button class="tab" data-screen="settings">Settings</button>
+  <label id="drywrap"><input type="checkbox" id="dry"> <span>Dry Run — rehearse, launch nothing</span></label>
+</header>
+<main>
+
+<section class="screen active" id="screen-home">
+  <h2>Social Skills</h2>
+  <div class="grid">
+    <button class="btn primary" data-run="playlist" style="grid-column: 1 / -1;">
+      ▶ Run Playlist
+      <small id="playlistSummary">the configured playlist, whole rotation</small>
+    </button>
+  </div>
+  <fieldset>
+    <legend>Custom Run</legend>
+    <div id="customStudents" class="list"></div>
+    <div style="display:flex; gap:18px; flex-wrap:wrap; margin-top:10px; align-items:center;">
+      <label class="row"><input type="radio" name="cmode" value="activity" checked> Do Activity</label>
+      <label class="row"><input type="radio" name="cmode" value="movie"> Watch Movie</label>
+      <input type="text" id="ctarget" placeholder="Activity name (empty = first not at 100%)">
+      <button class="btn" data-run="custom" style="min-width:220px;">Run Custom</button>
+    </div>
+    <p class="note">Type the activity name exactly as the dry-run table shows it.</p>
+  </fieldset>
+
+  <h2>enCORE</h2>
+  <div class="grid">
+    <button class="btn" data-run="teacherled-setup">
+      Teacher-Led — Set up only
+      <small>loads group &amp; length, stops at READY — you press Begin on screen</small>
+    </button>
+    <button class="btn danger" data-run="teacherled-live">
+      Teacher-Led — START LIVE SESSION
+      <small>presses Begin itself: a REAL recorded session starts immediately</small>
+    </button>
+    <button class="btn" disabled>
+      Student-Led — Set up only
+      <small>not built yet — automation for Student-Led doesn't exist</small>
+    </button>
+    <button class="btn" disabled>
+      Student-Led — START LIVE SESSION
+      <small>not built yet</small>
+    </button>
+  </div>
+
+  <h2>Utilities</h2>
+  <div class="grid">
+    <button class="btn ok" data-run="login">
+      Sign In
+      <small>one-time per machine — you type the password in the browser window, never here</small>
+    </button>
+    <button class="btn" data-run="recon-roster">
+      Refresh Roster
+      <small>pulls display names from the live app into a local report</small>
+    </button>
+  </div>
+</section>
+
+<section class="screen" id="screen-run">
+  <div id="runhead">
+    <span class="pill">Status: <b id="stRunning">idle</b></span>
+    <span class="pill">Mode: <b id="stAction">—</b></span>
+    <span class="pill">Student: <b id="stStudent">—</b></span>
+    <span class="pill">Step: <b id="stStep">—</b></span>
+    <button class="btn danger" id="stopbtn">■ STOP — clean shutdown (logs out, closes browser)</button>
+  </div>
+  <div id="log" aria-live="polite"></div>
+</section>
+
+<section class="screen" id="screen-settings">
+  <div id="savemsg"></div>
+  <fieldset>
+    <legend>Rotation &amp; roster (names stay in local config.json — never committed)</legend>
+    <div id="students" class="list"></div>
+    <div style="display:flex; gap:10px; margin-top:10px;">
+      <input type="text" id="newStudent" placeholder="Student display name, exactly as View Students shows it">
+      <button class="mini" id="addStudent" style="min-width:120px;">Add</button>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Playlist</legend>
+    <div id="playlist" class="list"></div>
+    <button class="mini" id="addStep" style="margin-top:10px; min-width:160px;">Add step</button>
+    <p class="note">Steps run in order for each student. “Once” = first student of the session only (group movies). Empty playlist = one activity per student.</p>
+  </fieldset>
+  <fieldset>
+    <legend>General</legend>
+    <label class="row">District: <select id="district"></select></label>
+    <label class="row"><input type="checkbox" id="autosubmit"> Press the sign-in button when the browser pre-filled the form (never types, never stores a password)</label>
+  </fieldset>
+  <fieldset>
+    <legend>Teacher-Led defaults</legend>
+    <label class="row">Group: <input type="text" id="tlGroup" style="max-width:280px;"></label>
+    <label class="row">Session length (min): <input type="number" id="tlLen" min="1" style="width:110px;"></label>
+    <label class="row">enCORE app hash: <input type="text" id="tlHash" placeholder="empty = district default" style="max-width:280px;"></label>
+  </fieldset>
+  <button class="btn primary" id="saveBtn" style="width:100%;">Save settings</button>
+  <p class="note">Saving validates first and keeps the previous config as config.json.bak. Invalid input is refused with the reason — nothing broken is ever written.</p>
+</section>
+
+</main>
+<footer id="version">…</footer>
+<script>
+'use strict';
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
+let cfg = null;
+let districts = [];
+
+/* ------------------------------- tabs ------------------------------- */
+function show(name) {
+  $$('.tab').forEach((t) => t.classList.toggle('active', t.dataset.screen === name));
+  $$('.screen').forEach((s) => s.classList.toggle('active', s.id === 'screen-' + name));
+}
+$$('.tab').forEach((t) => t.addEventListener('click', () => { if (t.dataset.screen === 'settings') loadConfig(); show(t.dataset.screen); }));
+$('#dry').addEventListener('change', () => $('#drywrap').classList.toggle('on', $('#dry').checked));
+
+/* ------------------------------ launch ------------------------------ */
+async function run(action, extra) {
+  const body = Object.assign({ action, dry: $('#dry').checked }, extra || {});
+  const r = await fetch('/api/run', { method: 'POST', body: JSON.stringify(body) });
+  if (!r.ok) {
+    const e = await r.json().catch(() => ({}));
+    alert(e.error || 'could not start the run');
+    return;
+  }
+  $('#stStudent').textContent = '—';
+  $('#stStep').textContent = '—';
+  show('run');
+}
+$$('[data-run]').forEach((b) =>
+  b.addEventListener('click', () => {
+    const a = b.dataset.run;
+    if (a === 'custom') {
+      const students = $$('#customStudents input:checked').map((c) => c.value);
+      const mode = $$('input[name=cmode]').find((r) => r.checked).value;
+      run('custom', { students, mode, target: $('#ctarget').value });
+    } else {
+      run(a);
+    }
+  })
+);
+$('#stopbtn').addEventListener('click', () => fetch('/api/stop', { method: 'POST' }));
+
+/* ---------------------------- live stream ---------------------------- */
+const logEl = $('#log');
+function addLine(text) {
+  const stuck = logEl.scrollTop + logEl.clientHeight >= logEl.scrollHeight - 40;
+  logEl.textContent += text + '\n';
+  if (stuck) logEl.scrollTop = logEl.scrollHeight;
+  let m;
+  if ((m = text.match(/\] LOGIN (.+)$/))) $('#stStudent').textContent = m[1];
+  if ((m = text.match(/\] START (.+)$/))) $('#stStep').textContent = m[1];
+  if (/\] NEXT$/.test(text)) $('#stStep').textContent = '—';
+  if (/SESSION COMPLETE|LOGIN SETUP COMPLETE|RECON COMPLETE|Clean exit\./.test(text)) $('#stStep').textContent = 'done';
+}
+function connect() {
+  const es = new EventSource('/api/stream');
+  es.onmessage = (ev) => {
+    const d = JSON.parse(ev.data);
+    if (d.type === 'line') addLine(d.text);
+    else if (d.type === 'status') {
+      if (d.running) logEl.textContent = '';
+      $('#stRunning').textContent = d.running ? 'RUNNING' : d.exitCode === null ? 'idle' : `finished (exit ${d.exitCode})`;
+      $('#stAction').textContent = d.action || '—';
+    }
+  };
+  es.onerror = () => { es.close(); setTimeout(connect, 1500); };
+}
+connect();
+
+/* ----------------------------- settings ------------------------------ */
+function studentItem(name, i) {
+  const div = document.createElement('div');
+  div.className = 'item';
+  div.innerHTML =
+    '<span class="grow"></span>' +
+    '<button class="mini" data-a="up" title="earlier in rotation">▲</button>' +
+    '<button class="mini" data-a="down" title="later in rotation">▼</button>' +
+    '<button class="mini danger" data-a="rm" title="remove">✕</button>';
+  div.querySelector('.grow').textContent = (i + 1) + '. ' + name;
+  div.addEventListener('click', (ev) => {
+    const a = ev.target.dataset && ev.target.dataset.a;
+    if (!a) return;
+    if (a === 'rm') cfg.students.splice(i, 1);
+    if (a === 'up' && i > 0) [cfg.students[i - 1], cfg.students[i]] = [cfg.students[i], cfg.students[i - 1]];
+    if (a === 'down' && i < cfg.students.length - 1) [cfg.students[i + 1], cfg.students[i]] = [cfg.students[i], cfg.students[i + 1]];
+    renderSettings();
+  });
+  return div;
+}
+function stepItem(step, i) {
+  const div = document.createElement('div');
+  div.className = 'item';
+  div.innerHTML =
+    '<select data-f="mode"><option value="movie">Watch Movie</option><option value="activity">Do Activity</option></select>' +
+    '<input type="text" data-f="target" placeholder="target activity (or leave empty)" style="flex:1;min-width:140px;">' +
+    '<label class="row" style="min-height:auto;">count <input type="number" data-f="count" min="1" style="width:80px;"></label>' +
+    '<label class="row" style="min-height:auto;"><input type="checkbox" data-f="once"> once</label>' +
+    '<button class="mini" data-a="up">▲</button><button class="mini" data-a="down">▼</button>' +
+    '<button class="mini danger" data-a="rm">✕</button>';
+  div.querySelector('[data-f=mode]').value = step.mode || 'movie';
+  div.querySelector('[data-f=target]').value = step.target || '';
+  div.querySelector('[data-f=count]').value = step.count || '';
+  div.querySelector('[data-f=once]').checked = step.once === true;
+  div.addEventListener('change', () => {
+    step.mode = div.querySelector('[data-f=mode]').value;
+    const t = div.querySelector('[data-f=target]').value.trim();
+    const c = parseInt(div.querySelector('[data-f=count]').value, 10);
+    if (t) { step.target = t; delete step.count; }
+    else { delete step.target; if (c > 0) step.count = c; else delete step.count; }
+    if (div.querySelector('[data-f=once]').checked) step.once = true; else delete step.once;
+  });
+  div.addEventListener('click', (ev) => {
+    const a = ev.target.dataset && ev.target.dataset.a;
+    if (!a) return;
+    if (a === 'rm') cfg.playlist.splice(i, 1);
+    if (a === 'up' && i > 0) [cfg.playlist[i - 1], cfg.playlist[i]] = [cfg.playlist[i], cfg.playlist[i - 1]];
+    if (a === 'down' && i < cfg.playlist.length - 1) [cfg.playlist[i + 1], cfg.playlist[i]] = [cfg.playlist[i], cfg.playlist[i + 1]];
+    renderSettings();
+  });
+  return div;
+}
+function renderSettings() {
+  if (!cfg) return;
+  const st = $('#students'); st.innerHTML = '';
+  cfg.students.forEach((n, i) => st.appendChild(studentItem(n, i)));
+  if (!cfg.students.length) st.innerHTML = '<p class="note">No students yet — add the rotation below.</p>';
+  const pl = $('#playlist'); pl.innerHTML = '';
+  (cfg.playlist = cfg.playlist || []).forEach((s, i) => pl.appendChild(stepItem(s, i)));
+  const ds = $('#district'); ds.innerHTML = '';
+  districts.forEach((d) => { const o = document.createElement('option'); o.value = d; o.textContent = d; ds.appendChild(o); });
+  ds.value = cfg.district || '';
+  $('#autosubmit').checked = cfg.autoSubmitPrefilledLogin !== false;
+  const tl = (cfg.teacherLed = cfg.teacherLed || {});
+  $('#tlGroup').value = tl.group || '';
+  $('#tlLen').value = tl.sessionLengthMin || 15;
+  $('#tlHash').value = tl.encoreAppHash || '';
+  renderHome();
+}
+function renderHome() {
+  const cs = $('#customStudents'); cs.innerHTML = '';
+  (cfg ? cfg.students : []).forEach((n) => {
+    const l = document.createElement('label');
+    l.className = 'row';
+    const c = document.createElement('input');
+    c.type = 'checkbox'; c.value = n; c.checked = true;
+    l.appendChild(c); l.appendChild(document.createTextNode(' ' + n));
+    cs.appendChild(l);
+  });
+  const p = cfg && cfg.playlist && cfg.playlist.length;
+  $('#playlistSummary').textContent = p
+    ? cfg.playlist.map((s) => (s.target ? s.target : `first ${s.count || 1}`) + ` (${s.mode})` + (s.once ? ' ×once' : '')).join(' → ') +
+      ` — ${cfg.students.length} student(s)`
+    : `one activity per student — ${cfg ? cfg.students.length : 0} student(s)`;
+}
+$('#addStudent').addEventListener('click', () => {
+  const v = $('#newStudent').value.trim();
+  if (!v) return;
+  cfg.students.push(v);
+  if (!cfg.roster.some((r) => (typeof r === 'string' ? r : r.name) === v)) cfg.roster.push({ name: v, aka: [], expected: true });
+  $('#newStudent').value = '';
+  renderSettings();
+});
+$('#addStep').addEventListener('click', () => { cfg.playlist.push({ mode: 'movie', count: 1 }); renderSettings(); });
+$('#saveBtn').addEventListener('click', async () => {
+  cfg.district = $('#district').value;
+  cfg.autoSubmitPrefilledLogin = $('#autosubmit').checked;
+  cfg.teacherLed.group = $('#tlGroup').value.trim();
+  cfg.teacherLed.sessionLengthMin = parseInt($('#tlLen').value, 10) || 15;
+  cfg.teacherLed.encoreAppHash = $('#tlHash').value.trim() || null;
+  // Rotation names must exist in the roster; prune roster entries the user removed from both.
+  const msg = $('#savemsg');
+  const r = await fetch('/api/config', { method: 'POST', body: JSON.stringify(cfg) });
+  const d = await r.json().catch(() => ({}));
+  if (r.ok) { msg.className = 'ok'; msg.textContent = 'Saved. Previous config kept as config.json.bak.'; renderHome(); }
+  else { msg.className = 'err'; msg.textContent = 'NOT saved:\n· ' + (d.errors || ['unknown error']).join('\n· '); }
+});
+
+async function loadConfig() {
+  const [c, d] = await Promise.all([fetch('/api/config').then((r) => r.json()), fetch('/api/districts').then((r) => r.json())]);
+  districts = d.districts || [];
+  cfg = c.config;
+  if (c.missing) { $('#savemsg').className = 'err'; $('#savemsg').textContent = 'No config.json yet — this is the template. Add students and Save to create it.'; }
+  renderSettings();
+}
+fetch('/api/version').then((r) => r.json()).then((d) => { $('#version').textContent = d.version + ' — serving on this machine only (127.0.0.1)'; });
+loadConfig();
+</script>
+</body>
+</html>
