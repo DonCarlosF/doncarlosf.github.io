@@ -28,17 +28,15 @@ export default async function WatchPage() {
       />
 
       <Section>
-        <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr]">
-          <div>
-            <Eyebrow>Live now / next up</Eyebrow>
-            <h2 className="mb-4 mt-2 font-display text-2xl font-semibold">KBCF Live</h2>
-            <BoxcastEmbed id={settings.boxcastId} />
-            <p className="mt-3 text-sm text-muted">
-              Streaming via BoxCast. The player shows the live service when we&apos;re on air, and the next scheduled
-              broadcast otherwise.
-            </p>
-          </div>
-          <aside className="rounded-card border border-border bg-surface p-6">
+        <Eyebrow>Live now / next up</Eyebrow>
+        <h2 className="mb-4 mt-2 font-display text-2xl font-semibold">KBCF Live</h2>
+        <BoxcastEmbed id={settings.boxcastId} />
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+          <p className="text-sm text-muted">
+            Streaming via BoxCast — the player shows the live service when we&apos;re on air, the next scheduled
+            broadcast otherwise, and a playlist of past services and highlights alongside it.
+          </p>
+          <aside className="kbcf-card rounded-card border border-border bg-surface p-6 transition-colors duration-300">
             <h2 className="font-display text-xl font-semibold">Watch elsewhere</h2>
             <p className="mt-2 text-sm text-muted">Prefer to watch on social? Catch the simulcast:</p>
             <div className="mt-4 flex flex-col gap-3">
@@ -58,21 +56,19 @@ export default async function WatchPage() {
         </div>
       </Section>
 
-      {clips.length > 0 && (
-        <Section tone="surface-2">
-          <SectionHeading eyebrow="Shorts" title="Clips for your feed" />
-          <div className="mt-8">
-            <ClipRail clips={clips} />
-          </div>
-        </Section>
-      )}
+      <Section tone="surface-2">
+        <SectionHeading eyebrow="Shorts" title="Clips for your feed" />
+        <div className="mt-8">
+          <ClipRail clips={clips} />
+        </div>
+      </Section>
 
       <Section id="archive">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <SectionHeading eyebrow="Archive" title="Past messages" />
           <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm font-semibold text-primary">
-            <Link href="/watch/series" className="hover:underline">Browse by series →</Link>
-            <Link href="/search" className="hover:underline">Search messages →</Link>
+            <Link href="/watch/series" className="kbcf-more hover:underline">Browse by series →</Link>
+            <Link href="/search" className="kbcf-more hover:underline">Search messages →</Link>
           </div>
         </div>
         <div className="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">

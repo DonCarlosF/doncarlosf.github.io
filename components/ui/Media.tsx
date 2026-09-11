@@ -7,10 +7,11 @@ import type { Img } from "@/lib/content/types";
  * placeholder — so the preview never shows an invented/fake photo.
  */
 export function SmartImage({
-  image, className, sizes, priority, ratio = "aspect-video", rounded = "rounded-card",
+  image, className, imageClassName, sizes, priority, ratio = "aspect-video", rounded = "rounded-card",
 }: {
   image?: Img;
   className?: string;
+  imageClassName?: string;
   sizes?: string;
   priority?: boolean;
   ratio?: string;
@@ -27,7 +28,7 @@ export function SmartImage({
           fill
           sizes={sizes || "(max-width: 768px) 100vw, 50vw"}
           priority={priority}
-          className="object-cover"
+          className={cn("object-cover", imageClassName)}
         />
       </div>
     );

@@ -10,6 +10,7 @@
  */
 import type {
   SiteSettings, Sermon, ChurchEvent, Group, Leader, BlogPost, Testimonial, Series, Speaker,
+  HomeContent, AboutContent, OutreachProgram,
 } from "./types";
 
 export const siteSettings: SiteSettings = {
@@ -17,44 +18,43 @@ export const siteSettings: SiteSettings = {
   tagline: "Church Like No Other",
   mission: "People are our heart and Jesus is our message.",
   address: { street: "1431 17th Avenue", city: "Oakland", state: "CA", zip: "94606" },
-  // phone/email unknown — intentionally omitted so the UI shows a clear placeholder.
-  phone: undefined,
+  phone: "(510) 326-2446",
+  // TODO(owner): pick the canonical email (info@ vs hello@) — placeholder until then.
   email: undefined,
+  // TODO(owner): confirm service times (sourced from the church's old site).
   serviceTimes: [
-    { day: "Saturday", label: "Morning Prayer", time: "Morning" },
-    { day: "Sunday", label: "Worship", time: "9:00 AM" },
+    { day: "Mon–Fri", label: "Prayer Line", time: "6:30–7:00 AM", phone: "(267) 930-4000", passcode: "089470707#" },
+    { day: "Saturday", label: "Morning Prayer", time: "9:00 AM" },
+    { day: "Sunday", label: "Worship", time: "9:00–10:45 AM" },
+    { day: "Wednesday", label: "Corporate Prayer", time: "6:30 PM" },
     { day: "Wednesday", label: "Bible Study", time: "7:00 PM" },
   ],
   boxcastId: "wsiikymmlhksnkgmc24r",
   givingProvider: "Clover",
   givingUrl: "https://www.clover.com/pay-widgets/fab217bf-1afb-4bda-9d0d-085098cbadac",
-  heroVideoUrl: undefined, // add an MP4/HLS hero loop in the CMS when available
-
-  // Social handles not supplied — left empty rather than guessed.
-  social: [],
+  social: [{ platform: "facebook", url: "https://www.facebook.com/kingdombuilderscf" }],
   mapEmbedQuery: "1431 17th Avenue, Oakland, CA 94606",
 };
 
-const pastorLJ: Speaker = { _id: "spk-lj", name: "Pastor L.J. Jennings", role: "Founder & Senior Pastor" };
+const pastorLJ: Speaker = { _id: "spk-lj", name: "Dr. LJ Jennings", role: "Founder & Senior Pastor" };
 
 export const leaders: Leader[] = [
   {
     _id: "ldr-lj",
-    name: "Pastor L.J. Jennings",
+    name: "Dr. LJ Jennings",
     role: "Founder & Senior Pastor",
-    // Verified facts only; remainder awaits approved bio copy.
-    bio: "L.J. Jennings is the Founder and Senior Pastor of Kingdom Builders Christian Fellowship, which he and Karen Jennings founded in 2009 after more than 20 years of ministry in the Bay Area. [Placeholder — add approved full bio in the CMS.]",
-    bioPlaceholder: true,
-    image: { alt: "Pastor L.J. Jennings", placeholder: true },
+    bio: "Founder and Senior Pastor of Kingdom Builders Christian Fellowship. Having served more than 20 years in the Bay Area Ministry. In 2009 God called Pastor Jennings to establish and create a “Church Like No Other”. LJ holds a Doctorate in Theology from Sacramento Theological Seminary, an Honorary Doctorate in Ministry from Bell Grove Theological Seminary, A Masters and Bachelors in Christian Education from CH Mason Bible College. He also attended California State University Hayward, where he majored in Political Science and Business Administration. He is a graduate of the Dale Carnegie Courses.",
+    image: { alt: "Dr. LJ Jennings, Founder & Senior Pastor", placeholder: true },
     order: 1,
   },
   {
     _id: "ldr-karen",
-    name: "Karen Jennings",
-    role: "Co-Founder",
-    bio: "Karen Jennings co-founded Kingdom Builders Christian Fellowship alongside Pastor L.J. Jennings in 2009. [Placeholder — add approved full bio in the CMS.]",
+    name: "Dr. Karen Jennings",
+    role: "Co-Pastor",
+    // Extended bio pending from the pastoral team.
+    bio: "Pastor LJ and Karen have a heart to reach our city and beyond with the life transforming message of Jesus. [Extended bio coming soon.]",
     bioPlaceholder: true,
-    image: { alt: "Karen Jennings", placeholder: true },
+    image: { alt: "Dr. Karen Jennings, Co-Pastor", placeholder: true },
     order: 2,
   },
 ];
@@ -78,9 +78,11 @@ export const sermons: Sermon[] = [
     thumbnail: { alt: "Sermon thumbnail placeholder", placeholder: true },
     sample: true,
     clips: [
-      { _id: "clip-1", hook: "Hook text for a vertical clip", platform: "instagram", viralityScore: 92, thumbnail: { alt: "Clip placeholder", placeholder: true } },
-      { _id: "clip-2", hook: "Another shareable moment", platform: "tiktok", viralityScore: 87, thumbnail: { alt: "Clip placeholder", placeholder: true } },
-      { _id: "clip-3", hook: "Made for your feed", platform: "youtube", viralityScore: 81, thumbnail: { alt: "Clip placeholder", placeholder: true } },
+      // Sample clips demonstrating the rail. clip-1 carries a public YouTube URL
+      // purely to exercise the inline-play facade (replace with real KBCF clips).
+      { _id: "clip-1", hook: "Sample clip — tap to play (replace in Studio)", sermonDate: "2026-06-07", status: "published", viralityScore: 92, platforms: { youtube: "https://www.youtube.com/watch?v=jNQXAC9IVRw" }, thumbnail: { alt: "Clip placeholder", placeholder: true } },
+      { _id: "clip-2", hook: "Another shareable moment", sermonDate: "2026-06-07", status: "published", viralityScore: 87, thumbnail: { alt: "Clip placeholder", placeholder: true } },
+      { _id: "clip-3", hook: "Scheduled clip (hidden until published)", sermonDate: "2026-06-07", status: "scheduled", viralityScore: 81, thumbnail: { alt: "Clip placeholder", placeholder: true } },
     ],
   },
   {
@@ -162,14 +164,83 @@ export const blogPosts: BlogPost[] = [
   },
 ];
 
-// Intentionally empty: the old site's problem was stale, invented testimonials.
-// Real, dated testimonials should be added in the CMS.
-export const testimonials: Testimonial[] = [];
+// Real testimonial provided by the pastoral team. Add more in the CMS.
+export const testimonials: Testimonial[] = [
+  {
+    _id: "tst-brenda",
+    quote:
+      "At KBCF I am making a difference in my community through my ministry work. I love serving and helping others at KBCF.",
+    attribution: "Brenda H.",
+  },
+];
 
 export const dreamCenter = {
-  // "Dream Center" is KBCF's community outreach arm (verified). Program
-  // specifics are placeholders pending approved copy.
   mission:
     "The Dream Center is the community outreach arm of Kingdom Builders Christian Fellowship, serving Oakland with the love of Jesus.",
-  programsPlaceholder: true,
+  // KBCF's outreach identity — the three H's.
+  threeHs: ["Housing", "Health", "Hunger"] as const,
+  headlineStat: "500+",
+  headlineStatLabel: "households fed every week",
+  housingStory: {
+    heading: "Affordable housing on church-owned land",
+    body: "KBCF is developing approximately 40 units of affordable housing on church-owned land at Eastmont/MacArthur — homes for seniors, formerly homeless veterans, and people with special needs.",
+  },
+  volunteerHeading: "Volunteer With Us!",
+  volunteerBody:
+    "With just a few hours of your time, you can immerse into a compassionate network that offers hope to individuals and Oakland communities. Not only will your time and service touch and change the lives of others, but will also impact you and yours.",
+};
+
+/** Owner-supplied outreach programs with real stats (editable in the CMS). */
+export const outreachPrograms: OutreachProgram[] = [
+  { _id: "op-feeding", name: "Feeding Families", stat: "500+", statLabel: "households · 25,000+ lbs of food weekly", schedule: "Thursdays 11 AM", serveCta: "Serve on Thursdays", order: 1, image: { alt: "Feeding Families food distribution", placeholder: true } },
+  { _id: "op-thanksgiving", name: "Thanksgiving Turkey Giveaway", stat: "1,000+", statLabel: "turkeys given annually", serveCta: "Volunteer", order: 2, image: { alt: "Thanksgiving turkey giveaway", placeholder: true } },
+  { _id: "op-b2s", name: "Back to School Bash", stat: "700+", statLabel: "students served", serveCta: "Volunteer", order: 3, image: { alt: "Back to School Bash", placeholder: true } },
+  { _id: "op-recovery", name: "Celebrate Recovery", description: "A Christ-centered recovery community.", serveCta: "Get involved", order: 4, image: { alt: "Celebrate Recovery", placeholder: true } },
+  { _id: "op-sober", name: "Men's Sober-Living Home", description: "A sober-living home for men rebuilding their lives.", serveCta: "Learn more", order: 5, image: { alt: "Men's sober-living home", placeholder: true } },
+  { _id: "op-streets", name: "Take It to the Streets", description: "Meals for our homeless neighbors at People's Park, Berkeley.", serveCta: "Serve a meal", order: 6, image: { alt: "Take It to the Streets meals", placeholder: true } },
+  { _id: "op-health", name: "Free Health Fair", description: "Free health resources for the community.", serveCta: "Volunteer", order: 7, image: { alt: "Free health fair", placeholder: true } },
+  { _id: "op-cleanup", name: "Neighborhood Clean-Ups", description: "Monthly clean-ups around our Oakland neighborhoods.", schedule: "Monthly", serveCta: "Join a clean-up", order: 8, image: { alt: "Neighborhood clean-up", placeholder: true } },
+];
+
+/** Home page content — editable in the CMS (homePage singleton). */
+export const homePage: HomeContent = {
+  heroSlides: [
+    { eyebrow: "God says you are", accent: "Enough.", ctaLabel: "Plan your visit", ctaHref: "/new-here" },
+    { eyebrow: "There's a place for you", title: "You belong", accent: "here.", ctaLabel: "Get connected", ctaHref: "/new-here#connect" },
+    { eyebrow: "Livestream every weekend", title: "Watch", accent: "online.", ctaLabel: "Watch live", ctaHref: "/watch" },
+  ],
+  // No seeded banner: EventBanner falls back to the soonest upcoming event.
+  welcomeHeading: "Church Like No Other",
+  welcomeBody:
+    "Welcome to Kingdom Builders! Whatever your age or life story, you are welcome! Our mission is simple: People are our heart and Jesus is our message. Kingdom Builders is an Oakland, CA based 21st century ministry. We love people from where they are and disciple them to be all God has called them to be. Come experience the love of Christ for yourself. We’re glad you’re here!",
+  pastorsHeading: "Meet Pastors LJ & Karen",
+  pastorsBody:
+    "Pastors LJ and Karen Jennings have dedicated their lives, voices, and resources to creating transformational experiences that help others dream again resulting in a deeper relationship with God, and collision with purpose. They have a heart to reach our city and beyond with the life transforming message of Jesus.",
+  pastorsImage: { alt: "Pastors LJ & Karen Jennings", placeholder: true },
+};
+
+/** About page content — editable in the CMS (aboutPage singleton). */
+export const aboutPage: AboutContent = {
+  intro:
+    "Kingdom Builders is a contemporary, non-denominational, 21st century ministry dedicated to reaching people where they are and sharing with them the love of Christ. Since our inception in 2009, Kingdom Builders progressively lives out its mission to lead people into a fully devoted relationship with Jesus Christ by loving people, cultivating community and inspiring hope.",
+  mission:
+    "Love people where they are and encourage them to grow in their relationship with Jesus Christ. Bringing people that are far from God close to him.",
+  storyHeading: "Our Story",
+  story: undefined, // pending approved copy from the pastoral team
+  storyPlaceholder: true,
+  beliefs: [
+    { name: "Jesus Christ", body: "We believe that Jesus was the Son of God, who was sacrificed so that humans could have eternal life in heaven. The key events in Jesus’ life that shape Christian beliefs include his crucifixion, resurrection and ascension." },
+    { name: "The Trinity", body: "We believe there is one God who eternally exists as three Elements - Father, Son and Holy Spirit. The Holy Spirit is the Spirit of God who dwells and empowers all Christians to lead a godly life. They describe their faith in “One God, In three persons.” All three persons are equal and eternal." },
+    { name: "The Bible", body: "We believe that the bible is the infallible word of God, which is sufficient for all we need to live a Christian life. It is a book of writings which is considered to be sacred by many Christians, and which includes the Hebrew Scriptures and a collection of writings from the early Christian Church. “All Scripture is God-breathed and is useful for teaching, rebuking, correcting and training in righteousness, so that the servant of God may be thoroughly equipped for every good work.” 2 Timothy 3:16-17" },
+    { name: "Justification By Faith", body: "We believe that through our faith in Jesus, we can have a right relationship with God." },
+    { name: "Prayer", body: "We believe that prayer is a way to communicate with God, and is one of five spiritual practices that are essential to growing our faith." },
+  ],
+  coreValues: [
+    { title: "Service Is What We Do", body: "Jesus was the greatest servant and our greatest example of service. From the least to the greatest, we are all called to serve one another. It is a privilege and honor that we get to serve." },
+    { title: "Connections Are What We Create", body: "Connecting with people of like passions and interests, creates relationships and propels the work of God. We encourage everyone to make connections with others though one of the many ministries committed to service." },
+    { title: "Hope Is Our Message", body: "We share the hope and message of Jesus and not a denomination or doctrine. We are committed to reaching those in search for a relationship with God and understand that the message is sacred and not the methods of reaching them." },
+    { title: "Gifts Are To Be Given", body: "We all have been given a gift to be used in the Kingdom of God. We give in three ways: we give out time, we give out talent and we give of our treasure. God has given richly towards us, it’s our honor to give back to Him." },
+    { title: "People Are Our Focus", body: "God is the only judge, so Kingdom Builders is committed to loving and not judging. We all are sinners and are just grateful for our salvation." },
+    { title: "Passion With A Purpose", body: "Everything we do, we do with passion and purpose. Passionate about Jesus and Purposeful about our worship. Our worship is passionate and Spirit energized. Our passion is for Jesus, His people and His Church." },
+  ],
 };

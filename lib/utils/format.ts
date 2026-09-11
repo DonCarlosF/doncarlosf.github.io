@@ -1,4 +1,11 @@
+import type { ServiceTime } from "@/lib/content/types";
+
 const DAY = { weekday: "short", month: "short", day: "numeric" } as const;
+
+/** "Worship 9:00 AM" — or just the label when a service has no fixed time. */
+export function serviceLabelTime(s: ServiceTime): string {
+  return s.time ? `${s.label} ${s.time}` : s.label;
+}
 
 export function formatDate(iso: string): string {
   try {

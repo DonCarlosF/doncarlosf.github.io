@@ -27,10 +27,10 @@ export default async function GivePage() {
 
       <Section>
         <div className="grid items-start gap-10 lg:grid-cols-[1.2fr_0.8fr]">
-          <CloverGiving url={settings.givingUrl} />
+          <CloverGiving url={settings.givingUrl} provider={settings.givingProvider} />
 
           <div id="ways" className="space-y-6">
-            <div className="rounded-card border border-border bg-surface p-6">
+            <div className="kbcf-card rounded-card border border-border bg-surface p-6 transition-colors duration-300">
               <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
                 <Repeat size={18} className="text-primary" aria-hidden /> Make it recurring
               </h2>
@@ -38,7 +38,7 @@ export default async function GivePage() {
                 Set up weekly or monthly giving in the secure form so faithful generosity is one less thing to remember.
               </p>
             </div>
-            <div className="rounded-card border border-border bg-surface p-6">
+            <div className="kbcf-card rounded-card border border-border bg-surface p-6 transition-colors duration-300">
               <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
                 <HandCoins size={18} className="text-primary" aria-hidden /> Other ways to give
               </h2>
@@ -47,7 +47,7 @@ export default async function GivePage() {
                 {settings.address.state} {settings.address.zip}.
               </p>
             </div>
-            <div className="rounded-card border border-border bg-surface p-6">
+            <div className="kbcf-card rounded-card border border-border bg-surface p-6 transition-colors duration-300">
               <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
                 <ShieldCheck size={18} className="text-primary" aria-hidden /> Secure &amp; accountable
               </h2>

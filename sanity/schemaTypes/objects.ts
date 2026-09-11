@@ -24,9 +24,11 @@ export const serviceTime = defineType({
   fields: [
     defineField({ name: "day", type: "string", validation: (r) => r.required() }),
     defineField({ name: "label", type: "string", description: 'e.g. "Worship", "Bible Study"', validation: (r) => r.required() }),
-    defineField({ name: "time", type: "string", description: 'e.g. "9:00 AM"', validation: (r) => r.required() }),
+    defineField({ name: "time", type: "string", description: 'e.g. "9:00 AM" — leave blank for services with no fixed time (e.g. Morning Prayer)' }),
+    defineField({ name: "phone", type: "string", description: "Dial-in number for call-in gatherings (e.g. the prayer line). Optional." }),
+    defineField({ name: "passcode", type: "string", description: "Dial-in passcode, if any. Optional." }),
   ],
-  preview: { select: { title: "day", subtitle: "time" } },
+  preview: { select: { title: "day", subtitle: "label" } },
 });
 
 export const socialLink = defineType({

@@ -15,7 +15,9 @@ export type Img = {
 export type ServiceTime = {
   day: string;        // e.g. "Sunday"
   label: string;      // e.g. "Worship"
-  time: string;       // e.g. "9:00 AM"
+  time?: string;      // e.g. "9:00 AM" — optional: some services have no fixed clock time
+  phone?: string;     // dial-in number for call-in gatherings (e.g. the prayer line)
+  passcode?: string;  // dial-in passcode, if any
 };
 
 export type SocialLink = {
@@ -39,7 +41,6 @@ export type SiteSettings = {
   boxcastId: string;
   givingUrl: string;
   givingProvider: string;
-  heroVideoUrl?: string;   // optional hero background video (muted loop)
   social: SocialLink[];
   mapEmbedQuery: string; // address string used to build a maps embed
 };
@@ -59,15 +60,21 @@ export type Series = {
   description?: string;
 };
 
+/** Clip documents are upserted by the church-clip-manager repo — the shape is a
+ *  cross-repo contract (see CLIP_CONTRACT.md). */
+export type ClipPlatforms = { youtube?: string; instagram?: string; tiktok?: string };
 export type Clip = {
   _id: string;
-  hook: string;          // short hook text
+  hook: string;            // short hook text
   caption?: string;
-  videoUrl?: string;     // vertical video
+  sermonDate?: string;     // YYYY-MM-DD (rail sorts by this, newest first)
+  scriptureRefs?: string[];
+  platforms?: ClipPlatforms; // post URLs where the clip is published
+  verticalVideoUrl?: string; // optional MP4 asset URL
   thumbnail?: Img;
-  platform?: "instagram" | "tiktok" | "youtube" | "facebook";
   hashtags?: string[];
-  viralityScore?: number; // 0-100, from the clip tool
+  viralityScore?: number;  // 0-100, from the clip tool
+  status?: "scheduled" | "published"; // rail renders only "published"
 };
 
 export type Sermon = {
@@ -139,6 +146,19 @@ export type BlogPost = {
   sample?: boolean;
 };
 
+/** Dream Center outreach program with its real impact stat. */
+export type OutreachProgram = {
+  _id: string;
+  name: string;
+  description?: string;
+  stat?: string;      // e.g. "500+"
+  statLabel?: string; // e.g. "households served weekly"
+  schedule?: string;  // e.g. "Thursdays 11 AM"
+  serveCta?: string;
+  image?: Img;
+  order?: number;
+};
+
 export type Testimonial = {
   _id: string;
   quote: string;
@@ -146,10 +166,45 @@ export type Testimonial = {
   image?: Img;
 };
 
-/** Editable homepage / generic page blocks live under `page`. */
-export type Page = {
-  _id: string;
-  title: string;
-  slug: string;
-  blocks?: unknown[];
+/** Home page content (CMS singleton `homePage`, with a seed fallback). */
+export type HeroSlide = {
+  eyebrow?: string;
+  title?: string;
+  accent?: string;   // emphasized phrase, rendered with the theme hero-accent treatment
+  ctaLabel?: string;
+  ctaHref?: string;
 };
+
+export type EventBanner = {
+  enabled?: boolean;
+  title: string;
+  date?: string;     // human-readable, editable (e.g. "May 8, 2024")
+  location?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+};
+
+export type HomeContent = {
+  heroSlides: HeroSlide[];
+  eventBanner?: EventBanner;
+  welcomeHeading: string;
+  welcomeBody: string;
+  pastorsHeading: string;
+  pastorsBody: string;
+  pastorsImage?: Img;
+};
+
+/** About page content (CMS singleton `aboutPage`, with a seed fallback). */
+export type Belief = { name: string; body: string };   // Five Pillars of Christianity
+export type CoreValue = { title: string; body: string };
+
+export type AboutContent = {
+  intro: string;
+  mission: string;
+  storyHeading?: string;
+  story?: string;
+  storyPlaceholder?: boolean;
+  beliefs: Belief[];
+  coreValues: CoreValue[];
+};
+

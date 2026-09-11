@@ -32,7 +32,9 @@ export function ChurchJsonLd({ settings }: { settings: SiteSettings }) {
     ...(settings.phone ? { telephone: settings.phone } : {}),
     ...(settings.email ? { email: settings.email } : {}),
     ...(settings.social.length ? { sameAs: settings.social.map((s) => s.url) } : {}),
-    event: settings.serviceTimes.map((s) => ({
+    // Call-in gatherings (s.phone set) are excluded: they don't happen at the
+    // building, and a physical-location Event for them would be wrong.
+    event: settings.serviceTimes.filter((s) => !s.phone).map((s) => ({
       "@type": "Event",
       name: `${s.day} ${s.label}`,
       eventSchedule: { "@type": "Schedule", byDay: s.day, startTime: s.time },

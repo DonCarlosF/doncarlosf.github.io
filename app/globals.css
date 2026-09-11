@@ -1,12 +1,9 @@
 @import "tailwindcss";
 
 /*
-  KBCF dual-theme design system.
-  Two art directions ship side-by-side as swappable token sets:
-    [data-theme="sanctuary"]  — warm editorial (Direction A)
-    [data-theme="movement"]   — bold & kinetic (Direction B)
-  Components reference semantic tokens only, so flipping data-theme on <html>
-  restyles the entire site with zero per-component changes.
+  KBCF design system — Direction A "Sanctuary" (locked).
+  Warm editorial: Fraunces display + Inter body; garnet #7A1E2B + gold #E0A53A
+  on ivory; slow, cinematic motion. Components reference semantic tokens only.
 */
 
 @theme inline {
@@ -31,9 +28,7 @@
   --radius-btn: var(--rad-btn);
 }
 
-/* ---------- Direction A · "Sanctuary" (default) ---------- */
-:root,
-[data-theme="sanctuary"] {
+:root {
   --c-bg: #fbf6ee;
   --c-surface: #ffffff;
   --c-surface-2: #f3e9da;
@@ -59,33 +54,6 @@
   color-scheme: light;
 }
 
-/* ---------- Direction B · "Movement" ---------- */
-[data-theme="movement"] {
-  --c-bg: #0b0b0f;
-  --c-surface: #15151d;
-  --c-surface-2: #1e1e28;
-  --c-border: #2a2a36;
-  --c-fg: #f4f3f0;
-  --c-muted: #9c9baa;
-  --c-primary: #5b4dff;
-  --c-primary-fg: #ffffff;
-  --c-accent: #7c71ff;
-  --c-accent-fg: #0b0b0f;
-  --c-cta: #ff5436;
-  --c-cta-fg: #ffffff;
-  --c-ring: #7c71ff;
-
-  --ff-display: var(--font-space), system-ui, sans-serif;
-  --ff-body: var(--font-inter), system-ui, sans-serif;
-
-  --rad-card: 16px;
-  --rad-btn: 10px;
-
-  --dur: 0.28s;
-  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  color-scheme: dark;
-}
-
 @layer base {
   * {
     border-color: var(--c-border);
@@ -100,7 +68,6 @@
     font-family: var(--ff-body);
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
-    transition: background-color 0.4s var(--ease), color 0.4s var(--ease);
   }
   h1, h2, h3, h4 {
     font-family: var(--ff-display);
@@ -134,12 +101,6 @@
     transform: translateY(18px);
   }
 
-  .ticker-track {
-    display: inline-flex;
-    white-space: nowrap;
-    animation: kbcf-marquee 30s linear infinite;
-  }
-
   .hero-grain::after {
     content: "";
     position: absolute;
@@ -150,39 +111,18 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
-  /* Theme-specific hero accents driven purely by CSS (no hydration branching). */
-  .hero-accent { color: var(--c-accent); }
-  [data-theme="sanctuary"] .hero-accent { font-style: italic; }
-  [data-theme="movement"] .hero-accent {
-    color: transparent;
-    -webkit-text-stroke: 1.5px var(--c-accent);
+  /* Sanctuary hero accent: italic gold. */
+  .hero-accent {
+    color: var(--c-accent);
+    font-style: italic;
   }
 
-  /* Hero background differs per direction. */
   .hero-bg {
     background:
       radial-gradient(120% 90% at 80% 8%, color-mix(in srgb, var(--c-accent) 38%, transparent), transparent 55%),
       linear-gradient(180deg, rgba(20, 14, 10, 0.35), rgba(20, 14, 10, 0.82));
     background-color: var(--c-primary);
   }
-  [data-theme="movement"] .hero-bg {
-    background:
-      radial-gradient(80% 60% at 70% 18%, color-mix(in srgb, var(--c-primary) 55%, transparent), transparent 60%),
-      radial-gradient(60% 55% at 12% 95%, color-mix(in srgb, var(--c-cta) 30%, transparent), transparent 60%),
-      linear-gradient(180deg, #0b0b0f, #101019);
-    background-color: #0b0b0f;
-  }
-
-  /* Hero primary CTA: gold in Sanctuary, coral in Movement. */
-  [data-theme="movement"] .hero-cta-primary {
-    background: var(--c-cta);
-    color: var(--c-cta-fg);
-  }
-}
-
-@keyframes kbcf-marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
 }
 
 /* Long-form article styling for Portable Text (blog body). */
@@ -202,7 +142,6 @@
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
-  .ticker-track { animation: none; }
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;

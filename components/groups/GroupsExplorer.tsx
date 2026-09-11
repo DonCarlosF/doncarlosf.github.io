@@ -40,8 +40,13 @@ export function GroupsExplorer({ groups }: { groups: Group[] }) {
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((g) => (
-          <Card key={g._id} className="flex h-full flex-col overflow-hidden p-0">
-            <SmartImage image={g.image || { alt: g.name, placeholder: true }} ratio="aspect-[16/10]" rounded="rounded-none" />
+          <Card key={g._id} className="group flex h-full flex-col overflow-hidden p-0">
+            <SmartImage
+              image={g.image || { alt: g.name, placeholder: true }}
+              ratio="aspect-[16/10]"
+              rounded="rounded-none"
+              imageClassName="transition-transform duration-500 group-hover:scale-105"
+            />
             <div className="flex flex-1 flex-col p-6">
               {g.type && (
                 <span className="mb-2 inline-flex w-fit items-center gap-1 rounded-full bg-surface-2 px-2.5 py-1 text-xs font-semibold text-primary">

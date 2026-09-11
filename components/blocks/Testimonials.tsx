@@ -15,7 +15,7 @@ export function Testimonials({ testimonials }: { testimonials: Testimonial[] }) 
       <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {testimonials.map((t, i) => (
           <Reveal key={t._id} delay={i * 80}>
-            <figure className="flex h-full flex-col rounded-card border border-border bg-surface p-6">
+            <figure className="kbcf-card flex h-full flex-col rounded-card border border-border bg-surface p-6 transition-colors duration-300">
               <Quote className="text-accent" aria-hidden />
               <blockquote className="mt-3 flex-1 text-lg leading-relaxed">{t.quote}</blockquote>
               <figcaption className="mt-4 text-sm font-semibold text-primary">{t.attribution}</figcaption>

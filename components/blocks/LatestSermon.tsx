@@ -4,25 +4,14 @@ import { Section, Eyebrow } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { SmartImage } from "@/components/ui/Media";
 import { ClipRail } from "@/components/watch/ClipRail";
+import { BoxcastFacade } from "@/components/watch/BoxcastFacade";
 import type { Sermon } from "@/lib/content/types";
 
-export function LatestSermon({ sermon }: { sermon: Sermon | null }) {
+export function LatestSermon({ sermon, liveId }: { sermon: Sermon | null; liveId?: string }) {
   if (!sermon) return null;
   return (
     <Section tone="surface-2" id="latest-message">
-      <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
-        <Link href="/watch" className="group relative block" aria-label={`Watch: ${sermon.title}`}>
-          <SmartImage image={sermon.thumbnail || { alt: `${sermon.title} thumbnail`, placeholder: true }} priority />
-          <span className="absolute left-4 top-4 rounded-full bg-cta px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-cta-fg">
-            ● Latest Message
-          </span>
-          <span className="absolute inset-0 flex items-center justify-center">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-primary shadow-lg transition-transform group-hover:scale-110">
-              <Play size={26} aria-hidden />
-            </span>
-          </span>
-        </Link>
-
+      <div className="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
         <div>
           <Eyebrow>Watch &amp; Grow</Eyebrow>
           <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl">{sermon.title}</h2>
@@ -34,7 +23,7 @@ export function LatestSermon({ sermon }: { sermon: Sermon | null }) {
           {sermon.description && <p className="mt-4 text-muted">{sermon.description}</p>}
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button href="/watch">Watch full message</Button>
+            <Button href={`/watch/${sermon.slug}`}>Watch full message</Button>
             <Button href="/watch#archive" variant="outline">Sermon archive</Button>
           </div>
 
@@ -45,6 +34,27 @@ export function LatestSermon({ sermon }: { sermon: Sermon | null }) {
             </div>
           ) : null}
         </div>
+
+        {liveId ? (
+          <div>
+            <Eyebrow className="mb-3">Live now / next up</Eyebrow>
+            {/* Click-to-load facade — no BoxCast iframe at initial page load
+                (Home LCP). Tap swaps in the full channel view. */}
+            <BoxcastFacade id={liveId} title="KBCF Live" heightClass="h-[520px] lg:h-[580px]" />
+          </div>
+        ) : (
+          <Link href={`/watch/${sermon.slug}`} className="group relative block" aria-label={`Watch: ${sermon.title}`}>
+            <SmartImage image={sermon.thumbnail || { alt: `${sermon.title} thumbnail`, placeholder: true }} priority />
+            <span className="absolute left-4 top-4 rounded-full bg-cta px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-cta-fg">
+              ● Latest Message
+            </span>
+            <span className="absolute inset-0 flex items-center justify-center">
+              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-primary shadow-lg transition-transform group-hover:scale-110">
+                <Play size={26} aria-hidden />
+              </span>
+            </span>
+          </Link>
+        )}
       </div>
     </Section>
   );

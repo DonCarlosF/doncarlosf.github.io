@@ -6,9 +6,12 @@ import type { Sermon } from "@/lib/content/types";
 
 export function SermonCard({ sermon }: { sermon: Sermon }) {
   return (
-    <Link href={`/watch/${sermon.slug}`} className="group block">
+    <Link href={`/watch/${sermon.slug}`} className="group block transition-transform duration-300 hover:-translate-y-1">
       <div className="relative">
-        <SmartImage image={sermon.thumbnail || { alt: `${sermon.title} thumbnail`, placeholder: true }} />
+        <SmartImage
+          image={sermon.thumbnail || { alt: `${sermon.title} thumbnail`, placeholder: true }}
+          imageClassName="transition-transform duration-500 group-hover:scale-105"
+        />
         <span className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-primary">
             <Play size={20} aria-hidden />
