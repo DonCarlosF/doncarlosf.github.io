@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
+import { after } from "next/server";
 import { z } from "zod";
+import { guard, line, logUndelivered } from "@/lib/api/guard";
 
 const schema = z.object({
-  name: z.string().min(1).max(120),
-  email: z.string().email().max(200),
-  phone: z.string().max(40).optional().or(z.literal("")),
-  visitDate: z.string().max(40).optional().or(z.literal("")),
-  message: z.string().max(2000).optional().or(z.literal("")),
+  name: line(120).min(1),
+  email: z.email().max(200),
+  phone: line(40).optional(),
+  visitDate: line(40).optional(),
+  message: z.string().trim().max(2000).optional(),
   company: z.string().optional(), // honeypot
 });
 
@@ -17,6 +19,9 @@ const schema = z.object({
  * - NEVER emails the visitor (visitor-facing copy needs approval first).
  */
 export async function POST(req: Request) {
+  const blocked = guard(req);
+  if (blocked) return blocked;
+
   let body: unknown;
   try {
     body = await req.json();
@@ -35,33 +40,37 @@ export async function POST(req: Request) {
 
   const staffEmail = process.env.STAFF_EMAIL;
   const resendKey = process.env.RESEND_API_KEY;
+  const summary = { name: data.name, email: data.email, visitDate: data.visitDate };
 
   if (staffEmail && resendKey) {
-    try {
-      await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          from: process.env.STAFF_FROM_EMAIL || "KBCF Website <onboarding@resend.dev>",
-          to: [staffEmail],
-          subject: `New visitor connect: ${data.name}`,
-          text: [
-            `Name: ${data.name}`,
-            `Email: ${data.email}`,
-            data.phone ? `Phone: ${data.phone}` : "",
-            data.visitDate ? `Planning to visit: ${data.visitDate}` : "",
-            data.message ? `Message: ${data.message}` : "",
-          ].filter(Boolean).join("\n"),
-        }),
-      });
-    } catch {
-      // Don't fail the visitor's submission if the notification fails.
-    }
+    // Runs after the response is sent, so the visitor never waits on Resend.
+    after(async () => {
+      try {
+        const res = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: process.env.STAFF_FROM_EMAIL || "KBCF Website <onboarding@resend.dev>",
+            to: [staffEmail],
+            reply_to: data.email,
+            subject: `New visitor connect: ${data.name}`.slice(0, 150),
+            text: [
+              `Name: ${data.name}`,
+              `Email: ${data.email}`,
+              data.phone ? `Phone: ${data.phone}` : "",
+              data.visitDate ? `Planning to visit: ${data.visitDate}` : "",
+              data.message ? `Message: ${data.message}` : "",
+            ].filter(Boolean).join("\n"),
+          }),
+        });
+        if (!res.ok) logUndelivered("connect", `${res.status} ${await res.text().catch(() => "")}`, summary);
+      } catch (err) {
+        logUndelivered("connect", err, summary);
+      }
+    });
   } else {
     // Not configured yet — log server-side so nothing is silently lost.
-    console.info("[connect] submission received (staff email not configured):", {
-      name: data.name, email: data.email, visitDate: data.visitDate,
-    });
+    console.info("[connect] submission received (staff email not configured):", summary);
   }
 
   return NextResponse.json({

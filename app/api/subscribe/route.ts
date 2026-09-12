@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { guard } from "@/lib/api/guard";
 
-const schema = z.object({ email: z.string().email().max(200) });
+const schema = z.object({ email: z.email().max(200) });
 
 /**
  * Mailing-list signup. Intentionally NOT wired to a provider yet — no email is
@@ -9,6 +10,9 @@ const schema = z.object({ email: z.string().email().max(200) });
  * opt-in copy is approved. We validate and acknowledge interest only.
  */
 export async function POST(req: Request) {
+  const blocked = guard(req);
+  if (blocked) return blocked;
+
   let body: unknown;
   try {
     body = await req.json();
