@@ -1,5 +1,5 @@
 import { defineField, defineType } from "sanity";
-import { HomeIcon } from "@sanity/icons";
+import { HomeIcon } from "@sanity/icons/Home";
 
 /** Home page content (singleton). Editable hero slideshow, event banner,
  *  welcome intro, and pastors snippet. */
@@ -28,7 +28,7 @@ export const homePage = defineType({
             defineField({ name: "title", title: "Headline", type: "string" }),
             defineField({ name: "accent", title: "Emphasized phrase", type: "string", description: "Rendered with the theme's hero accent treatment." }),
             defineField({ name: "ctaLabel", title: "Button label", type: "string" }),
-            defineField({ name: "ctaHref", title: "Button link (path or URL)", type: "string" }),
+            defineField({ name: "ctaHref", title: "Button link (path or URL)", type: "string", validation: (r) => r.custom((v?: string) => !v || /^(\/|#|https?:\/\/)/.test(v) || "Use a site path (/new-here), an anchor (#connect) or an https:// URL") }),
           ],
           preview: { select: { title: "title", subtitle: "accent" } },
         },
@@ -45,7 +45,7 @@ export const homePage = defineType({
         defineField({ name: "date", type: "string", description: 'e.g. "May 8, 2024"' }),
         defineField({ name: "location", type: "string" }),
         defineField({ name: "ctaLabel", title: "Button label", type: "string" }),
-        defineField({ name: "ctaHref", title: "Button link (path or URL)", type: "string" }),
+        defineField({ name: "ctaHref", title: "Button link (path or URL)", type: "string", validation: (r) => r.custom((v?: string) => !v || /^(\/|#|https?:\/\/)/.test(v) || "Use a site path (/new-here), an anchor (#connect) or an https:// URL") }),
       ],
     }),
     defineField({ name: "welcomeHeading", title: "Welcome heading", type: "string", group: "welcome" }),
