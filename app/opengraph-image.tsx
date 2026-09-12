@@ -1,12 +1,14 @@
 import { ImageResponse } from "next/og";
-import { siteSettings } from "@/lib/content/seed";
+import { getSiteSettings } from "@/lib/content";
 
 export const alt = "Kingdom Builders Christian Fellowship — Church Like No Other";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 // Branded social-share card (Sanctuary palette — the default direction).
+// Reads live Site Settings so the card follows edits made in the Studio.
 export default async function OpengraphImage() {
+  const siteSettings = await getSiteSettings();
   const sunday = siteSettings.serviceTimes.find((s) => s.day === "Sunday");
   return new ImageResponse(
     (

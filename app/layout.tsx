@@ -2,15 +2,19 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import { siteUrl } from "@/lib/site-url";
 
-const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap", style: ["normal", "italic"] });
+// The italic face is only used by the Home hero, so it is loaded (and preloaded)
+// there — see app/(site)/page.tsx — instead of on every route.
+const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap" });
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kingdombuilders.example";
 const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  // Relative canonical resolves per route, so query-string variants collapse to the clean path.
+  alternates: { canonical: "./" },
   title: {
     default: "Kingdom Builders Christian Fellowship | Oakland, CA",
     template: "%s | Kingdom Builders Christian Fellowship",
@@ -18,15 +22,14 @@ export const metadata: Metadata = {
   description:
     "Church Like No Other. People are our heart and Jesus is our message. Join us for Sunday Worship at 9:00 AM in Oakland, CA.",
   applicationName: "Kingdom Builders Christian Fellowship",
+  // No title/description here: each page's own title/description then flows
+  // into its og:/twitter: tags instead of every page sharing the site-wide ones.
   openGraph: {
     type: "website",
     siteName: "Kingdom Builders Christian Fellowship",
-    title: "Kingdom Builders Christian Fellowship | Oakland, CA",
-    description: "Church Like No Other. People are our heart and Jesus is our message.",
     locale: "en_US",
   },
   twitter: { card: "summary_large_image" },
-  robots: { index: true, follow: true },
   // Search Console: set NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION to emit the meta tag.
   verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
     ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
@@ -42,12 +45,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${inter.variable} h-full antialiased`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${fraunces.variable} ${inter.variable} h-full antialiased`}>
       <body className="min-h-full">
-        {/* Marks JS active so reveal animations engage; no-JS users see content. */}
-        <Script id="kbcf-js-init" strategy="beforeInteractive">
-          {`document.documentElement.classList.add('js');`}
-        </Script>
         {/* Privacy-friendly analytics — loads only when a domain is configured. */}
         {plausibleDomain && (
           <Script defer data-domain={plausibleDomain} src="https://plausible.io/js/script.js" strategy="afterInteractive" />
