@@ -7,7 +7,7 @@
  */
 
 export type Img = {
-  src?: string;       // resolved URL (seed) — Sanity images resolve via urlFor()
+  src?: string;       // resolved URL (seed, or asset->url projected in GROQ)
   alt: string;        // alt text is REQUIRED everywhere for WCAG 2.1 AA
   placeholder?: boolean; // true => render a labeled placeholder, never a fake photo
 };
@@ -105,7 +105,7 @@ export type ChurchEvent = {
   description?: string;
   registrationUrl?: string;
   image?: Img;
-  source?: "cms" | "planningcenter";
+  source?: "cms";
   sample?: boolean;
 };
 

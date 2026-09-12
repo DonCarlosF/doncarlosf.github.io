@@ -22,7 +22,7 @@ export default async function EventsPage() {
       />
       <Section>
         {upcoming.length === 0 ? (
-          <EmptyState title="No upcoming events right now" body="Check back soon, or add events in the CMS / Planning Center." />
+          <EmptyState title="No upcoming events right now" body="Check back soon, or add events in the Studio." />
         ) : (
           <EventsView events={upcoming} />
         )}
