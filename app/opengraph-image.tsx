@@ -35,7 +35,7 @@ export default async function OpengraphImage() {
           </div>
         </div>
         <div style={{ display: "flex", fontSize: 30, color: "rgba(251,246,238,0.92)" }}>
-          {sunday ? `Sundays ${sunday.time} Worship` : "Sundays 9:00 AM"} · {siteSettings.address.city}, {siteSettings.address.state}
+          {sunday?.time ? `Sundays ${sunday.time} Worship` : "Sundays 9:00 AM"} · {siteSettings.address.city}, {siteSettings.address.state}
         </div>
       </div>
     ),
