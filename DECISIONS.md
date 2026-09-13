@@ -83,3 +83,93 @@ chain (type/schema/query/seed), `lib/integrations/planningcenter.ts` (+ its
 `next.config` image host and env vars — KBCF is CMS-native for events/groups),
 the theme system (4 themes, switcher, `useTheme`), Header's unused `churchName`
 prop, unused ticker CSS.
+
+## Platform upgrade (Next 16.3 / React 19.3 / Sanity 6.13)
+
+**Adopted**
+- Next 16.2.9→16.3.4, React 19.2.4→19.3.0, Sanity 6.0→6.13.1 (+ `@sanity/vision`),
+  next-sanity 13.1→13.3.4, `@portabletext/react` 6→8, Tailwind 4.3.1→4.3.3,
+  lucide-react 1.18→1.44, zod 4.4→4.6, styled-components 6.4→6.5, `@types/node` 20→22.
+- **Node 22.12+ is now required** (`engines` + `.nvmrc`): Sanity 6.13 and
+  PortableText 8 both declare it. Vercel's Node version must be set to 22.x.
+- `@sanity/icons` v5 removed its barrel export, so schema files import per-icon
+  subpaths (`@sanity/icons/Calendar`). The dependency is now declared directly
+  rather than relied on transitively.
+- **React Compiler on** (`reactCompiler: true`, stable in 16). Build time is
+  unchanged in practice and the client chunks show compiler output; the ten
+  small client components memoize for free.
+- **`middleware.ts` deleted.** The `?page_id=N` map moved into `redirects()`
+  using `has: [{ type: "query" }]`. The deprecated `middleware` convention would
+  otherwise have run a function in front of the site's most-visited route just to
+  check a query param. Two consequences, both intended: mapped ids now emit 308
+  (not 301) and carry the original `?page_id=` through to the destination
+  (harmless — the canonical tag dedupes it), and an *unknown* id renders Home
+  with 200 rather than redirecting (same destination, one less hop; a catch-all
+  entry would have looped `/` → `/`).
+- Cache tags on every Sanity query + `POST /api/revalidate` (shared-secret,
+  constant-time compare) so publishes appear in seconds; the polling window
+  relaxed 60s → 300s as the safety net.
+- `export const revalidate = 3600` on the `(site)` layout: with no Sanity
+  configured nothing fetches, so "upcoming events", the banner expiry and the ©
+  year were otherwise frozen at build time. When Sanity is connected the
+  5-minute fetch value (the lowest on the route) still wins.
+
+**Deliberately NOT adopted**
+- **TypeScript 7** (`tsc` is now the Go port). It has no stable plugin API, so
+  the `plugins: [{ name: "next" }]` language-service integration doesn't work,
+  and typescript-eslint still caps at `<6.1.0`. Revisit at 7.1.
+- **ESLint 10.** `eslint-config-next@16.3.4` pins `typescript-eslint@^8.46`, and
+  `eslint-plugin-jsx-a11y`/`eslint-plugin-import` still declare `^9` peers.
+- **Cache Components / PPR.** Every page and the site layout `await` data at the
+  top level with no `use cache`/Suspense, and four files read the clock; enabling
+  it is a restructure, not a flag. The webhook above delivers the editorial
+  benefit without it. Revisit post-launch.
+- **`typedRoutes`.** `Button` forwards a plain `string` href and receives
+  CMS-authored values, so it would need generics plus casts at every CMS
+  boundary — poor trade for a 16-route site.
+
+## Security, a11y and data-layer hardening (same pass)
+- **Headers** on every response (HSTS, nosniff, `X-Frame-Options: DENY`,
+  Referrer-Policy, Permissions-Policy). CSP ships **report-only** with a separate,
+  looser policy for `/studio`: every page is prerendered, so nonces (which force
+  dynamic rendering) aren't available and `'unsafe-inline'` is required for
+  Next's hydration payload. `upgrade-insecure-requests` is omitted because
+  Chrome ignores (and logs) it under Report-Only; add it when enforcing.
+- **JSON-LD escaping** (`<` → `<`): CMS text could otherwise close the
+  script tag. Also fixed the shapes Rich Results rejects — the Church object no
+  longer emits free-text service times as `Schedule`, Events carry a
+  `PostalAddress`, VideoObject requires a real `thumbnailUrl`, BlogPosting has
+  `image`/`publisher`/`mainEntityOfPage`, and `SearchAction` uses `EntryPoint`.
+- **Form notifications** moved into `after()` (the visitor no longer waits on
+  Resend) and now check `res.ok`: a rejected send logs `UNDELIVERED` with the
+  submission instead of silently vanishing behind a 200. Added `reply_to`, a
+  cross-site/`Content-Length` guard, and single-line field validation so a name
+  can't fold an email subject.
+- **Sanity is now genuinely the single source of truth:** `sfetch` distinguishes
+  "no Sanity" from "Sanity said zero", so deleting the last post no longer
+  resurrects the seeded sample. Errors are logged (and with `CONTENT_STRICT=1`
+  rethrown) instead of silently falling back. `getSiteSettings` merges per field,
+  so an editor clearing one array can't crash the layout.
+- **Timezone:** every date renders in `America/Los_Angeles`. The build runs in
+  UTC, so the events list and calendar previously disagreed with the visitor's
+  browser (a hydration mismatch) and could place an event on the wrong day.
+- **A11y:** the hero slideshow is pausable and stops in background tabs (WCAG
+  2.2.2); form success states are announced and take focus (4.1.3); Escape in
+  the mobile menu returns focus to the toggle; the sermon page's `<h1>` precedes
+  its `<h2>`; alt text is a hard Studio requirement rather than a warning.
+- **Placeholder safety:** seeded sample sermons/posts/events are `noindex` and
+  excluded from the sitemap, so a premature DNS cutover can't index
+  "Sample Message — Edit in Studio".
+- **Reveal-on-scroll** no longer hides content that is already visible at
+  hydration (it could blink), and drops its `will-change` layer once revealed.
+  This also removed the `beforeInteractive` script and `next/script` from every
+  route that has no analytics domain set.
+- Image `sizes` are explicit per call site (thumbnails were requesting up to 6×
+  their rendered width), the sermon YouTube embed became a click-to-load facade,
+  `priority` → `preload` (deprecated in 16), and `remotePatterns` dropped the
+  dead `**.amazonaws.com`/`**.cloudfront.net` wildcards that let anyone proxy
+  images through the site's optimizer.
+- Known: `npm audit` reports 15 advisories, all inside the Sanity **CLI/Studio**
+  toolchain (adm-zip, js-yaml, smol-toml, uuid) and none on the request path.
+  They clear when Sanity ships a fixed CLI; `npm audit fix` cannot resolve them
+  without a breaking downgrade.
