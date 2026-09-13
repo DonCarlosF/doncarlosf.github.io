@@ -24,7 +24,7 @@ export function NewsletterForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: data.get("email") }),
       });
-      const json = await res.json();
+      const json = await res.json().catch(() => ({}));
       setStatus(res.ok ? "done" : "error");
       setMessage(json.message || (res.ok ? "Thanks!" : "Something went wrong."));
       if (res.ok) form.reset();
@@ -35,7 +35,7 @@ export function NewsletterForm() {
   }
 
   if (status === "done") {
-    return <p className="text-sm text-muted">{message}</p>;
+    return <p role="status" aria-live="polite" className="text-sm text-muted">{message}</p>;
   }
 
   return (
@@ -52,10 +52,10 @@ export function NewsletterForm() {
       />
       {/* honeypot */}
       <input type="text" name="company" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
-      <Button type="submit" variant="primary" size="sm" disabled={status === "loading"}>
-        {status === "loading" ? "…" : "Subscribe"}
+      <Button type="submit" variant="primary" size="sm" disabled={status === "loading"} aria-busy={status === "loading"}>
+        {status === "loading" ? "Subscribing…" : "Subscribe"}
       </Button>
-      {status === "error" && <p className="mt-1 text-xs text-cta sm:w-full">{message}</p>}
+      {status === "error" && <p role="alert" className="mt-1 text-xs text-cta sm:w-full">{message}</p>}
     </form>
   );
 }

@@ -8,25 +8,31 @@ import type { HeroSlide } from "@/lib/content/types";
 
 /**
  * Auto-rotating hero slideshow. Reuses the theme hero CSS hooks (hero-section,
- * hero-bg, hero-glow, hero-eyebrow, hero-title, hero-accent, hero-cta-primary)
- * so all five art directions style it. Respects prefers-reduced-motion (no
- * auto-advance; the global reduced-motion rule also zeroes the fade).
+ * hero-bg, hero-glow, hero-eyebrow, hero-title, hero-accent, hero-cta-primary).
+ * Auto-advance pauses in background tabs, is skipped under prefers-reduced-motion,
+ * and can be stopped by the visitor (WCAG 2.2.2).
  */
-export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
+export function HeroSlider({ slides, className }: { slides: HeroSlide[]; className?: string }) {
   const items = slides?.length ? slides : [{ title: "Welcome", accent: "" }];
   const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    if (items.length < 2) return;
+    if (items.length < 2 || paused) return;
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;
-    const id = setInterval(() => setActive((a) => (a + 1) % items.length), 6500);
+    const id = setInterval(() => {
+      if (!document.hidden) setActive((a) => (a + 1) % items.length);
+    }, 6500);
     return () => clearInterval(id);
-  }, [items.length]);
+  }, [items.length, paused]);
 
   return (
     <section
-      className="hero-section hero-grain relative isolate flex min-h-[80vh] items-center overflow-hidden text-white"
+      className={cn(
+        "hero-section hero-grain relative isolate flex min-h-[80vh] items-center overflow-hidden text-white",
+        className
+      )}
       aria-roledescription="carousel"
       aria-label="Welcome"
     >
@@ -71,13 +77,12 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
         </div>
 
         {items.length > 1 && (
-          <div className="mt-8 flex gap-2" role="tablist" aria-label="Choose a slide">
+          <div className="mt-8 flex items-center gap-2" role="group" aria-label="Slideshow controls">
             {items.map((s, i) => (
               <button
                 key={i}
                 type="button"
-                role="tab"
-                aria-selected={i === active}
+                aria-current={i === active ? "true" : undefined}
                 aria-label={`Show slide ${i + 1}${[s.title, s.accent].filter(Boolean).length ? `: ${[s.title, s.accent].filter(Boolean).join(" ")}` : ""}`}
                 onClick={() => setActive(i)}
                 className="group flex h-6 min-w-6 items-center justify-center"
@@ -91,6 +96,14 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                 />
               </button>
             ))}
+            <button
+              type="button"
+              aria-pressed={paused}
+              onClick={() => setPaused((p) => !p)}
+              className="ml-2 h-6 rounded-md px-2 text-xs font-semibold text-white/85 hover:text-white"
+            >
+              {paused ? "Play" : "Pause"} slideshow
+            </button>
           </div>
         )}
       </Container>

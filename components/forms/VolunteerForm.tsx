@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 
 const field =
@@ -14,6 +14,13 @@ const field =
 export function VolunteerForm() {
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [message, setMessage] = useState("");
+  const doneRef = useRef<HTMLDivElement>(null);
+
+  // The form unmounts on success; move focus to the confirmation so keyboard and
+  // screen-reader users don't land on <body> and hear nothing.
+  useEffect(() => {
+    if (status === "done") doneRef.current?.focus();
+  }, [status]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -39,7 +46,7 @@ export function VolunteerForm() {
 
   if (status === "done") {
     return (
-      <div className="rounded-card border border-border bg-surface p-6 text-center">
+      <div ref={doneRef} tabIndex={-1} role="status" aria-live="polite" className="rounded-card border border-border bg-surface p-6 text-center">
         <p className="font-display text-xl font-semibold">Thank you for serving! 🙌</p>
         <p className="mt-2 text-muted">{message}</p>
       </div>
@@ -71,7 +78,7 @@ export function VolunteerForm() {
 
       {status === "error" && <p role="alert" className="text-sm text-cta">{message}</p>}
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={status === "loading"}>
+        <Button type="submit" disabled={status === "loading"} aria-busy={status === "loading"}>
           {status === "loading" ? "Sending…" : "Sign up to volunteer"}
         </Button>
         <p className="text-xs text-muted">We&apos;ll reach out with next steps.</p>
