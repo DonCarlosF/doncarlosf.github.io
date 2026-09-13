@@ -58,6 +58,7 @@ export type Series = {
   slug: string;
   image?: Img;
   description?: string;
+  sample?: boolean;        // flags seeded placeholder content
 };
 
 /** Clip documents are upserted by the church-clip-manager repo — the shape is a

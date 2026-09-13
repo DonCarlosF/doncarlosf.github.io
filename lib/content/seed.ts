@@ -59,7 +59,7 @@ export const leaders: Leader[] = [
   },
 ];
 
-const sampleSeries: Series = { _id: "ser-sample", title: "Sample Series", slug: "sample-series", description: "Replace with a real series in the CMS." };
+const sampleSeries: Series = { _id: "ser-sample", title: "Sample Series", slug: "sample-series", description: "Replace with a real series in the CMS.", sample: true };
 
 export const seriesList: Series[] = [sampleSeries];
 

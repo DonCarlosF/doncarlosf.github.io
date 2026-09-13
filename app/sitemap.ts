@@ -13,7 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticPaths.map((p) => ({ url: `${base}${p}`, lastModified: now, changeFrequency: "weekly" as const, priority: p === "" ? 1 : 0.7 })),
     ...live(sermons).map((s) => ({ url: `${base}/watch/${s.slug}`, lastModified: new Date(s.date), changeFrequency: "monthly" as const, priority: 0.6 })),
-    ...series.map((s) => ({ url: `${base}/watch/series/${s.slug}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.5 })),
+    ...live(series).map((s) => ({ url: `${base}/watch/series/${s.slug}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.5 })),
     ...live(events).map((e) => ({ url: `${base}/events/${e.slug}`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.5 })),
     ...live(posts).map((p) => ({ url: `${base}/blog/${p.slug}`, lastModified: new Date(p.date), changeFrequency: "monthly" as const, priority: 0.5 })),
   ];

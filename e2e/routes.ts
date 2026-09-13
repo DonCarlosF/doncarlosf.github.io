@@ -40,12 +40,17 @@ export const SITEMAP_PATHS = [
   "/dream-center",
   "/blog",
   "/contact",
-  "/watch/series/sample-series",
   "/events/sunday-worship",
 ] as const;
 
 /** Seeded placeholder content and internal search results must NOT be in the sitemap. */
-export const SITEMAP_EXCLUDED = ["/watch/sample-message-1", "/blog/sample-post", "/events/sample-event", "/search"] as const;
+export const SITEMAP_EXCLUDED = [
+  "/watch/sample-message-1",
+  "/watch/series/sample-series",
+  "/blog/sample-post",
+  "/events/sample-event",
+  "/search",
+] as const;
 
 /**
  * Third-party hosts the site may reach out to (analytics, video, maps, fonts).
