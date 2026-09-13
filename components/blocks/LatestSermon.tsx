@@ -44,7 +44,7 @@ export function LatestSermon({ sermon, liveId }: { sermon: Sermon | null; liveId
           </div>
         ) : (
           <Link href={`/watch/${sermon.slug}`} className="group relative block" aria-label={`Watch: ${sermon.title}`}>
-            <SmartImage image={sermon.thumbnail || { alt: `${sermon.title} thumbnail`, placeholder: true }} priority />
+            <SmartImage image={sermon.thumbnail || { alt: `${sermon.title} thumbnail`, placeholder: true }} />
             <span className="absolute left-4 top-4 rounded-full bg-cta px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-cta-fg">
               ● Latest Message
             </span>
