@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { after } from "next/server";
 import { z } from "zod";
-import { guard, line, logUndelivered } from "@/lib/api/guard";
+import { guard, line, logUndelivered, readJson } from "@/lib/api/guard";
 
 const schema = z.object({
   name: line(120).min(1),
@@ -22,14 +22,10 @@ export async function POST(req: Request) {
   const blocked = guard(req);
   if (blocked) return blocked;
 
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ ok: false, message: "Invalid request." }, { status: 400 });
-  }
+  const body = await readJson(req);
+  if ("response" in body) return body.response;
 
-  const parsed = schema.safeParse(body);
+  const parsed = schema.safeParse(body.data);
   if (!parsed.success) {
     return NextResponse.json({ ok: false, message: "Please check the form and try again." }, { status: 422 });
   }
