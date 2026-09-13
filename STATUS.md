@@ -24,7 +24,7 @@ fallback; every getter switches to live CMS data automatically once the project
 | Kids & Youth | **REMOVED (locked)** | Owner's 2026-06-16 instruction stands. |
 | Blog + detail | **BUILT** | Fresh start, Portable Text; 1 flagged sample post. |
 | Contact | **BUILT** | Map/directions, prayer line, working form, phone set; **canonical email = owner TODO**. |
-| Other | — | `/search`, `/watch/series[/slug]`, `/studio`, 3 API routes, OG image, sitemap, robots, 404, `middleware` (WP `page_id` 301s). |
+| Other | — | `/search`, `/watch/series[/slug]`, `/studio`, 3 API routes, OG image, sitemap, robots, 404, WP `page_id` → route redirects (declarative, in `next.config.ts`). |
 
 ## 2. Integrations
 - **BoxCast** — WIRED (channel `wsiikymmlhksnkgmc24r`): full view on `/watch`; Home uses a click-to-load facade (zero iframes at load).

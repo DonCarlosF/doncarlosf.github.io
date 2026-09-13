@@ -56,19 +56,23 @@
 - `EventBanner`: expires 24h after a parseable date; **unparseable dates never
   expire** (fail-open so a typo doesn't hide an announcement). With no live banner
   it falls back to the soonest upcoming event. Expiry evaluates at render — on the
-  static preview that's build time; with Sanity connected, ISR (60s) keeps it fresh.
+  static preview that's build time; with Sanity connected, ISR keeps it fresh.
+  (Superseded by the platform upgrade below: the `(site)` layout now sets
+  `revalidate = 3600`, so the preview is no longer frozen at build time, and the
+  ISR window is 300s plus the on-demand publish webhook.)
 - Stale "May 8, 2024" banner removed from both seeds.
 
 ## Redirects (Task 6)
 - Old post slugs + page IDs fetched live from `kingdombuilderscf.org/wp-json` —
   14 real post slugs (root-level permalinks) → 301 to `/blog`; also added
   `/get-connected` (a real old page) → `/new-here`.
-- `?page_id=N` handled in `middleware.ts` with a map of the real WP page IDs →
-  new routes (unknown ids → `/`); matcher limited to `/` since WP page_id links
-  are always root-relative. 1461 wasn't among the published page IDs → falls to `/`.
+- `?page_id=N` was originally handled in `middleware.ts` with a map of the real
+  WP page IDs → new routes. **Superseded by the platform upgrade below:** that
+  map now lives in `next.config.ts` `redirects()` via `has: [{ type: "query" }]`,
+  and `middleware.ts` is gone. 1461 wasn't among the published page IDs, so it
+  renders the homepage (200) rather than redirecting.
 - Note: `next.config` `permanent: true` emits **308**, the modern equivalent of
-  301 (search engines treat both as permanent); the middleware rules emit literal
-  301s.
+  301 (search engines treat both as permanent). All redirects are now 308.
 
 ## Analytics (Task 7)
 - Plausible (privacy-friendly, no cookie banner) via `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`;
