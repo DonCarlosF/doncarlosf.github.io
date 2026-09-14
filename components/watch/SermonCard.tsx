@@ -10,6 +10,7 @@ export function SermonCard({ sermon }: { sermon: Sermon }) {
       <div className="relative">
         <SmartImage
           image={sermon.thumbnail || { alt: `${sermon.title} thumbnail`, placeholder: true }}
+          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           imageClassName="transition-transform duration-500 group-hover:scale-105"
         />
         <span className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">

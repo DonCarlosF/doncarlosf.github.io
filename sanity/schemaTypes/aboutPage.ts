@@ -1,5 +1,5 @@
 import { defineField, defineType } from "sanity";
-import { InfoOutlineIcon } from "@sanity/icons";
+import { InfoOutlineIcon } from "@sanity/icons/InfoOutline";
 
 /** About page content (singleton): intro, mission, story, the Five Pillars of
  *  Christianity (beliefs), and the core values. */

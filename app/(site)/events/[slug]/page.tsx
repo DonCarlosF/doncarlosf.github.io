@@ -6,7 +6,7 @@ import { Section, Eyebrow } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { SmartImage } from "@/components/ui/Media";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { getEvent, getEvents } from "@/lib/content";
+import { getEvent, getEvents, getSiteSettings } from "@/lib/content";
 import { formatEventDate } from "@/lib/utils/format";
 
 export async function generateStaticParams() {
@@ -18,13 +18,19 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const event = await getEvent(slug);
   if (!event) return { title: "Event not found" };
-  return { title: event.title, description: event.description || `Join us for ${event.title}.` };
+  return {
+    title: event.title,
+    description: event.description || `Join us for ${event.title}.`,
+    // Seeded placeholders must never be indexed if DNS moves before the CMS is live.
+    ...(event.sample ? { robots: { index: false, follow: false } } : {}),
+  };
 }
 
 export default async function EventPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const event = await getEvent(slug);
+  const [event, settings] = await Promise.all([getEvent(slug), getSiteSettings()]);
   if (!event) notFound();
+  const { address } = settings;
 
   return (
     <Section>
@@ -34,7 +40,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
 
       <div className="mt-6 grid gap-10 lg:grid-cols-[1.4fr_1fr]">
         <div>
-          <SmartImage image={event.image || { alt: event.title, placeholder: true }} priority />
+          <SmartImage image={event.image || { alt: event.title, placeholder: true }} preload />
           {event.description && <p className="mt-6 text-lg text-muted">{event.description}</p>}
         </div>
         <aside>
@@ -69,7 +75,20 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
           eventStatus: "https://schema.org/EventScheduled",
           eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
           ...(event.description ? { description: event.description } : {}),
-          location: { "@type": "Place", name: event.location || "Kingdom Builders Christian Fellowship" },
+          // Google requires a postal address on offline events; default to the church.
+          location: {
+            "@type": "Place",
+            name: event.location || settings.churchName,
+            address: {
+              "@type": "PostalAddress",
+              streetAddress: address.street,
+              addressLocality: address.city,
+              addressRegion: address.state,
+              postalCode: address.zip,
+              addressCountry: "US",
+            },
+          },
+          organizer: { "@type": "Organization", name: settings.churchName },
           ...(event.registrationUrl ? { offers: { "@type": "Offer", url: event.registrationUrl } } : {}),
         }}
       />

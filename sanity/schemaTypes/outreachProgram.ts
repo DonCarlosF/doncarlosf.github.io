@@ -1,5 +1,5 @@
 import { defineField, defineType } from "sanity";
-import { HeartIcon } from "@sanity/icons";
+import { HeartIcon } from "@sanity/icons/Heart";
 
 /** Dream Center outreach program with its real, owner-supplied impact stat. */
 export const outreachProgram = defineType({

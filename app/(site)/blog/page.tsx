@@ -26,7 +26,11 @@ export default async function BlogPage() {
             {posts.map((p) => (
               <article key={p._id}>
                 <Link href={`/blog/${p.slug}`} className="group block">
-                  <SmartImage image={p.coverImage || { alt: p.title, placeholder: true }} ratio="aspect-[16/10]" />
+                  <SmartImage
+                    image={p.coverImage || { alt: p.title, placeholder: true }}
+                    ratio="aspect-[16/10]"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                  />
                   <p className="mt-3 text-xs uppercase tracking-wide text-muted">
                     {formatDate(p.date)}{p.category ? ` · ${p.category}` : ""}
                   </p>

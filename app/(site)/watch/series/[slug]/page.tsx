@@ -17,7 +17,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const data = await getSeries(slug);
   if (!data) return { title: "Series not found" };
-  return { title: data.series.title, description: data.series.description || `The ${data.series.title} series.` };
+  return {
+    title: data.series.title,
+    description: data.series.description || `The ${data.series.title} series.`,
+    // Seeded placeholders must never be indexed if DNS moves before the CMS is live.
+    ...(data.series.sample ? { robots: { index: false, follow: false } } : {}),
+  };
 }
 
 export default async function SeriesPage({ params }: { params: Promise<{ slug: string }> }) {

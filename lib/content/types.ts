@@ -7,7 +7,7 @@
  */
 
 export type Img = {
-  src?: string;       // resolved URL (seed) — Sanity images resolve via urlFor()
+  src?: string;       // resolved URL (seed, or asset->url projected in GROQ)
   alt: string;        // alt text is REQUIRED everywhere for WCAG 2.1 AA
   placeholder?: boolean; // true => render a labeled placeholder, never a fake photo
 };
@@ -58,6 +58,7 @@ export type Series = {
   slug: string;
   image?: Img;
   description?: string;
+  sample?: boolean;        // flags seeded placeholder content
 };
 
 /** Clip documents are upserted by the church-clip-manager repo — the shape is a
@@ -105,7 +106,7 @@ export type ChurchEvent = {
   description?: string;
   registrationUrl?: string;
   image?: Img;
-  source?: "cms" | "planningcenter";
+  source?: "cms";
   sample?: boolean;
 };
 

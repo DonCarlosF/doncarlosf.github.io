@@ -6,10 +6,10 @@ point DNS — it's for review only.
 ## 1. Deploy to Vercel (preview)
 
 1. Go to **vercel.com → Add New → Project** and import
-   `DonCarlosF/doncarlosf.github.io`, branch `claude/cool-fermi-vzbnc2`.
-   - One-click import URL:
-     `https://vercel.com/new/clone?repository-url=https://github.com/DonCarlosF/doncarlosf.github.io/tree/claude/cool-fermi-vzbnc2`
-2. Framework preset auto-detects **Next.js**. No build settings to change.
+   `DonCarlosF/doncarlosf.github.io` (branch `main`).
+2. Framework preset auto-detects **Next.js**. No build settings to change —
+   but set the **Node.js version to 22.x** (Settings → General), which the
+   Sanity v6 toolchain requires.
 3. Add the env vars below (all optional — the site renders on seed data without
    them), then **Deploy**. You'll get a `*.vercel.app` preview URL.
 
@@ -22,14 +22,15 @@ point DNS — it's for review only.
 | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | Correct metadata/sitemap/OG URLs |
 | `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET` | Live CMS + `/studio` |
-| `STAFF_EMAIL`, `RESEND_API_KEY` | Connect/contact form → staff email |
+| `STAFF_EMAIL`, `RESEND_API_KEY` | Connect/volunteer forms → staff email |
+| `SANITY_REVALIDATE_SECRET` | Publish webhook → pages refresh in seconds |
 | `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` | Plausible analytics (loads only when set) |
 | `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Search Console verification meta tag |
 
 ## 2. Connect Sanity (live content + `/studio`)
 
 ```bash
-npm install
+npm ci
 npx sanity login           # opens browser
 npx sanity init --env      # creates a project + writes .env (choose "production")
 # copy the project id into Vercel as NEXT_PUBLIC_SANITY_PROJECT_ID
@@ -44,10 +45,23 @@ NEXT_PUBLIC_SANITY_PROJECT_ID=xxxx SANITY_WRITE_TOKEN=sk... npm run seed:sanity
 
 Then staff edit everything at `your-preview-url/studio` — no code.
 
+### Publish webhook (edits go live in seconds)
+
+Without this, a publish takes up to 5 minutes to appear. With it, it's seconds.
+
+1. Pick any long random string and set `SANITY_REVALIDATE_SECRET` in Vercel.
+2. sanity.io → your project → **API → Webhooks → Create webhook**:
+   - URL: `https://<your-site>/api/revalidate`
+   - Dataset `production`; trigger on **Create, Update, Delete**
+   - HTTP method `POST`; add header `x-revalidate-secret` with the same string.
+
+**Verify:** publish a change in the Studio and reload the page — it should
+update almost immediately. An unauthenticated POST to `/api/revalidate`
+returns 401.
+
 ## 3. Events & groups
 
-CMS-native: staff manage events and groups directly in the Studio (KBCF does not
-use Planning Center).
+CMS-native: staff manage events and groups directly in the Studio.
 
 ## 4. Adding real photos (two ways)
 
@@ -63,8 +77,6 @@ precedence over the `public/images/` files.
 
 ## 5. Going to production (later, with approval)
 
-- Replace placeholder copy (statement of faith, bios, Dream Center programs)
-  and add real photos in the CMS.
-- Provide the real old-site URL list to finalize redirects in `next.config.ts`.
-- Add real phone/email/socials in Site Settings.
-- Only then attach the production domain.
+Follow `LAUNCH.md` — it is the ordered runbook. In short: replace placeholder
+copy and photos in the CMS, set the env vars above for Production, enforce the
+Content-Security-Policy, then attach the domain.

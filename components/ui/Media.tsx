@@ -7,13 +7,15 @@ import type { Img } from "@/lib/content/types";
  * placeholder — so the preview never shows an invented/fake photo.
  */
 export function SmartImage({
-  image, className, imageClassName, sizes, priority, ratio = "aspect-video", rounded = "rounded-card",
+  image, className, imageClassName, sizes, preload, ratio = "aspect-video", rounded = "rounded-card",
 }: {
   image?: Img;
   className?: string;
   imageClassName?: string;
+  /** Rendered width hints so the browser picks the right srcset candidate. */
   sizes?: string;
-  priority?: boolean;
+  /** Only for the above-the-fold (LCP) image of a page. */
+  preload?: boolean;
   ratio?: string;
   rounded?: string;
 }) {
@@ -27,7 +29,7 @@ export function SmartImage({
           alt={image!.alt}
           fill
           sizes={sizes || "(max-width: 768px) 100vw, 50vw"}
-          priority={priority}
+          preload={preload}
           className={cn("object-cover", imageClassName)}
         />
       </div>

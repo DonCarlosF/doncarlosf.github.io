@@ -11,9 +11,11 @@ manages the site (you) · `DONE` = already completed in the repo.
 
 | Item | Owner | Verified how |
 | --- | --- | --- |
-| Site built (16 routes), CMS-first with seed fallback | DONE | build green, 29 routes |
-| Lighthouse Home mobile: Perf 94 · A11y 100 · BP 100 · SEO 100 | DONE | measured on prod build |
-| Redirect map incl. 14 real old WordPress post slugs + `?page_id=N` middleware | DONE | curl-verified |
+| Site built (16 routes), CMS-first with seed fallback | DONE | build green, 31 prerendered entries |
+| Lighthouse mobile: Perf 92–98 · A11y 100 · BP 100 · SEO 100 | DONE | measured on prod build |
+| Automated suite: 71 Playwright + axe checks over every route | DONE | `npm run test:e2e`, runs in CI |
+| Redirect map incl. 14 real old WordPress post slugs + `?page_id=N` | DONE | curl- and e2e-verified |
+| Security headers; CSP staged in report-only mode | DONE | `curl -I` shows them; enforce in §7 |
 | Clip contract (`CLIP_CONTRACT.md`), playable rail, published-only filter | DONE | inline play verified |
 | Dream Center: three H's, real stats, housing story, volunteer form | DONE | rendered + spot-checked |
 | Forms with spam protection, env-gated staff notify | DONE | API routes tested |
@@ -26,7 +28,7 @@ manages the site (you) · `DONE` = already completed in the repo.
 4. In Vercel → Settings → Environment Variables, set the two `NEXT_PUBLIC_SANITY_*` vars (table in §2) → **Redeploy**.
 5. Locally (or any machine with Node): `NEXT_PUBLIC_SANITY_PROJECT_ID=xxx SANITY_WRITE_TOKEN=sk... npm run seed:sanity`
 
-**Verify:** `your-site/studio` opens and shows Site Settings / Home Page / About Page filled with the approved copy; editing a field and publishing changes the site within ~1 min. **Then revoke the seeding token** (API → Tokens → delete).
+**Verify:** `your-site/studio` opens and shows Site Settings / Home Page / About Page filled with the approved copy; editing a field and publishing changes the site within ~5 min (seconds once the publish webhook in DEPLOY.md §2 is set up). **Then revoke the seeding token** (API → Tokens → delete).
 
 ## 2. Environment variables (complete list) — EDITOR · ~10 min
 
@@ -43,6 +45,8 @@ Set in Vercel → Project → Settings → Environment Variables (Production):
 | `RESEND_API_KEY` | from §3 | form notifications |
 | `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` | `kingdombuilderscf.org` | analytics (§5) |
 | `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | token from Search Console (§5) | Search Console |
+| `SANITY_REVALIDATE_SECRET` | any long random string | publish webhook (§1) |
+| `CONTENT_STRICT` | `1` (set only after §1 works) | fail loudly instead of silently serving seed content |
 
 Not env vars here: the Sanity **write token** (seeding only, then revoked) and the
 clip-manager's token (lives in that repo's gitignored `.env`).
@@ -91,10 +95,18 @@ sample clips in Studio once real ones exist.
 
 ## 7. Pre-cutover QA — EDITOR · ~30 min
 
-- [ ] Lighthouse on the Vercel URL (mobile): Perf ≥90, A11y ≥95 — expect ≈94/100.
+- [ ] `npm run check && npm run build && npm run test:e2e` locally (or read the CI run on the commit) — all green.
+- [ ] Lighthouse on the Vercel URL (mobile): Perf ≥90, A11y ≥95 — expect ≈92–98/100.
+- [ ] **Enforce the CSP:** open the site with DevTools → Console on `/`, `/watch`,
+      `/contact`, `/events` and `/studio`. If no "Content-Security-Policy-Report-Only"
+      violations appear, rename that header key to `Content-Security-Policy` in
+      `next.config.ts` and redeploy. If violations appear, add the named host to
+      the matching directive first.
 - [ ] Redirect spot-checks (should 301/308 to the new pages):
   `curl -sI https://<vercel-url>/giving | head -3` · same for `/livestream`,
-  `/about/new-here`, `/the-power-of-the-tongue`, `/?page_id=1461`.
+  `/about/new-here`, `/the-power-of-the-tongue`, `/?page_id=1657` (→ `/watch`).
+- [ ] An *unmapped* id renders the homepage instead of redirecting, by design:
+      `curl -sI 'https://<vercel-url>/?page_id=1461'` returns 200, no `Location`.
 - [ ] Forms deliver (§3), giving link opens the correct Clover page, BoxCast plays,
   prayer-line number taps correctly on a phone.
 - [ ] Phone test at 360px width; zoom works.

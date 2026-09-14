@@ -12,7 +12,7 @@ export function ServiceTimesBar({ settings }: { settings: SiteSettings }) {
             <span className="font-semibold">{s.day}</span> · {serviceLabelTime(s)}
           </span>
         ))}
-        <span className="opacity-90">📍 {address.street}, {address.city}, {address.state} {address.zip}</span>
+        <span className="opacity-90"><span aria-hidden>📍</span> {address.street}, {address.city}, {address.state} {address.zip}</span>
       </Container>
     </div>
   );

@@ -28,7 +28,7 @@ export default async function NewHerePage() {
       <PageHeader
         eyebrow="New here?"
         title="We saved you a seat."
-        intro={`However you found us, we'd love to meet you${sunday ? ` this Sunday at ${sunday.time}` : ""}. Here's everything you need to walk in with confidence.`}
+        intro={`However you found us, we'd love to meet you${sunday?.time ? ` this Sunday at ${sunday.time}` : ""}. Here's everything you need to walk in with confidence.`}
       >
         <Button href="#connect" size="lg">Let us know you&apos;re coming</Button>
         <Button href="/watch" size="lg" variant="outline">Watch online first</Button>
