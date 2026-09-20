@@ -1,0 +1,21 @@
+---
+description: KBCF website non-negotiables for Cursor Cloud Projects
+alwaysApply: true
+---
+
+# KBCF (Oakland) — always on
+
+Canonical rules: **`AGENTS.md`**. Short Claude Code entry: **`CLAUDE.md`**. Do not duplicate long policy here.
+
+This repo is the Kingdom Builders Christian Fellowship public site (Next.js 16 App Router, Tailwind v4, Sanity at `/studio`, Vercel **preview only**).
+
+## Hard rules
+
+- Never invent doctrine, testimonials, stats, quotes, photos, or contact facts. Keep `sample` / `placeholder` / `TODO(owner)` labels visible.
+- Do not attach production DNS (`kingdombuilderscf.org`) or run `LAUNCH.md` cutover steps.
+- Do not commit `.env*` secrets or Sanity write tokens.
+- Sanctuary theme is **locked**; Planning Center and Kids & Youth are **removed**. Don’t restore them.
+- Don’t change `CLIP_CONTRACT.md` unless the clip-manager repo changes too.
+- Forms notify **staff only** (Resend); never email the visitor. Clover giving is a **link-out**, not an iframe.
+- Content reads go through `lib/content` (CMS-first, seed fallback). Site must run with **zero** env vars.
+- Prefer `DECISIONS.md` + `STATUS.md` + code over stale README theme/PCO text.
