@@ -1,6 +1,10 @@
 # KBCF website — agent instructions
 
-This is the **canonical** rulebook for Claude Code, Cursor Cloud Projects, and other coding agents. [`CLAUDE.md`](CLAUDE.md) is the short Claude Code entry (stack, map, do/don’t) and imports this file. Cursor also applies [`.cursor/rules/kbcf.mdc`](.cursor/rules/kbcf.mdc) (non-negotiables only — do not fork policy there).
+This root **`AGENTS.md` is the canonical project instructions.** Cursor (IDE, Cloud Projects, and Project subagents) loads it automatically, plus any nested `AGENTS.md` (none in this repo — add a nested file only if a subtree needs *different* rules). Claude Code does **not** read `AGENTS.md` natively; [`CLAUDE.md`](CLAUDE.md) is a thin `@AGENTS.md` include and must not grow a second copy of these rules. Do not add `.cursorrules` or always-on `.cursor/rules/*.mdc` that restate this file.
+
+## Cursor Project workspace
+
+This repo is one product (the KBCF public site) and is suitable as a **Cursor Project**: a long-running coordinator plus cloud agents / subagents should all inherit this file. Point the Project at the repo root. Subagents do not get a private runbook — they use **§2 How to run** (`npm run dev` / `lint` / `build`; no test suite; zero env vars is valid).
 
 You are working on the public website for **Kingdom Builders Christian Fellowship (KBCF)** in Oakland, CA. Goal: a fast, accessible, mobile-first site that helps first-time visitors show up on Sunday, and lets non-technical staff edit content in Sanity without touching code.
 
@@ -268,9 +272,11 @@ If you change architecture or a locked decision, update `DECISIONS.md` / `STATUS
 
 ## 14. Suggested workflow for agents
 
+Coordinator and Project subagents follow the same loop:
+
 1. Read this file + `STATUS.md` + `DECISIONS.md` for the area you touch.
 2. Change the smallest set of files; match neighbors.
 3. Keep seed/CMS fallbacks and labeled placeholders intact.
-4. `npm run lint` and `npm run build` for code changes.
+4. `npm run lint` and `npm run build` for code changes (see §2).
 5. For UI, exercise the route (and other routes that share the state you touched).
 6. Do not push/merge to `main` unless the human asked. Don’t attach production domains.
