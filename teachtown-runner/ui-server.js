@@ -30,6 +30,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { spawn, execSync, execFileSync } = require('child_process');
+const { SUBJECT_KEYS, normalizeSubjectKey } = require('./lib/subjects');
 
 const DIR = __dirname;
 const CONFIG = path.join(DIR, 'config.json');
@@ -48,7 +49,7 @@ function buildVersion() {
   // content hash: same code → same hash on every machine. Git SHA is
   // appended where a .git dir exists (nice to have, never required).
   const h = crypto.createHash('sha256');
-  for (const f of ['runner.js', 'ui-server.js', 'ui.html', 'privacy-check.js', 'init-config.js']) {
+  for (const f of ['runner.js', 'ui-server.js', 'ui.html', 'privacy-check.js', 'init-config.js', 'lib/subjects.js']) {
     try {
       h.update(fs.readFileSync(path.join(DIR, f)));
     } catch {}
@@ -128,9 +129,14 @@ function buildRun(body) {
       return { args: ['--login'] };
     case 'recon-roster':
       return { args: ['--recon-roster'] };
-    case 'studentled-setup':
-    case 'studentled-live':
-      return { error: 'Student-Led automation is not built yet — the CLI stub only prints recon notes.' };
+    case 'studentled-subject': {
+      // One button per subject; the learner is fixed by config
+      // (studentLed.learnerPseudonym). The subject key is a curriculum word,
+      // not a name, so it is safe on argv. Stops at READY — never launches.
+      const subject = normalizeSubjectKey(body.subject);
+      if (!subject) return { error: `Student-Led needs a subject: ${SUBJECT_KEYS.join(', ')}` };
+      return { args: ['--student-led', '--subject', subject, ...flags], overrides: { studentLed: { autoBegin: false } } };
+    }
     default:
       return { error: `unknown action "${body.action}"` };
   }
@@ -237,6 +243,27 @@ function validateConfig(cfg) {
   else {
     if (typeof tl.sessionLengthMin !== 'number' || tl.sessionLengthMin <= 0) errs.push('teacherLed.sessionLengthMin must be a positive number');
     if (typeof tl.autoBegin !== 'boolean') errs.push('teacherLed.autoBegin must be true or false');
+  }
+  // studentLed is optional (configs created before it existed lack it); when
+  // present it must be something the runner's loadConfig accepts.
+  const sl = cfg.studentLed;
+  if (sl !== undefined) {
+    if (typeof sl !== 'object' || sl === null || Array.isArray(sl)) errs.push('"studentLed" must be an object');
+    else {
+      if (sl.learnerPseudonym !== undefined && (typeof sl.learnerPseudonym !== 'string' || !sl.learnerPseudonym.trim()))
+        errs.push('studentLed.learnerPseudonym must be a non-empty string');
+      if (sl.learners !== undefined) {
+        if (typeof sl.learners !== 'object' || sl.learners === null || Array.isArray(sl.learners))
+          errs.push('studentLed.learners must be an object of pseudonym → display name');
+        else
+          for (const [k, v] of Object.entries(sl.learners)) {
+            if (typeof v !== 'string') errs.push(`studentLed.learners["${k}"] must be a string (empty until you fill it in)`);
+          }
+      }
+      if (sl.autoBegin !== undefined && typeof sl.autoBegin !== 'boolean') errs.push('studentLed.autoBegin must be true or false');
+      if (sl.lessonSource !== undefined && !['recommended', 'iep', 'facilitator', 'benchmark'].includes(sl.lessonSource))
+        errs.push('studentLed.lessonSource must be recommended, iep, facilitator, or benchmark');
+    }
   }
   return errs;
 }

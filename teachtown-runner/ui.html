@@ -38,6 +38,10 @@
   .btn.danger { background: var(--danger); border-color: var(--dangerDark); }
   .btn.danger small { color: #ffd9d6; }
   .btn.ok { background: var(--ok); border-color: #1d7a4e; }
+  .grid.subjects { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .btn.subject { min-height: 96px; font-size: 28px; background: #2a3646; border-color: #3d5068; }
+  .btn.subject:disabled { opacity: .45; }
+  .learner { color: var(--text); }
   fieldset { border: 1px solid var(--line); border-radius: 12px; margin: 0 0 16px; padding: 14px 16px; }
   legend { color: var(--muted); padding: 0 8px; }
   label.row { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 19px; }
@@ -107,15 +111,29 @@
       Teacher-Led — START LIVE SESSION
       <small>presses Begin itself: a REAL recorded session starts immediately</small>
     </button>
-    <button class="btn" disabled>
-      Student-Led — Set up only
-      <small>not built yet — automation for Student-Led doesn't exist</small>
+  </div>
+
+  <h2>enCORE — Student-Led for <span class="learner">Luis</span></h2>
+  <div class="grid subjects">
+    <button class="btn subject" data-run="studentled-subject" data-subject="ela">
+      ELA
+      <small>only ELA stays checked · stops at READY</small>
     </button>
-    <button class="btn" disabled>
-      Student-Led — START LIVE SESSION
-      <small>not built yet</small>
+    <button class="btn subject" data-run="studentled-subject" data-subject="math">
+      Math
+      <small>only Math stays checked · stops at READY</small>
+    </button>
+    <button class="btn subject" data-run="studentled-subject" data-subject="social-skills">
+      Social Skills
+      <small>only Social Skills stays checked · stops at READY</small>
+    </button>
+    <button class="btn subject" data-run="studentled-subject" data-subject="science">
+      Science
+      <small>only Science stays checked · stops at READY</small>
     </button>
   </div>
+  <p class="note" id="slNote">Picks <span class="learner">Luis</span> on step 1, unchecks the other three subjects on step 2, verifies, and waits — you press Next and launch on screen. Turn on Dry Run to verify the checkboxes and back out without starting anything.</p>
+  <p class="note" id="slMissing" style="display:none;">Buttons are off until <span class="learner">Luis</span>'s display name is entered under Settings → Student-Led learner (local config.json only).</p>
 
   <h2>Utilities</h2>
   <div class="grid">
@@ -168,6 +186,19 @@
     <label class="row">Session length (min): <input type="number" id="tlLen" min="1" style="width:110px;"></label>
     <label class="row">enCORE app hash: <input type="text" id="tlHash" placeholder="empty = district default" style="max-width:280px;"></label>
   </fieldset>
+  <fieldset>
+    <legend>Student-Led learner (display name stays in local config.json — never committed)</legend>
+    <label class="row"><span class="learner" id="slPseudonym">Luis</span> = <input type="text" id="slName" placeholder="display name exactly as enCORE shows it"></label>
+    <label class="row">Lesson source:
+      <select id="slSource">
+        <option value="recommended">Recommended Lessons (app default)</option>
+        <option value="iep">IEP Goals</option>
+        <option value="facilitator">Facilitator-Selected Lessons</option>
+        <option value="benchmark">Benchmark Assessments</option>
+      </select>
+    </label>
+    <p class="note">The four Student-Led buttons on Home run for this one learner. The buttons, logs, and this page only ever show the pseudonym.</p>
+  </fieldset>
   <button class="btn primary" id="saveBtn" style="width:100%;">Save settings</button>
   <p class="note">Saving validates first and keeps the previous config as config.json.bak. Invalid input is refused with the reason — nothing broken is ever written.</p>
 </section>
@@ -209,6 +240,8 @@ $$('[data-run]').forEach((b) =>
       const students = $$('#customStudents input:checked').map((c) => c.value);
       const mode = $$('input[name=cmode]').find((r) => r.checked).value;
       run('custom', { students, mode, target: $('#ctarget').value });
+    } else if (a === 'studentled-subject') {
+      run(a, { subject: b.dataset.subject });
     } else {
       run(a);
     }
@@ -226,6 +259,10 @@ function addLine(text) {
   if ((m = text.match(/\] LOGIN (.+)$/))) $('#stStudent').textContent = m[1];
   if ((m = text.match(/\] START (.+)$/))) $('#stStep').textContent = m[1];
   if (/\] NEXT$/.test(text)) $('#stStep').textContent = '—';
+  if ((m = text.match(/\] Selected learner "([^"]+)"/))) $('#stStudent').textContent = m[1];
+  if ((m = text.match(/\] SUBJECTS (before|after):\s+(.+)$/))) $('#stStep').textContent = `subjects ${m[1]}: ${m[2]}`;
+  if (/\] SUBJECT CHECK FAILED/.test(text)) $('#stStep').textContent = 'SUBJECT CHECK FAILED — fix on screen';
+  if (/\] READY — /.test(text)) $('#stStep').textContent = 'READY — finish on screen';
   if (/SESSION COMPLETE|LOGIN SETUP COMPLETE|RECON COMPLETE|Clean exit\./.test(text)) $('#stStep').textContent = 'done';
 }
 function connect() {
@@ -310,9 +347,29 @@ function renderSettings() {
   $('#tlGroup').value = tl.group || '';
   $('#tlLen').value = tl.sessionLengthMin || 15;
   $('#tlHash').value = tl.encoreAppHash || '';
+  const sl = studentLed();
+  $('#slName').value = sl.learners[sl.learnerPseudonym] || '';
+  $('#slSource').value = sl.lessonSource || 'recommended';
   renderHome();
 }
+// Configs written before Student-Led existed lack the block; the pseudonym
+// defaults match config.template.json so the buttons still read right.
+function studentLed() {
+  const sl = (cfg.studentLed = cfg.studentLed || {});
+  if (typeof sl.learnerPseudonym !== 'string' || !sl.learnerPseudonym.trim()) sl.learnerPseudonym = 'Luis';
+  if (typeof sl.learners !== 'object' || sl.learners === null || Array.isArray(sl.learners)) sl.learners = {};
+  if (!(sl.learnerPseudonym in sl.learners)) sl.learners[sl.learnerPseudonym] = '';
+  if (typeof sl.autoBegin !== 'boolean') sl.autoBegin = false;
+  if (!sl.lessonSource) sl.lessonSource = 'recommended';
+  return sl;
+}
 function renderHome() {
+  const sl = studentLed();
+  $$('.learner').forEach((el) => { el.textContent = sl.learnerPseudonym; });
+  const learnerSet = !!(sl.learners[sl.learnerPseudonym] || '').trim();
+  $$('.btn.subject').forEach((b) => { b.disabled = !learnerSet; });
+  $('#slNote').style.display = learnerSet ? '' : 'none';
+  $('#slMissing').style.display = learnerSet ? 'none' : '';
   const cs = $('#customStudents'); cs.innerHTML = '';
   (cfg ? cfg.students : []).forEach((n) => {
     const l = document.createElement('label');
@@ -343,6 +400,9 @@ $('#saveBtn').addEventListener('click', async () => {
   cfg.teacherLed.group = $('#tlGroup').value.trim();
   cfg.teacherLed.sessionLengthMin = parseInt($('#tlLen').value, 10) || 15;
   cfg.teacherLed.encoreAppHash = $('#tlHash').value.trim() || null;
+  const sl = studentLed();
+  sl.learners[sl.learnerPseudonym] = $('#slName').value.trim();
+  sl.lessonSource = $('#slSource').value;
   // Rotation names must exist in the roster; prune roster entries the user removed from both.
   const msg = $('#savemsg');
   const r = await fetch('/api/config', { method: 'POST', body: JSON.stringify(cfg) });
