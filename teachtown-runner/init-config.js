@@ -94,6 +94,18 @@ const ask = (q) => {
   }
 
   const alsoRoster = (await ask('Use the same names for the recon roster? [Y/n]: ')).toLowerCase();
+
+  // Student-Led learner: the template carries only the pseudonym; the display
+  // name it stands for is entered here and lives in config.json alone.
+  const sl = (template.studentLed = template.studentLed || {});
+  const pseudonym = sl.learnerPseudonym || 'Luis';
+  sl.learnerPseudonym = pseudonym;
+  sl.learners = sl.learners && typeof sl.learners === 'object' ? sl.learners : {};
+  console.log('');
+  console.log(`Student-Led sessions run for one learner, called "${pseudonym}" everywhere`);
+  console.log('except this file. Enter that learner\'s display name exactly as enCORE');
+  console.log('shows it (leave empty to fill it in later via `npm run ui` → Settings).');
+  sl.learners[pseudonym] = await ask(`Display name for "${pseudonym}": `);
   rl.close();
 
   template.students = students;
@@ -107,6 +119,7 @@ const ask = (q) => {
   console.log(`Wrote ${CONFIG}`);
   console.log(`  students (rotation order): ${students.length}`);
   console.log(`  roster entries: ${template.roster.length}`);
+  console.log(`  Student-Led learner "${pseudonym}": ${sl.learners[pseudonym] ? 'set' : 'NOT set (Settings screen or config.json)'}`);
   console.log('');
   console.log('This file stays on this machine (gitignored). Next:');
   console.log('  npm start -- --dry-run     rehearse without launching anything');

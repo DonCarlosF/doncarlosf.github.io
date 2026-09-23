@@ -32,7 +32,18 @@
  *                                   After this, normal runs are zero-touch.
  *                                   Combined with any other mode flag, that
  *                                   mode wins (it signs in first anyway).
- *      npm start -- --student-led   not implemented yet (prints the recon notes)
+ *      npm start -- --student-led --subject ela|math|social-skills|science
+ *                                   enCORE Student-Led for ONE learner (the
+ *                                   studentLed.learnerPseudonym entry — "Luis"
+ *                                   — whose display name lives only in local
+ *                                   config.json): pick the learner, Next, then
+ *                                   leave ONLY that subject checked on "Select
+ *                                   Session Mode" and stop at READY. You press
+ *                                   Next / launch on screen. With --dry-run it
+ *                                   verifies the checkboxes, prints them, and
+ *                                   backs out without starting anything.
+ *                                   studentLed.autoBegin:true also presses Next
+ *                                   and the step-3 launch button (unverified).
  *      npm start -- --recon-roster  day-one recon: SSO chain + list every student
  *                                   in Social Skills AND enCORE, diff against the
  *                                   config roster, write recon/roster-report-*.txt.
@@ -62,6 +73,7 @@ const os = require('os');
 const path = require('path');
 const readline = require('readline');
 const { chromium } = require('playwright');
+const subjects = require('./lib/subjects');
 
 const PROJECT_DIR = __dirname;
 const CONFIG_PATH = path.join(PROJECT_DIR, 'config.json');
@@ -207,6 +219,12 @@ function loadConfig(flags) {
       if (o.teacherLed && typeof o.teacherLed === 'object') {
         cfg.teacherLed = Object.assign({}, cfg.teacherLed || {}, o.teacherLed);
       }
+      if (o.studentLed && typeof o.studentLed === 'object') {
+        // Only run-shaping keys — the learner map stays whatever config.json says.
+        const pick = {};
+        for (const k of ['subject', 'autoBegin', 'lessonSource']) if (k in o.studentLed) pick[k] = o.studentLed[k];
+        cfg.studentLed = Object.assign({}, cfg.studentLed || {}, pick);
+      }
     } catch (err) {
       fail(`TT_UI_OVERRIDES is not valid JSON: ${err.message}`);
     }
@@ -288,7 +306,8 @@ function loadConfig(flags) {
     .filter((r) => r.name);
 
   // The rotation students list is only required when the rotation will run.
-  const rotationRun = !flags.teacherLedOnly && !flags.reconRoster && !flags.reconGoals && flags.report == null && !flags.loginOnly;
+  const rotationRun =
+    !flags.teacherLedOnly && !flags.studentLed && !flags.reconRoster && !flags.reconGoals && flags.report == null && !flags.loginOnly;
   if (rotationRun) {
     if (!Array.isArray(cfg.students) || cfg.students.length === 0 ||
         cfg.students.some((s) => typeof s !== 'string' || !s.trim())) {
@@ -368,8 +387,62 @@ function loadConfig(flags) {
   if (willRunTeacherLed && !tl.group && tl.students.length === 0) {
     fail('teacherLed needs either "group" or a non-empty "students" list in config.json.');
   }
+
+  // Student-Led (enCORE), one learner at a time. The learner is addressed by
+  // PSEUDONYM everywhere the repo can see — code, flags, UI labels, log
+  // lines — and the pseudonym maps to a display name ONLY inside gitignored
+  // config.json ("learners": { "Luis": "<display name>" }).
+  const sl = Object.assign(
+    { learnerPseudonym: 'Luis', learners: {}, lessonSource: 'recommended', subject: null, autoBegin: false },
+    cfg.studentLed || {}
+  );
+  sl.learnerPseudonym =
+    typeof sl.learnerPseudonym === 'string' && sl.learnerPseudonym.trim() ? sl.learnerPseudonym.trim() : 'Luis';
+  if (typeof sl.learners !== 'object' || sl.learners === null || Array.isArray(sl.learners)) sl.learners = {};
+  // The pre-build stub kept the display name in "student" — honor it once.
+  if (!sl.learners[sl.learnerPseudonym] && typeof sl.student === 'string' && sl.student.trim()) {
+    sl.learners[sl.learnerPseudonym] = sl.student.trim();
+  }
+  sl.studentName =
+    typeof sl.learners[sl.learnerPseudonym] === 'string' ? sl.learners[sl.learnerPseudonym].trim() : '';
+  sl.lessonSource = typeof sl.lessonSource === 'string' && sl.lessonSource.trim() ? sl.lessonSource.trim().toLowerCase() : 'recommended';
+  if (!Object.prototype.hasOwnProperty.call(LESSON_SOURCES, sl.lessonSource)) {
+    fail(`studentLed.lessonSource must be one of ${Object.keys(LESSON_SOURCES).join(', ')} (got "${sl.lessonSource}").`);
+  }
+  sl.autoBegin = sl.autoBegin === true;
+  const rawSubject = flags.subject != null ? flags.subject : sl.subject;
+  sl.subject = subjects.normalizeSubjectKey(rawSubject);
+  if (rawSubject != null && rawSubject !== '' && !sl.subject) {
+    fail(`unknown subject "${rawSubject}" — use one of: ${subjects.SUBJECT_KEYS.join(', ')}`);
+  }
+  if (flags.studentLed) {
+    if (!sl.subject) {
+      fail(
+        '--student-led needs a subject: --subject ' + subjects.SUBJECT_KEYS.join('|') + '\n' +
+          '  (the UI buttons and the windows/*.cmd launchers pass it for you).'
+      );
+    }
+    if (!sl.studentName) {
+      fail(
+        `studentLed.learners["${sl.learnerPseudonym}"] is empty in config.json.\n` +
+          `  Enter the learner's display name EXACTLY as enCORE shows it — there, or in\n` +
+          '  `npm run ui` → Settings → Student-Led learner. config.json is gitignored;\n' +
+          '  the name never leaves this machine.'
+      );
+    }
+  }
+  cfg.studentLed = sl;
   return cfg;
 }
+
+// Step-2 lesson-source radios (recon 2026-07). "recommended" is the app's
+// default, so it is never clicked — a missing radio must not fail the run.
+const LESSON_SOURCES = {
+  recommended: /recommended lessons?/i,
+  iep: /iep goals?/i,
+  facilitator: /facilitator[- ]selected/i,
+  benchmark: /benchmark assessments?/i,
+};
 
 // Defaults never contain "~" (they're built with os.homedir()); this
 // expansion is only a convenience for a hand-written config value, and it
@@ -2375,15 +2448,146 @@ async function runTeacherLed(tt, config, dryRun, logger) {
   }
 }
 
-// TODO(--student-led): recon'd 2026-07-17, unbuilt. Start a Session →
-// Student-Led "Get started" → 3-step wizard: 1) Select Student (single,
-// Next) → 2) Select Session Mode — lesson-source radios: IEP Goals /
-// Facilitator-Selected Lessons / Recommended Lessons (default) / Benchmark
-// Assessments; right panel: subject checkboxes (ELA, Math, Science, Social
-// Studies) + lesson checklist → 3) Prepare Session (NOT entered — assumed
-// confirm-and-launch; codegen it first). Config stub "studentLed" ships in
-// config.template.json. Same never-past-the-launch-button rule as
-// Teacher-Led: stop at step 3 unless studentLed.autoBegin.
+/* ---------------------------- student-led ---------------------------- */
+
+// Student-Led wizard (recon 2026-07-17): 1) Select Student (single, Next) →
+// 2) Select Session Mode — lesson-source radios + subject checkboxes + lesson
+// checklist → 3) Prepare Session (never entered by recon; assumed
+// confirm-and-launch).
+//
+// This automates what Carlos does by hand after Start Session: pick the one
+// learner, then uncheck every subject except the one being taught. It stops
+// on step 2 with the boxes verified (READY) — the human presses Next and
+// launches. studentLed.autoBegin:true additionally presses Next and the
+// step-3 launch button, best effort on an unverified screen. Between-question
+// navigation only: nothing here ever touches a lesson.
+async function studentLedSetup(tt, sl, dryRun, logger) {
+  const frame = encoreLocator(tt);
+  const who = sl.learnerPseudonym; // never the display name — logs and the UI show the pseudonym
+  const subjectLabel = subjects.SUBJECTS[sl.subject].label;
+
+  await openSessionFormat(tt, logger);
+  await clickGetStarted(tt, /student-led/i, 1, 'Student-Led', logger);
+  await frame.getByText(/select student/i).first().waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+  await dismissOnboarding(tt, logger);
+
+  // Step 1 — exactly one learner. The row is matched on the display name
+  // from config.json; only the pseudonym is ever logged.
+  const tab = frame.getByText(/my students/i).first();
+  if (await tab.isVisible().catch(() => false)) await tab.click({ timeout: 5_000 }).catch(() => {});
+  const row = frame.getByText(sl.studentName, { exact: true }).or(frame.getByText(sl.studentName)).first();
+  if (!(await visibleSoon(row, 10_000))) {
+    await screenshot(tt, 'studentled-no-learner');
+    throw new Error(
+      `Student-Led step 1: the display name configured for "${who}" is not in the student list — ` +
+        'check studentLed.learners in config.json against what enCORE shows (npm start -- --recon-roster lists it).'
+    );
+  }
+  await row.click({ timeout: 5_000 });
+  logger.event(`Selected learner "${who}"`);
+
+  const next = frame.getByRole('button', { name: /^next$/i }).or(frame.getByText(/^\s*Next\s*$/)).first();
+  await next.waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+  if (!(await waitForEnabled(next, 10_000))) {
+    logger.event('WARN Next still looks disabled after selecting the learner — trying anyway');
+  }
+  await next.click({ timeout: 10_000 });
+  await frame.getByText(/select session mode/i).first().waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+  await dismissOnboarding(tt, logger);
+  if (state.reconMode) await reconShot(tt, 'student-led-step2-before');
+
+  // Step 2a — lesson source. The app defaults to Recommended; anything else
+  // is a click on the radio's label, best effort.
+  if (sl.lessonSource !== 'recommended') {
+    const radio = frame.getByText(LESSON_SOURCES[sl.lessonSource]).first();
+    if (await visibleSoon(radio, 5_000)) {
+      await radio.click({ timeout: 5_000 }).catch(() => {});
+      logger.event(`Lesson source: ${sl.lessonSource}`);
+      await sleep(500);
+    } else {
+      logger.event(`WARN lesson source "${sl.lessonSource}" not found on step 2 — leaving the app default`);
+    }
+  }
+
+  // Step 2b — ONLY the requested subject stays checked. Read → plan → click
+  // → re-read; the result is verified before anyone is told READY.
+  const before = await subjects.readCheckboxes(frame);
+  logger.event(`SUBJECTS before: ${subjects.describeSubjectState(before)}`);
+  const result = await subjects.selectOnlySubject(frame, sl.subject, { log: (m) => logger.event(m) });
+  logger.event(`SUBJECTS after:  ${subjects.describeSubjectState(result.boxes)}`);
+  if (!result.ok) {
+    await screenshot(tt, `studentled-subjects-${sl.subject}`);
+    const why =
+      result.plan.target == null
+        ? `no "${subjectLabel}" checkbox was recognized on this screen`
+        : `the boxes did not settle to only "${subjectLabel}" after ${result.attempts} attempt(s)`;
+    if (dryRun) {
+      throw new Error(`SUBJECT CHECK FAILED — ${why}. Nothing was started. See the screenshot in logs/.`);
+    }
+    logger.event(`SUBJECT CHECK FAILED — ${why}.`);
+    logger.event('STOPPED before Next — fix the subject boxes on screen yourself, then continue by hand. Nothing was started.');
+    logger.event('Idling — Ctrl+C here (or STOP in the UI) closes the browser.');
+    await new Promise(() => {});
+    return;
+  }
+  logger.event(`SUBJECTS OK — only ${subjectLabel} is checked for "${who}"`);
+
+  if (dryRun) {
+    logger.event(`STUDENT-LED DRY RUN COMPLETE — ${subjectLabel} for "${who}" verified on step 2; backing out, nothing started.`);
+    await tt.goto(state.ttNavBase + '#/home', { timeout: NAV_TIMEOUT }).catch(() => {});
+    return;
+  }
+
+  if (!sl.autoBegin) {
+    logger.event(`READY — ${subjectLabel} for "${who}". Press Next on screen and launch when the group is ready.`);
+    logger.event('Idling — the session is in your hands (Ctrl+C here or close the browser when done)');
+    await new Promise(() => {}); // hold the screen; Ctrl+C / window close end the run
+    return;
+  }
+
+  // autoBegin — step 3 was never entered by recon; every selector below is a
+  // guess that fails soft into READY.
+  await next.click({ timeout: 10_000 });
+  if (await visibleSoon(frame.getByText(/prepare session/i).first(), 15_000)) {
+    await dismissOnboarding(tt, logger);
+    const begin = frame
+      .getByRole('button', { name: /begin session|start session|launch/i })
+      .or(frame.getByText(/begin session|start session|launch session/i))
+      .first();
+    if ((await visibleSoon(begin, 10_000)) && (await waitForEnabled(begin, 15_000))) {
+      await begin.click({ timeout: 10_000 });
+      logger.event(`BEGIN clicked — Student-Led ${subjectLabel} session for "${who}" is live (this is a real logged session)`);
+    } else {
+      logger.event('READY — on Prepare Session; the launch button was not recognized, press it on screen');
+    }
+  } else {
+    logger.event('READY — Next was pressed; finish on screen (Prepare Session did not appear as expected)');
+  }
+  logger.event('Idling — the session is in your hands (Ctrl+C here or close the browser when done)');
+  await new Promise(() => {});
+}
+
+async function runStudentLed(tt, config, dryRun, logger) {
+  const sl = config.studentLed;
+  logger.event(`STUDENT-LED — entering enCORE (${subjects.SUBJECTS[sl.subject].label} for "${sl.learnerPseudonym}")`);
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      await enterEncore(tt, config, logger);
+      noteProfileAuthenticated(logger);
+      await studentLedSetup(tt, sl, dryRun, logger);
+      return; // dry run backs out; live setups idle
+    } catch (err) {
+      if (state.shuttingDown) return;
+      if (err instanceof ReconStopError) throw err;
+      if (err instanceof ManualSignInTimeoutError) throw err;
+      if (/^SUBJECT CHECK FAILED/.test(err.message)) throw err; // a retry would just re-click the same boxes
+      logger.event(`WARN student-led — ${err.message.split('\n')[0]}`);
+      await screenshot(tt, `studentled-attempt${attempt}`);
+      if (attempt >= 2) throw err;
+      logger.event('Recovering: hub → re-enter enCORE');
+    }
+  }
+}
 
 /* ------------------------------ recon ------------------------------- */
 
@@ -2734,9 +2938,20 @@ async function shutdown(code) {
     const v = argv[argv.indexOf('--report') + 1];
     return v && !v.startsWith('-') ? v : ''; // next flag ≠ a student name
   };
+  // --subject KEY or --subject=KEY (validated in loadConfig).
+  const subjectArg = () => {
+    const eq = argv.find((a) => a.startsWith('--subject='));
+    if (eq) return eq.slice('--subject='.length);
+    const i = argv.indexOf('--subject');
+    if (i < 0) return null;
+    const v = argv[i + 1];
+    return v && !v.startsWith('-') ? v : '';
+  };
   const flags = {
     dryRun: argv.includes('--dry-run'),
     teacherLedOnly: argv.includes('--teacher-led'),
+    studentLed: argv.includes('--student-led'),
+    subject: subjectArg(),
     reconRoster: argv.includes('--recon-roster'),
     reconGoals: argv.includes('--recon-goals'),
     report: argv.includes('--report') ? reportArg() : null,
@@ -2744,25 +2959,13 @@ async function shutdown(code) {
   const anyRecon = flags.reconRoster || flags.reconGoals || flags.report != null;
   const dryRun = flags.dryRun;
   const teacherLedOnly = flags.teacherLedOnly;
+  if (flags.studentLed && teacherLedOnly) fail('--student-led and --teacher-led are separate modes — pass one.');
+  if (flags.subject != null && !flags.studentLed) fail('--subject only applies to --student-led.');
   // --login is a warmup other modes subsume (every mode runs the sign-in
   // chain first) — the more specific mode wins, instead of silently
   // discarding the mode's actual work.
-  flags.loginOnly = argv.includes('--login') && !anyRecon && !teacherLedOnly && !dryRun;
+  flags.loginOnly = argv.includes('--login') && !anyRecon && !teacherLedOnly && !flags.studentLed && !dryRun;
   const loginImplied = argv.includes('--login') && !flags.loginOnly;
-
-  if (process.argv.includes('--student-led')) {
-    console.error(
-      '--student-led is not implemented yet.\n' +
-        'Recon (2026-07-17): Start a Session → Student-Led "Get started" → wizard:\n' +
-        '  1) Select Student (single-select, Next)\n' +
-        '  2) Select Session Mode — lesson source: IEP Goals / Facilitator-Selected /\n' +
-        '     Recommended (default) / Benchmark Assessments; subjects: ELA, Math,\n' +
-        '     Science, Social Studies; lesson checklist\n' +
-        '  3) Prepare Session (unverified — codegen before building)\n' +
-        'The "studentLed" config stub is already in config.template.json.'
-    );
-    process.exit(1);
-  }
 
   const config = loadConfig(flags);
 
@@ -2797,7 +3000,7 @@ async function shutdown(code) {
     ? ' (recon)'
     : flags.loginOnly
       ? ' (login only)'
-      : `${dryRun ? ' (dry run)' : ''}${teacherLedOnly ? ' (teacher-led only)' : ''}`;
+      : `${dryRun ? ' (dry run)' : ''}${teacherLedOnly ? ' (teacher-led only)' : ''}${flags.studentLed ? ' (student-led)' : ''}`;
   logger.event(
     `SESSION START${modeTag} — ` +
       (anyRecon
@@ -2808,6 +3011,9 @@ async function shutdown(code) {
           ].filter(Boolean).join(' ')}`
         : flags.loginOnly
           ? `district=${config.district || '(legacy)'}, flags=--login`
+          : flags.studentLed
+          ? `enCORE Student-Led, learner "${config.studentLed.learnerPseudonym}", subject=${config.studentLed.subject}, ` +
+            `lessonSource=${config.studentLed.lessonSource}, autoBegin=${config.studentLed.autoBegin}`
           : teacherLedOnly
           ? `enCORE ${config.teacherLed.group ? `group "${config.teacherLed.group}"` : `${config.teacherLed.students.length} student(s)`}, ` +
             `length=${config.teacherLed.sessionLengthMin}min, autoBegin=${config.teacherLed.autoBegin}`
@@ -2907,6 +3113,15 @@ async function shutdown(code) {
 
     if (teacherLedOnly) {
       await runTeacherLed(tt, config, dryRun, logger); // idles until Ctrl+C / window close
+      return;
+    }
+
+    if (flags.studentLed) {
+      await runStudentLed(tt, config, dryRun, logger); // live: idles; dry run: verifies and returns
+      if (dryRun) {
+        noteProfileAuthenticated(logger);
+        logger.event('SESSION COMPLETE');
+      }
       return;
     }
 

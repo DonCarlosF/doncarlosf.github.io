@@ -21,10 +21,10 @@
     "autoBegin": false
   },
   "studentLed": {
-    "_note": "Not implemented yet — `npm start -- --student-led` prints the recon notes. --recon-goals walks to step 2 to check the IEP Goals lesson source.",
-    "student": "",
+    "_note": "enCORE Student-Led for ONE learner: `npm start -- --student-led --subject ela|math|social-skills|science` (the UI's four Student-Led buttons and windows/*.cmd pass the subject). learnerPseudonym names the entry in `learners`; in your local config.json fill that entry with the learner's display name EXACTLY as enCORE shows it — never here in the template. Only the chosen subject stays checked on step 2; the runner stops at READY and you press Next/launch. lessonSource: recommended (app default) | iep | facilitator | benchmark. autoBegin:true also presses Next and the step-3 launch button (unverified screen) — a REAL logged session.",
+    "learnerPseudonym": "Luis",
+    "learners": { "Luis": "" },
     "lessonSource": "recommended",
-    "subjects": ["ELA", "Math", "Science", "Social Studies"],
     "autoBegin": false
   }
 }
