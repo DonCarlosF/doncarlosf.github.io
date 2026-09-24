@@ -3,12 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "description": "Rotates a TeachTown Social Skills group session: logs each student in, launches their activity on the big screen, waits while the group answers live, then moves to the next student. Humans answer all questions.",
+  "main": "mac/main.js",
   "scripts": {
     "start": "node runner.js",
     "ui": "node ui-server.js",
     "init-config": "node init-config.js",
     "privacy-check": "node privacy-check.js",
-    "test": "node --test test/subjects.test.js test/subjects.dom.test.js test/student-led-step1.test.js test/student-led-step1.dom.test.js",
+    "test": "node --test test/subjects.test.js test/subjects.dom.test.js test/student-led-step1.test.js test/student-led-step1.dom.test.js test/home-status.test.js test/mac-menu.test.js",
+    "mac:dev": "electron mac/main.js",
+    "mac:build": "electron-builder --mac --dir",
     "install-hooks": "git config core.hooksPath teachtown-runner/hooks && echo \"privacy pre-commit hook installed\""
   },
   "engines": {
@@ -16,5 +19,31 @@
   },
   "dependencies": {
     "playwright": "^1.51.0"
+  },
+  "devDependencies": {
+    "electron": "^35.7.5",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "local.teachtown.runner",
+    "productName": "TeachTown Runner",
+    "directories": { "output": "dist" },
+    "files": [
+      "runner.js",
+      "ui-server.js",
+      "ui.html",
+      "init-config.js",
+      "privacy-check.js",
+      "lib/**/*",
+      "mac/**/*",
+      "config.template.json",
+      "config/districts/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.education",
+      "identity": null,
+      "target": [{ "target": "dir", "arch": ["arm64", "x64"] }]
+    }
   }
 }

@@ -32,14 +32,18 @@
  *                                   After this, normal runs are zero-touch.
  *                                   Combined with any other mode flag, that
  *                                   mode wins (it signs in first anyway).
- *      npm start -- --student-led --subject ela|math|social-skills|science
+ *      npm start -- --student-led --subject ela|math|science|social-studies|social-skills
  *                                   enCORE Student-Led for ONE learner (the
  *                                   studentLed.learnerPseudonym entry — "Luis"
  *                                   — whose display name lives only in local
  *                                   config.json): pick the learner (the click
  *                                   opens step 2 on SLZUSD; other tenants
  *                                   still need Next), then leave ONLY that
- *                                   subject checked and stop at READY. You
+ *                                   subject checked and stop at READY.
+ *                                   social-studies (Social Studies) is an
+ *                                   enCORE school subject. social-skills
+ *                                   (Social Skills) is a different activity
+ *                                   and is not an alias for Social Studies. You
  *                                   press Next / launch on screen. With
  *                                   --dry-run it
  *                                   verifies the checkboxes, prints them, and

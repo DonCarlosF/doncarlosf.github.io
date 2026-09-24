@@ -38,8 +38,11 @@
   .btn.danger { background: var(--danger); border-color: var(--dangerDark); }
   .btn.danger small { color: #ffd9d6; }
   .btn.ok { background: var(--ok); border-color: #1d7a4e; }
-  .grid.subjects { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-  .btn.subject { min-height: 96px; font-size: 28px; background: #2a3646; border-color: #3d5068; }
+  .grid.subjects { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .btn.subject { min-height: 128px; font-size: 32px; background: #2a3646; border-color: #3d5068; }
+  .btn.subject small { font-size: 18px; line-height: 1.35; color: #d5e2ee; }
+  .btn.subject.studies { background: #3a3420; border-color: #c4a15a; }
+  .btn.subject.skills { background: #1c3330; border-color: #3d8f78; }
   .btn.subject:disabled { opacity: .45; }
   .learner { color: var(--text); }
   fieldset { border: 1px solid var(--line); border-radius: 12px; margin: 0 0 16px; padding: 14px 16px; }
@@ -69,6 +72,26 @@
   #savemsg.ok { color: var(--ok); } #savemsg.err { color: #ff8d86; white-space: pre-wrap; }
   footer { text-align: center; color: var(--muted); font-size: 15px; padding: 18px; }
   .note { color: var(--muted); font-size: 16px; margin: 6px 0 0; }
+  .statuscard { background: var(--panel); border: 2px solid var(--line); border-radius: 16px;
+                padding: 16px 18px; margin: 0 0 16px; }
+  .statuscard[data-phase="working"] { border-color: var(--accent); }
+  .statuscard[data-phase="ready"] { border-color: var(--ok); }
+  .statuscard[data-phase="attention"] { border-color: var(--danger); }
+  .statuscard[data-phase="finished"] { border-color: var(--ok); }
+  .statusphase { font-size: 32px; font-weight: 700; line-height: 1.2; }
+  .statusaction { font-size: 20px; margin-top: 4px; }
+  .statusdetail { font-size: 18px; color: var(--muted); margin: 8px 0 0; }
+  .homelog { margin: 10px 0 0; max-height: 6.5em; overflow: auto; background: #0b0e12;
+             border-radius: 10px; padding: 10px 12px; font: 15px/1.45 ui-monospace, Consolas, monospace;
+             white-space: pre-wrap; }
+  .drycard { display: flex; gap: 14px; align-items: flex-start; cursor: pointer;
+             background: var(--panel2); border: 2px solid var(--line); border-radius: 16px;
+             padding: 16px 18px; margin: 0 0 8px; }
+  .drycard.on { border-color: var(--warn); background: #3a3018; }
+  .drycard input { width: 32px; height: 32px; margin-top: 4px; flex: none; }
+  .drycard strong { display: block; font-size: 26px; }
+  .drycard small { display: block; color: #e7d7b0; font-size: 18px; font-weight: 400; margin-top: 4px; }
+  .firsthint { background: #1c2836; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
 </style>
 </head>
 <body>
@@ -77,12 +100,61 @@
   <button class="tab active" data-screen="home">Home</button>
   <button class="tab" data-screen="run">Run</button>
   <button class="tab" data-screen="settings">Settings</button>
-  <label id="drywrap"><input type="checkbox" id="dry"> <span>Dry Run — rehearse, launch nothing</span></label>
+  <label id="drywrap"><input type="checkbox" id="dry"> <span>Dry run — practice, start nothing</span></label>
 </header>
 <main>
 
 <section class="screen active" id="screen-home">
-  <h2>Social Skills</h2>
+  <div id="homeStatus" class="statuscard" data-phase="waiting">
+    <div class="statusphase" id="homePhase">Waiting</div>
+    <div class="statusaction" id="homeAction">Last action: nothing yet</div>
+    <p class="statusdetail" id="homeHint">Nothing is running. Pick a lesson when you are ready.</p>
+    <pre id="homeLog" class="homelog" aria-live="polite"></pre>
+  </div>
+
+  <label class="drycard" id="homeDryCard">
+    <input type="checkbox" id="homeDry">
+    <span>
+      <strong>Dry run</strong>
+      <small>Practice only. Checks the boxes, then backs out. A real lesson does not start.</small>
+    </span>
+  </label>
+
+  <h2>School subjects for <span class="learner">Luis</span></h2>
+  <p class="note">ELA, Math, Science, and Social Studies. Each button picks <span class="learner">Luis</span> and leaves only that subject checked, then waits. You press Next on the TeachTown screen.</p>
+  <div class="grid subjects">
+    <button class="btn subject" data-run="studentled-subject" data-subject="ela">
+      ELA
+      <small>Reading and writing. Only ELA stays checked.</small>
+    </button>
+    <button class="btn subject" data-run="studentled-subject" data-subject="math">
+      Math
+      <small>Numbers. Only Math stays checked.</small>
+    </button>
+    <button class="btn subject" data-run="studentled-subject" data-subject="science">
+      Science
+      <small>Science class. Only Science stays checked.</small>
+    </button>
+    <button class="btn subject studies" data-run="studentled-subject" data-subject="social-studies">
+      Social Studies
+      <small>History and the world. This is not Social Skills.</small>
+    </button>
+  </div>
+
+  <h2>Social Skills for <span class="learner">Luis</span></h2>
+  <p class="note">A different activity from Social Studies. Use this when the lesson screen has a box that says Social Skills. It will not check Social Studies.</p>
+  <div class="grid subjects">
+    <button class="btn subject skills" data-run="studentled-subject" data-subject="social-skills">
+      Social Skills
+      <small>Not Social Studies. Only the Social Skills box stays checked.</small>
+    </button>
+  </div>
+  <p class="note" id="slNote">Picks <span class="learner">Luis</span>, leaves only the subject you picked checked, and waits. You press Next on the screen. Turn on Dry run to look at the boxes and back out without starting a lesson.</p>
+  <p class="note" id="slMissing" style="display:none;">Buttons are off until <span class="learner">Luis</span>'s display name is entered under Settings. That name stays in config.json on this computer only.</p>
+  <p class="note firsthint" id="firstRun">First time here: open Settings and type the display name for <span class="learner">Luis</span>. It stays in config.json on this computer. You sign in yourself in the browser window. This app never stores a password.</p>
+
+  <h2>Also on this computer</h2>
+  <p class="note">Group Social Skills is the class rotation. It is not the Social Studies school subject, and it is not the Social Skills lesson button above.</p>
   <div class="grid">
     <button class="btn primary" data-run="playlist" style="grid-column: 1 / -1;">
       ▶ Run Playlist
@@ -100,8 +172,6 @@
     </div>
     <p class="note">Type the activity name exactly as the dry-run table shows it.</p>
   </fieldset>
-
-  <h2>enCORE</h2>
   <div class="grid">
     <button class="btn" data-run="teacherled-setup">
       Teacher-Led — Set up only
@@ -111,32 +181,6 @@
       Teacher-Led — START LIVE SESSION
       <small>presses Begin itself: a REAL recorded session starts immediately</small>
     </button>
-  </div>
-
-  <h2>enCORE — Student-Led for <span class="learner">Luis</span></h2>
-  <div class="grid subjects">
-    <button class="btn subject" data-run="studentled-subject" data-subject="ela">
-      ELA
-      <small>only ELA stays checked · stops at READY</small>
-    </button>
-    <button class="btn subject" data-run="studentled-subject" data-subject="math">
-      Math
-      <small>only Math stays checked · stops at READY</small>
-    </button>
-    <button class="btn subject" data-run="studentled-subject" data-subject="social-skills">
-      Social Skills
-      <small>only Social Skills stays checked · stops at READY</small>
-    </button>
-    <button class="btn subject" data-run="studentled-subject" data-subject="science">
-      Science
-      <small>only Science stays checked · stops at READY</small>
-    </button>
-  </div>
-  <p class="note" id="slNote">Picks <span class="learner">Luis</span> on step 1, unchecks the other three subjects on step 2, verifies, and waits — you press Next and launch on screen. Turn on Dry Run to verify the checkboxes and back out without starting anything.</p>
-  <p class="note" id="slMissing" style="display:none;">Buttons are off until <span class="learner">Luis</span>'s display name is entered under Settings → Student-Led learner (local config.json only).</p>
-
-  <h2>Utilities</h2>
-  <div class="grid">
     <button class="btn ok" data-run="login">
       Sign In
       <small>one-time per machine — you type the password in the browser window, never here</small>
@@ -149,6 +193,10 @@
 </section>
 
 <section class="screen" id="screen-run">
+  <div id="runStatus" class="statuscard" data-phase="waiting">
+    <div class="statusphase" id="runPhase">Waiting</div>
+    <p class="statusdetail" id="runHint">Nothing is running. Pick a lesson when you are ready.</p>
+  </div>
   <div id="runhead">
     <span class="pill">Status: <b id="stRunning">idle</b></span>
     <span class="pill">Mode: <b id="stAction">—</b></span>
@@ -160,6 +208,7 @@
 </section>
 
 <section class="screen" id="screen-settings">
+  <p class="note firsthint">The name for <span class="learner">Luis</span> stays in config.json on this computer. It is not uploaded. You sign in yourself in the browser window. This page never asks for a password and never stores one.</p>
   <div id="savemsg"></div>
   <fieldset>
     <legend>Rotation &amp; roster (names stay in local config.json — never committed)</legend>
@@ -197,7 +246,7 @@
         <option value="benchmark">Benchmark Assessments</option>
       </select>
     </label>
-    <p class="note">The four Student-Led buttons on Home run for this one learner. The buttons, logs, and this page only ever show the pseudonym.</p>
+    <p class="note">The lesson buttons on Home run for this one learner. Social Studies and Social Skills are different buttons. The buttons, logs, and this page only ever show the pseudonym.</p>
   </fieldset>
   <button class="btn primary" id="saveBtn" style="width:100%;">Save settings</button>
   <p class="note">Saving validates first and keeps the previous config as config.json.bak. Invalid input is refused with the reason — nothing broken is ever written.</p>
@@ -205,6 +254,7 @@
 
 </main>
 <footer id="version">…</footer>
+<script src="/home-status.js"></script>
 <script>
 'use strict';
 const $ = (s) => document.querySelector(s);
@@ -218,7 +268,22 @@ function show(name) {
   $$('.screen').forEach((s) => s.classList.toggle('active', s.id === 'screen-' + name));
 }
 $$('.tab').forEach((t) => t.addEventListener('click', () => { if (t.dataset.screen === 'settings') loadConfig(); show(t.dataset.screen); }));
-$('#dry').addEventListener('change', () => $('#drywrap').classList.toggle('on', $('#dry').checked));
+function setDry(on) {
+  $('#dry').checked = !!on;
+  $('#homeDry').checked = !!on;
+  $('#drywrap').classList.toggle('on', !!on);
+  $('#homeDryCard').classList.toggle('on', !!on);
+}
+$('#dry').addEventListener('change', () => setDry($('#dry').checked));
+$('#homeDry').addEventListener('change', () => setDry($('#homeDry').checked));
+if (window.ttDesktop && typeof window.ttDesktop.listen === 'function') {
+  window.ttDesktop.listen((cmd) => {
+    if (!cmd || typeof cmd !== 'object') return;
+    if (cmd.type === 'start' && cmd.subject) run('studentled-subject', { subject: cmd.subject });
+    else if (cmd.type === 'dry-run') setDry(!$('#homeDry').checked);
+    else if (cmd.type === 'settings') { loadConfig(); show('settings'); }
+  });
+}
 
 /* ------------------------------ launch ------------------------------ */
 async function run(action, extra) {
@@ -251,7 +316,28 @@ $('#stopbtn').addEventListener('click', () => fetch('/api/stop', { method: 'POST
 
 /* ---------------------------- live stream ---------------------------- */
 const logEl = $('#log');
+let seenLines = [];
+let lastStatus = { running: false, exitCode: null, action: null };
+function paintStatus() {
+  if (!window.HomeStatus) return;
+  const view = window.HomeStatus.parentStatus({
+    running: !!lastStatus.running,
+    exitCode: lastStatus.exitCode,
+    actionLabel: lastStatus.action || '—',
+    lines: seenLines,
+  });
+  $('#homeStatus').dataset.phase = view.phase;
+  $('#runStatus').dataset.phase = view.phase;
+  $('#homePhase').textContent = view.phaseLabel;
+  $('#runPhase').textContent = view.phaseLabel;
+  $('#homeAction').textContent = 'Last action: ' + (lastStatus.action || 'nothing yet');
+  $('#homeHint').textContent = view.detail;
+  $('#runHint').textContent = view.detail;
+  $('#homeLog').textContent = seenLines.slice(-4).join('\n');
+}
 function addLine(text) {
+  seenLines.push(text);
+  if (seenLines.length > 500) seenLines.shift();
   const stuck = logEl.scrollTop + logEl.clientHeight >= logEl.scrollHeight - 40;
   logEl.textContent += text + '\n';
   if (stuck) logEl.scrollTop = logEl.scrollHeight;
@@ -271,10 +357,15 @@ function connect() {
     const d = JSON.parse(ev.data);
     if (d.type === 'line') addLine(d.text);
     else if (d.type === 'status') {
-      if (d.running) logEl.textContent = '';
+      if (d.running) {
+        logEl.textContent = '';
+        seenLines = [];
+      }
+      lastStatus = d;
       $('#stRunning').textContent = d.running ? 'RUNNING' : d.exitCode === null ? 'idle' : `finished (exit ${d.exitCode})`;
       $('#stAction').textContent = d.action || '—';
     }
+    paintStatus();
   };
   es.onerror = () => { es.close(); setTimeout(connect, 1500); };
 }

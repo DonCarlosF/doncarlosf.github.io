@@ -21,7 +21,7 @@
     "autoBegin": false
   },
   "studentLed": {
-    "_note": "enCORE Student-Led for ONE learner: `npm start -- --student-led --subject ela|math|social-skills|science` (the UI's four Student-Led buttons and windows/*.cmd pass the subject). learnerPseudonym names the entry in `learners`; in your local config.json fill that entry with the learner's display name EXACTLY as enCORE shows it — never here in the template. Only the chosen subject stays checked on step 2; the runner stops at READY and you press Next/launch. lessonSource: recommended (app default) | iep | facilitator | benchmark. autoBegin:true also presses Next and the step-3 launch button (unverified screen) — a REAL logged session.",
+    "_note": "enCORE Student-Led for ONE learner: `npm start -- --student-led --subject ela|math|science|social-studies|social-skills`. social-studies is the enCORE school subject (Social Studies). social-skills is the separate Social Skills activity — it is not another name for Social Studies. The UI buttons and windows/*.cmd pass the subject. learnerPseudonym names the entry in `learners`; in your local config.json fill that entry with the learner's display name EXACTLY as enCORE shows it — never here in the template. Only the chosen subject stays checked on step 2; the runner stops at READY and you press Next/launch. lessonSource: recommended (app default) | iep | facilitator | benchmark. autoBegin:true also presses Next and the step-3 launch button (unverified screen) — a REAL logged session.",
     "learnerPseudonym": "Luis",
     "learners": { "Luis": "" },
     "lessonSource": "recommended",

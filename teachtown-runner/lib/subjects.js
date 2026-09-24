@@ -11,27 +11,35 @@
  *   planSubjectSelection(boxes, key)  pure: which boxes to click, and why
  *   selectOnlySubject(root, key, …)   Playwright: read → plan → click → verify
  *
- * Only the four subject boxes are ever touched. Anything else with a
- * checkbox on that screen (the lesson checklist, "select all" rows) is left
- * exactly as found — `match` is anchored against the WHOLE label, so a lesson
- * called "Math: Add within 20" never counts as the Math subject box.
+ * Only subject boxes are ever touched. Anything else with a checkbox on
+ * that screen (the lesson checklist, "select all" rows) is left exactly as
+ * found — `match` is anchored against the WHOLE label, so a lesson called
+ * "Math: Add within 20" never counts as the Math subject box.
+ *
+ * Social Studies and Social Skills are different functions. Social Studies
+ * is an enCORE school subject, next to ELA, Math, and Science. Social Skills
+ * is the separate TeachTown activity. A box labeled "Social Studies" is never
+ * treated as Social Skills, and the other way around. A bare "social" is
+ * not accepted — it used to collapse both into one button.
  */
 
 // Keys are what the CLI / UI / Windows launchers pass (`--subject KEY`).
-// Order = the order the buttons are laid out (ELA, Math, Social Skills,
-// Science). "Social Skills" also accepts the "Social Studies" spelling the
-// 2026-07 recon captured; a tenant shows one or the other, never both.
+// Order = the buttons: four enCORE school subjects, then Social Skills.
+// `family` decides which missing boxes are worth a warning. Social Skills is
+// not expected on the enCORE row, so its absence is not a warning when the
+// run is ELA / Math / Science / Social Studies.
 const SUBJECTS = {
-  ela: { label: 'ELA', match: /^(ela|english language arts)$/i },
-  math: { label: 'Math', match: /^math(ematics)?$/i },
-  'social-skills': { label: 'Social Skills', match: /^social[ -]?(skills|studies)$/i },
-  science: { label: 'Science', match: /^science$/i },
+  ela: { label: 'ELA', match: /^(ela|english language arts)$/i, family: 'encore' },
+  math: { label: 'Math', match: /^math(ematics)?$/i, family: 'encore' },
+  science: { label: 'Science', match: /^science$/i, family: 'encore' },
+  'social-studies': { label: 'Social Studies', match: /^social[ -]?studies$/i, family: 'encore' },
+  'social-skills': { label: 'Social Skills', match: /^social[ -]?skills$/i, family: 'social-skills' },
 };
 const SUBJECT_KEYS = Object.keys(SUBJECTS);
 
 // Loose user input → canonical key (null when it isn't a subject we know).
-// "ELA", "ela", "Math", "social skills", "social_skills", "SocialSkills",
-// "social", "Social Studies", "science" all resolve.
+// "ELA", "Social Studies", "social_skills", "SocialSkills" resolve.
+// "social", "ss", "studies", and "skills" do not — those words are shared.
 function normalizeSubjectKey(raw) {
   if (typeof raw !== 'string') return null;
   const s = raw.trim().toLowerCase().replace(/[\s_]+/g, '-');
@@ -39,7 +47,8 @@ function normalizeSubjectKey(raw) {
   if (s === 'ela' || s === 'english-language-arts' || s === 'english') return 'ela';
   if (s === 'math' || s === 'mathematics' || s === 'maths') return 'math';
   if (s === 'science' || s === 'sci') return 'science';
-  if (/^social(-?(skills|studies))?$/.test(s) || s === 'socialskills' || s === 'socialstudies' || s === 'ss') return 'social-skills';
+  if (s === 'social-studies' || s === 'socialstudies') return 'social-studies';
+  if (s === 'social-skills' || s === 'socialskills') return 'social-skills';
   return null;
 }
 
@@ -93,12 +102,23 @@ function planSubjectSelection(boxes, wantKey) {
       warnings.push(`${matches.length} checkboxes look like "${SUBJECTS[key].label}" — using the first (position ${target + 1})`);
     }
   }
-  for (const k of SUBJECT_KEYS) {
-    if (k !== key && !byKey[k]) warnings.push(`no "${SUBJECTS[k].label}" checkbox found (nothing to uncheck there)`);
+  // Warn only about the other boxes in the same family. Social Skills is not
+  // an enCORE domain, so a Social Studies screen with no Social Skills box
+  // is normal — and must not be "fixed" by clicking Social Studies.
+  if (SUBJECTS[key].family === 'encore') {
+    for (const k of SUBJECT_KEYS) {
+      if (k !== key && SUBJECTS[k].family === 'encore' && !byKey[k]) {
+        warnings.push(`no "${SUBJECTS[k].label}" checkbox found (nothing to uncheck there)`);
+      }
+    }
   }
 
-  const toggles = [];
   const expected = list.map((b) => !!(b && b.checked));
+  // No target: click nothing. Guessing would check the wrong function
+  // (Social Studies standing in for Social Skills, or the reverse).
+  if (target == null) return { key, target, toggles: [], subjects, warnings, expected };
+
+  const toggles = [];
   Object.keys(subjects).forEach((iStr) => {
     const i = Number(iStr);
     const want = i === target;
@@ -114,7 +134,7 @@ function subjectStateIsCorrect(boxes, wantKey) {
   return plan.target != null && plan.toggles.length === 0;
 }
 
-// One-line state summary for the log: "ELA [ ]  Math [x]  Social Skills [ ]  Science [ ]".
+// One-line state summary for the log: "ELA [ ]  Math [x]  Science [ ]  Social Studies [ ]  Social Skills [ ]".
 function describeSubjectState(boxes) {
   const parts = [];
   for (const b of Array.isArray(boxes) ? boxes : []) {

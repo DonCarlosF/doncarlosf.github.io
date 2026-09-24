@@ -91,19 +91,77 @@ test('switching subjects re-checks the new one and unchecks the previous', async
   try {
     assert.equal((await selectOnlySubject(page, 'ela', { settleMs: 120 })).ok, true);
     assert.equal((await selectOnlySubject(page, 'science', { settleMs: 120 })).ok, true);
-    assert.deepEqual(await mockState(page), { ELA: false, Math: false, Science: true, 'Social Skills': false });
+    assert.deepEqual(await mockState(page), {
+      ELA: false, Math: false, Science: true, 'Social Studies': false, 'Social Skills': false,
+    });
   } finally {
     await page.close();
   }
 });
 
-test('the "Social Studies" spelling still resolves the Social Skills button', async (t) => {
+test('Social Studies checks Social Studies and unchecks Social Skills', async (t) => {
   if (!browser) return t.skip(launchError.message);
-  const page = await openStep2('label=studies');
+  const page = await openStep2('');
   try {
+    const result = await selectOnlySubject(page, 'social-studies', { settleMs: 120 });
+    assert.equal(result.ok, true);
+    assert.deepEqual(await mockState(page), {
+      ELA: false, Math: false, Science: false, 'Social Studies': true, 'Social Skills': false,
+    });
+  } finally {
+    await page.close();
+  }
+});
+
+test('Social Skills does not check a Social Studies box', async (t) => {
+  if (!browser) return t.skip(launchError.message);
+  const page = await openStep2('domains=encore');
+  try {
+    const lines = [];
+    const result = await selectOnlySubject(page, 'social-skills', { log: (m) => lines.push(m), settleMs: 120 });
+    assert.equal(result.ok, false);
+    assert.equal(result.plan.target, null);
+    assert.equal(result.attempts, 0);
+    assert.match(lines.join('\n'), /no "Social Skills" checkbox/);
+    assert.deepEqual(await mockState(page), {
+      ELA: true, Math: true, Science: true, 'Social Studies': true,
+    }, 'Social Studies was not clicked');
+  } finally {
+    await page.close();
+  }
+});
+
+test('the enCORE Social Studies screen leaves only Social Studies checked', async (t) => {
+  if (!browser) return t.skip(launchError.message);
+  const page = await openStep2('domains=encore');
+  try {
+    const result = await selectOnlySubject(page, 'social-studies', { settleMs: 120 });
+    assert.equal(result.ok, true);
+    assert.deepEqual(await mockState(page), {
+      ELA: false, Math: false, Science: false, 'Social Studies': true,
+    });
+  } finally {
+    await page.close();
+  }
+});
+
+test('a Social Skills box is not accepted as Social Studies', async (t) => {
+  if (!browser) return t.skip(launchError.message);
+  const page = await openStep2('domains=skills');
+  try {
+    const lines = [];
+    const missed = await selectOnlySubject(page, 'social-studies', { log: (m) => lines.push(m), settleMs: 120 });
+    assert.equal(missed.ok, false);
+    assert.equal(missed.attempts, 0);
+    assert.match(lines.join('\n'), /no "Social Studies" checkbox/);
+    assert.deepEqual(await mockState(page), {
+      ELA: true, Math: true, Science: true, 'Social Skills': true,
+    }, 'untouched');
     const result = await selectOnlySubject(page, 'social-skills', { settleMs: 120 });
     assert.equal(result.ok, true);
-    assert.deepEqual(await mockState(page), { ELA: false, Math: false, Science: false, 'Social Studies': true });
+    assert.deepEqual(await mockState(page), {
+      ELA: false, Math: false, Science: false, 'Social Skills': true,
+    });
   } finally {
     await page.close();
   }
@@ -119,7 +177,9 @@ test('a missing target box reports ok:false and clicks nothing', async (t) => {
     assert.equal(result.plan.target, null);
     assert.equal(result.attempts, 0);
     assert.match(lines.join('\n'), /no "Science" checkbox found/);
-    assert.deepEqual(await mockState(page), { ELA: true, Math: true, 'Social Skills': true }, 'untouched');
+    assert.deepEqual(await mockState(page), {
+      ELA: true, Math: true, 'Social Studies': true, 'Social Skills': true,
+    }, 'untouched');
   } finally {
     await page.close();
   }
