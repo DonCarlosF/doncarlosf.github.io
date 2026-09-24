@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   description: "Upcoming gatherings, services, and events at Kingdom Builders Christian Fellowship.",
 };
 
+export const revalidate = 3600;
+
 export default async function EventsPage() {
   const upcoming = await getUpcomingEventsAll();
 
@@ -22,9 +24,9 @@ export default async function EventsPage() {
       />
       <Section>
         {upcoming.length === 0 ? (
-          <EmptyState title="No upcoming events right now" body="Check back soon, or add events in the CMS / Planning Center." />
+          <EmptyState title="No upcoming events right now" body="Check back soon, or add events in the CMS." />
         ) : (
-          <EventsView events={upcoming} />
+          <EventsView events={upcoming} todayIso={new Date().toISOString()} />
         )}
       </Section>
     </>

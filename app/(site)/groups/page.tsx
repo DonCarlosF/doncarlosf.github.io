@@ -26,7 +26,7 @@ export default async function GroupsPage() {
 
       <Section>
         {groups.length === 0 ? (
-          <EmptyState title="Groups are coming soon" body="Add groups in the CMS or connect Planning Center Groups." />
+          <EmptyState title="Groups are coming soon" body="Groups will show up here once they're added in the CMS." />
         ) : (
           <GroupsExplorer groups={groups} />
         )}

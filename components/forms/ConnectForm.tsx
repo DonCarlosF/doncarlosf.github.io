@@ -11,9 +11,10 @@ const field =
  * the submission and (when configured) notifies staff. It never auto-emails the
  * visitor — outbound visitor copy needs explicit approval first.
  */
-export function ConnectForm() {
+export function ConnectForm({ intent = "visit" }: { intent?: "visit" | "message" }) {
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [message, setMessage] = useState("");
+  const isMessage = intent === "message";
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -25,7 +26,7 @@ export function ConnectForm() {
       const res = await fetch("/api/connect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, intent }),
       });
       const json = await res.json();
       setStatus(res.ok ? "done" : "error");
@@ -40,7 +41,7 @@ export function ConnectForm() {
   if (status === "done") {
     return (
       <div className="rounded-card border border-border bg-surface p-6 text-center">
-        <p className="font-display text-xl font-semibold">See you soon! 🎉</p>
+        <p className="font-display text-xl font-semibold">{isMessage ? "Message received" : "See you soon!"}</p>
         <p className="mt-2 text-muted">{message}</p>
       </div>
     );
@@ -61,14 +62,18 @@ export function ConnectForm() {
           <label htmlFor="cf-phone" className="mb-1 block text-sm font-medium">Phone <span className="text-muted">(optional)</span></label>
           <input id="cf-phone" name="phone" type="tel" autoComplete="tel" className={field} />
         </div>
-        <div>
-          <label htmlFor="cf-date" className="mb-1 block text-sm font-medium">When are you planning to visit?</label>
-          <input id="cf-date" name="visitDate" type="date" className={field} />
-        </div>
+        {!isMessage && (
+          <div>
+            <label htmlFor="cf-date" className="mb-1 block text-sm font-medium">When are you planning to visit?</label>
+            <input id="cf-date" name="visitDate" type="date" className={field} />
+          </div>
+        )}
       </div>
       <div>
-        <label htmlFor="cf-msg" className="mb-1 block text-sm font-medium">Anything we should know? <span className="text-muted">(optional)</span></label>
-        <textarea id="cf-msg" name="message" rows={3} className={field} />
+        <label htmlFor="cf-msg" className="mb-1 block text-sm font-medium">
+          {isMessage ? "Message" : "Anything we should know?"} {isMessage ? <span className="text-cta">*</span> : <span className="text-muted">(optional)</span>}
+        </label>
+        <textarea id="cf-msg" name="message" rows={3} required={isMessage} className={field} />
       </div>
       {/* honeypot */}
       <input type="text" name="company" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
@@ -76,9 +81,9 @@ export function ConnectForm() {
       {status === "error" && <p role="alert" className="text-sm text-cta">{message}</p>}
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={status === "loading"}>
-          {status === "loading" ? "Sending…" : "Let us know you're coming"}
+          {status === "loading" ? "Sending…" : isMessage ? "Send message" : "Let us know you're coming"}
         </Button>
-        <p className="text-xs text-muted">We&apos;ll have someone ready to greet you.</p>
+        <p className="text-xs text-muted">{isMessage ? "A staff member will follow up." : "We'll have someone ready to greet you."}</p>
       </div>
     </form>
   );

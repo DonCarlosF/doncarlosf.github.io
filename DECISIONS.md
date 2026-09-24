@@ -77,6 +77,20 @@
 - **GA4 alternative:** swap the Script tag for gtag.js keyed on `NEXT_PUBLIC_GA_ID`;
   GA4 would likely need a consent banner — Plausible avoids that entirely.
 
+## Upcoming events roll forward (2026-09-24)
+
+- A recurrence string means "this gathering repeats weekly." The upcoming list
+  and homepage banner use the next America/Los_Angeles occurrence, not the
+  original anchor date. One-off events leave the list 12 hours after `start`.
+  The old fallback that dumped every past event onto the page when nothing was
+  upcoming is gone — an empty calendar stays empty.
+- Seed anchors for Saturday Morning Prayer and Wednesday Bible Study were stored
+  an hour (and, for Wednesday, several hours) off the times already printed in
+  `serviceTimes` and the recurrence labels. Those instants now match 9:00 AM and
+  7:00 PM Pacific. No new service was added.
+- The calendar paints a weekly event on every matching church-local weekday
+  after the series starts, and opens on the current month.
+
 ## Dead code removed (Task 8)
 `page` schema + type, `upcomingEventsQuery`/`eventBySlugQuery`, the `heroVideoUrl`
 chain (type/schema/query/seed), `lib/integrations/planningcenter.ts` (+ its

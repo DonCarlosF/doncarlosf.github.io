@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { ConnectForm } from "@/components/forms/ConnectForm";
 import { MapEmbed } from "@/components/map/MapEmbed";
 import { getSiteSettings } from "@/lib/content";
-import { serviceLabelTime } from "@/lib/utils/format";
+import { serviceLabelTime, telHref } from "@/lib/utils/format";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -38,7 +38,13 @@ export default async function ContactPage() {
               </li>
               <li className="flex items-start gap-3">
                 <Phone className="mt-0.5 shrink-0 text-primary" size={18} aria-hidden />
-                <span>{settings.phone || "Phone — add in CMS"}</span>
+                <span>
+                  {settings.phone ? (
+                    <a href={telHref(settings.phone)} className="font-semibold text-primary underline underline-offset-2">{settings.phone}</a>
+                  ) : (
+                    "Phone — add in CMS"
+                  )}
+                </span>
               </li>
               <li className="flex items-start gap-3">
                 <Mail className="mt-0.5 shrink-0 text-primary" size={18} aria-hidden />
@@ -84,7 +90,7 @@ export default async function ContactPage() {
             <SectionHeading title="Send us a message" />
             <p className="mt-3 text-sm text-muted">We&apos;ll get back to you as soon as we can.</p>
             <div className="mt-6">
-              <ConnectForm />
+              <ConnectForm intent="message" />
             </div>
           </div>
         </div>

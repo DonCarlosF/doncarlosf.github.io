@@ -36,6 +36,9 @@ export default async function NewHerePage() {
 
       <Section>
         <SectionHeading eyebrow="What to expect" title="Your first visit, no surprises." />
+        <p className="mt-4 max-w-3xl rounded-card border border-dashed border-border bg-surface-2 px-4 py-3 text-sm text-muted">
+          Draft — awaiting pastoral approval. Service length, what to wear, and parking below are unconfirmed and are not church policy until the pastoral team signs off.
+        </p>
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {EXPECT.map((e) => (
             <Card key={e.title} className="h-full">

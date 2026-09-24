@@ -7,7 +7,10 @@ import { Button } from "@/components/ui/Button";
 import { SmartImage } from "@/components/ui/Media";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getEvent, getEvents } from "@/lib/content";
-import { formatEventDate } from "@/lib/utils/format";
+import { formatUpcomingWhen } from "@/lib/utils/format";
+import { nextOccurrenceIso, weeklyScheduleLd } from "@/lib/utils/recurrence";
+
+export const revalidate = 3600;
 
 export async function generateStaticParams() {
   const events = await getEvents();
@@ -26,6 +29,9 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   const event = await getEvent(slug);
   if (!event) notFound();
 
+  const nextStart = nextOccurrenceIso(event);
+  const when = formatUpcomingWhen({ ...event, nextStart });
+
   return (
     <Section>
       <Link href="/events" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:gap-2">
@@ -43,7 +49,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
           <ul className="mt-6 space-y-3 text-sm">
             <li className="flex items-center gap-3">
               {event.recurrence ? <Repeat size={18} className="text-primary" aria-hidden /> : <CalendarDays size={18} className="text-primary" aria-hidden />}
-              <span>{event.recurrence || formatEventDate(event.start, event.allDay)}</span>
+              <span>{when}</span>
             </li>
             {event.location && (
               <li className="flex items-center gap-3">
@@ -64,8 +70,9 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
           "@context": "https://schema.org",
           "@type": "Event",
           name: event.title,
-          startDate: event.start,
-          ...(event.end ? { endDate: event.end } : {}),
+          startDate: event.recurrence ? nextStart : event.start,
+          ...(event.end && !event.recurrence ? { endDate: event.end } : {}),
+          ...(event.recurrence ? { eventSchedule: weeklyScheduleLd(event.start) } : {}),
           eventStatus: "https://schema.org/EventScheduled",
           eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
           ...(event.description ? { description: event.description } : {}),

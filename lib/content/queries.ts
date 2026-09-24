@@ -47,7 +47,8 @@ const eventProj = `{
 export const eventsQuery = `*[_type == "event"] | order(start asc) ${eventProj}`;
 
 export const groupsQuery = `*[_type == "group"]{
-  "_id": _id, name, "slug": slug.current, type, schedule, location, description, joinUrl, "image": image${imgProj}
+  "_id": _id, name, "slug": slug.current, type, schedule, location, description,
+  leaderName, semester, joinUrl, "image": image${imgProj}
 }`;
 
 export const leadersQuery = `*[_type == "leader"] | order(order asc){

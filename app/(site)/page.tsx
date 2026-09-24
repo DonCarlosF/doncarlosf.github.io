@@ -12,6 +12,8 @@ import { Testimonials } from "@/components/blocks/Testimonials";
 import { getSiteSettings, getHomePage, getLatestSermon, getUpcomingEvents, getTestimonials, dreamCenter } from "@/lib/content";
 import { localOr } from "@/lib/content/local-images";
 
+export const revalidate = 3600;
+
 export default async function HomePage() {
   const [settings, home, sermon, events, testimonials] = await Promise.all([
     getSiteSettings(),

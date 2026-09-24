@@ -6,22 +6,22 @@ import { Section } from "@/components/ui/Section";
 import { SermonCard } from "@/components/watch/SermonCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { search } from "@/lib/content";
-import { formatDate } from "@/lib/utils/format";
+import { formatDate, formatEventDate } from "@/lib/utils/format";
 
 export const metadata: Metadata = {
   title: "Search",
-  description: "Search sermons and articles from Kingdom Builders Christian Fellowship.",
+  description: "Search sermons, articles, events, and groups from Kingdom Builders Christian Fellowship.",
 };
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q = "" } = await searchParams;
   const term = q.trim();
-  const results = term ? await search(term) : { sermons: [], posts: [] };
-  const total = results.sermons.length + results.posts.length;
+  const results = term ? await search(term) : { sermons: [], posts: [], events: [], groups: [] };
+  const total = results.sermons.length + results.posts.length + results.events.length + results.groups.length;
 
   return (
     <>
-      <PageHeader eyebrow="Search" title="Find a message or article" intro="Search across sermons and the blog by topic, speaker, or scripture." />
+      <PageHeader eyebrow="Search" title="Find a message, event, or group" intro="Search sermons, articles, events, and groups by topic, speaker, or scripture." />
       <Section>
         <form action="/search" method="get" role="search" className="flex max-w-xl gap-2">
           <label htmlFor="q" className="sr-only">Search</label>
@@ -52,6 +52,39 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
               {results.sermons.map((s) => <SermonCard key={s._id} sermon={s} />)}
             </div>
+          </div>
+        )}
+
+        {results.events.length > 0 && (
+          <div className="mt-12">
+            <h2 className="mb-6 font-display text-xl font-semibold">Events</h2>
+            <ul className="divide-y divide-border border-y border-border">
+              {results.events.map((event) => (
+                <li key={event._id} className="py-4">
+                  <Link href={`/events/${event.slug}`} className="font-display text-lg font-semibold hover:text-primary">{event.title}</Link>
+                  <p className="text-sm text-muted">
+                    {event.recurrence || formatEventDate(event.start, event.allDay)}
+                    {event.location ? ` · ${event.location}` : ""}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {results.groups.length > 0 && (
+          <div className="mt-12">
+            <h2 className="mb-6 font-display text-xl font-semibold">Groups</h2>
+            <ul className="divide-y divide-border border-y border-border">
+              {results.groups.map((group) => (
+                <li key={group._id} className="py-4">
+                  <Link href="/groups" className="font-display text-lg font-semibold hover:text-primary">{group.name}</Link>
+                  <p className="text-sm text-muted">
+                    {[group.type, group.schedule, group.location].filter(Boolean).join(" · ")}
+                  </p>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 

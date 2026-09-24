@@ -10,6 +10,7 @@ import { sanityClient } from "./client";
 import * as seed from "./seed";
 import * as q from "./queries";
 import { localOr } from "./local-images";
+import { isUpcoming, nextOccurrenceIso } from "@/lib/utils/recurrence";
 import type {
   SiteSettings, Sermon, ChurchEvent, Group, Leader, BlogPost, Testimonial, Clip, Series,
   HomeContent, AboutContent, OutreachProgram,
@@ -80,14 +81,18 @@ export async function getEvents(): Promise<ChurchEvent[]> {
   return nonEmpty(cms) ? cms : seed.events;
 }
 
-/** Upcoming events (sorted soonest-first), including ones happening today. */
-export async function getUpcomingEventsAll(): Promise<ChurchEvent[]> {
-  const cutoff = Date.now() - 1000 * 60 * 60 * 12;
+/**
+ * Upcoming events, soonest first.
+ * Weekly gatherings (a recurrence string) roll forward in America/Los_Angeles.
+ * One-off events drop off 12 hours after they start. Past events are not
+ * shown as upcoming just because nothing else is on the calendar.
+ */
+export async function getUpcomingEventsAll(now = new Date()): Promise<ChurchEvent[]> {
   const all = await getEvents();
-  const future = all
-    .filter((e) => new Date(e.start).getTime() >= cutoff)
-    .sort((a, b) => a.start.localeCompare(b.start));
-  return future.length ? future : [...all].sort((a, b) => a.start.localeCompare(b.start));
+  return all
+    .filter((e) => isUpcoming(e, now))
+    .map((e) => ({ ...e, nextStart: nextOccurrenceIso(e, now) }))
+    .sort((a, b) => (a.nextStart ?? a.start).localeCompare(b.nextStart ?? b.start));
 }
 
 export async function getUpcomingEvents(limit = 4): Promise<ChurchEvent[]> {
@@ -165,17 +170,20 @@ export async function getOutreachPrograms(): Promise<OutreachProgram[]> {
   return nonEmpty(data) ? data : seed.outreachPrograms;
 }
 
-/** Lightweight search across sermons + blog (title/description/excerpt). */
+/** Lightweight search across sermons, blog, events, and groups. */
 export async function search(term: string) {
   const t = term.trim().toLowerCase();
-  if (!t) return { sermons: [], posts: [] };
-  const [sermons, posts] = await Promise.all([getSermons(), getBlogPosts()]);
-  const matchS = sermons.filter((s) =>
-    [s.title, s.description, s.series?.title, s.speaker?.name, ...(s.scriptureRefs ?? [])]
-      .filter(Boolean).join(" ").toLowerCase().includes(t)
-  );
-  const matchP = posts.filter((p) =>
-    [p.title, p.excerpt, p.category, p.author?.name].filter(Boolean).join(" ").toLowerCase().includes(t)
-  );
-  return { sermons: matchS, posts: matchP };
+  if (!t) return { sermons: [], posts: [], events: [], groups: [] };
+  const [sermons, posts, events, groups] = await Promise.all([
+    getSermons(), getBlogPosts(), getEvents(), getGroups(),
+  ]);
+  const hay = (parts: Array<string | undefined>) => parts.filter(Boolean).join(" ").toLowerCase().includes(t);
+  return {
+    sermons: sermons.filter((s) =>
+      hay([s.title, s.description, s.series?.title, s.speaker?.name, ...(s.scriptureRefs ?? [])])
+    ),
+    posts: posts.filter((p) => hay([p.title, p.excerpt, p.category, p.author?.name])),
+    events: events.filter((e) => hay([e.title, e.description, e.location, e.recurrence])),
+    groups: groups.filter((g) => hay([g.name, g.description, g.type, g.location, g.schedule, g.leaderName, g.semester])),
+  };
 }

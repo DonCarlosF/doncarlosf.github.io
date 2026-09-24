@@ -107,6 +107,8 @@ export type ChurchEvent = {
   image?: Img;
   source?: "cms" | "planningcenter";
   sample?: boolean;
+  /** Next occurrence, computed at render for recurring events. Not stored in the CMS. */
+  nextStart?: string;
 };
 
 export type Group = {
@@ -117,6 +119,8 @@ export type Group = {
   schedule?: string;
   location?: string;
   description?: string;
+  leaderName?: string;
+  semester?: string;
   joinUrl?: string;
   image?: Img;
   sample?: boolean;

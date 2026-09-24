@@ -7,6 +7,7 @@ const schema = z.object({
   phone: z.string().max(40).optional().or(z.literal("")),
   visitDate: z.string().max(40).optional().or(z.literal("")),
   message: z.string().max(2000).optional().or(z.literal("")),
+  intent: z.enum(["visit", "message"]).optional(),
   company: z.string().optional(), // honeypot
 });
 
@@ -29,6 +30,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, message: "Please check the form and try again." }, { status: 422 });
   }
   const data = parsed.data;
+  if (data.intent === "message" && !data.message?.trim()) {
+    return NextResponse.json({ ok: false, message: "Please add a message and try again." }, { status: 422 });
+  }
 
   // Honeypot tripped → pretend success, do nothing.
   if (data.company) return NextResponse.json({ ok: true, message: "Thanks!" });
@@ -44,8 +48,9 @@ export async function POST(req: Request) {
         body: JSON.stringify({
           from: process.env.STAFF_FROM_EMAIL || "KBCF Website <onboarding@resend.dev>",
           to: [staffEmail],
-          subject: `New visitor connect: ${data.name}`,
+          subject: data.intent === "message" ? `Website message: ${data.name}` : `New visitor connect: ${data.name}`,
           text: [
+            data.intent === "message" ? "Sent from the contact page." : "Sent from the plan-your-visit form.",
             `Name: ${data.name}`,
             `Email: ${data.email}`,
             data.phone ? `Phone: ${data.phone}` : "",
@@ -66,6 +71,8 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     ok: true,
-    message: "We've got it — our team will be ready to welcome you. See you soon!",
+    message: data.intent === "message"
+      ? "We've received your message and will get back to you."
+      : "We've got it — our team will be ready to welcome you. See you soon!",
   });
 }

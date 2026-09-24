@@ -3,7 +3,7 @@ import { CalendarDays, ArrowRight } from "lucide-react";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
-import { formatEventDate } from "@/lib/utils/format";
+import { formatUpcomingWhen } from "@/lib/utils/format";
 import type { ChurchEvent } from "@/lib/content/types";
 
 export function UpcomingEvents({ events }: { events: ChurchEvent[] }) {
@@ -26,7 +26,8 @@ export function UpcomingEvents({ events }: { events: ChurchEvent[] }) {
                 <span className="min-w-0 flex-1">
                   <span className="block font-display text-lg font-semibold">{e.title}</span>
                   <span className="block text-sm text-muted">
-                    {e.recurrence || formatEventDate(e.start, e.allDay)}{e.location ? ` · ${e.location}` : ""}
+                    {formatUpcomingWhen(e)}
+                    {e.location ? ` · ${e.location}` : ""}
                   </span>
                 </span>
                 <ArrowRight size={18} className="text-muted" aria-hidden />
