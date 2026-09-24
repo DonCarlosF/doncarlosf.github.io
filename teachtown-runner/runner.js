@@ -36,10 +36,12 @@
  *                                   enCORE Student-Led for ONE learner (the
  *                                   studentLed.learnerPseudonym entry — "Luis"
  *                                   — whose display name lives only in local
- *                                   config.json): pick the learner, Next, then
- *                                   leave ONLY that subject checked on "Select
- *                                   Session Mode" and stop at READY. You press
- *                                   Next / launch on screen. With --dry-run it
+ *                                   config.json): pick the learner (the click
+ *                                   opens step 2 on SLZUSD; other tenants
+ *                                   still need Next), then leave ONLY that
+ *                                   subject checked and stop at READY. You
+ *                                   press Next / launch on screen. With
+ *                                   --dry-run it
  *                                   verifies the checkboxes, prints them, and
  *                                   backs out without starting anything.
  *                                   studentLed.autoBegin:true also presses Next
@@ -74,6 +76,7 @@ const path = require('path');
 const readline = require('readline');
 const { chromium } = require('playwright');
 const subjects = require('./lib/subjects');
+const { advanceStudentLedToStep2 } = require('./lib/student-led');
 
 const PROJECT_DIR = __dirname;
 const CONFIG_PATH = path.join(PROJECT_DIR, 'config.json');
@@ -2450,15 +2453,21 @@ async function runTeacherLed(tt, config, dryRun, logger) {
 
 /* ---------------------------- student-led ---------------------------- */
 
-// Student-Led wizard (recon 2026-07-17): 1) Select Student (single, Next) →
-// 2) Select Session Mode — lesson-source radios + subject checkboxes + lesson
-// checklist → 3) Prepare Session (never entered by recon; assumed
-// confirm-and-launch).
+// Student-Led wizard: 1) Select Student → 2) lesson picker (subject
+// checkboxes + lesson-source radios + lesson checklist) → 3) Prepare
+// Session (never entered by the July 2026 recon; assumed confirm-and-launch).
+//
+// Step 1 → 2 is tenant-shaped. July recon clicked an explicit Next. On
+// SLZUSD (2026-09) the learner click itself opens "Select lessons for …'s
+// Student-Led Session" and step 1 has no Next. The stepper header still
+// says "Select Session Mode" on every step, so that title is not a step
+// detector — lib/student-led.js waits for the lesson-picker copy, and only
+// clicks Next when that copy does not show up.
 //
 // This automates what Carlos does by hand after Start Session: pick the one
 // learner, then uncheck every subject except the one being taught. It stops
-// on step 2 with the boxes verified (READY) — the human presses Next and
-// launches. studentLed.autoBegin:true additionally presses Next and the
+// on step 2 with the boxes verified (READY) — the human presses the forward control
+// and launches. studentLed.autoBegin:true additionally presses Next and the
 // step-3 launch button, best effort on an unverified screen. Between-question
 // navigation only: nothing here ever touches a lesson.
 async function studentLedSetup(tt, sl, dryRun, logger) {
@@ -2486,13 +2495,17 @@ async function studentLedSetup(tt, sl, dryRun, logger) {
   await row.click({ timeout: 5_000 });
   logger.event(`Selected learner "${who}"`);
 
-  const next = frame.getByRole('button', { name: /^next$/i }).or(frame.getByText(/^\s*Next\s*$/)).first();
-  await next.waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
-  if (!(await waitForEnabled(next, 10_000))) {
-    logger.event('WARN Next still looks disabled after selecting the learner — trying anyway');
-  }
-  await next.click({ timeout: 10_000 });
-  await frame.getByText(/select session mode/i).first().waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+  // Step 1 → 2. The stepper header shows "Select Session Mode" on EVERY step,
+  // so step 2 is recognized by its own content (the "Select lessons for …"
+  // title / lesson-source radios), never by the stepper label. Live SLZUSD
+  // (2026-09-23) opens step 2 on the learner click itself — there is no Next
+  // on step 1; the July recon saw one. Check for step 2 first so a forward
+  // button on step 2 is never mistaken for step 1's Next.
+  await advanceStudentLedToStep2(frame, {
+    log: (m) => logger.event(m),
+    nextTimeout: NAV_TIMEOUT,
+    step2Timeout: NAV_TIMEOUT,
+  });
   await dismissOnboarding(tt, logger);
   if (state.reconMode) await reconShot(tt, 'student-led-step2-before');
 
@@ -2546,7 +2559,10 @@ async function studentLedSetup(tt, sl, dryRun, logger) {
   }
 
   // autoBegin — step 3 was never entered by recon; every selector below is a
-  // guess that fails soft into READY.
+  // guess that fails soft into READY. The step-2 forward control was
+  // "Next" in the July recon; a tenant that labels it differently needs its
+  // own pass.
+  const next = frame.getByRole('button', { name: /^next$/i }).or(frame.getByText(/^\s*Next\s*$/)).first();
   await next.click({ timeout: 10_000 });
   if (await visibleSoon(frame.getByText(/prepare session/i).first(), 15_000)) {
     await dismissOnboarding(tt, logger);
@@ -2803,8 +2819,11 @@ async function reconGoals(tt, config, logger) {
     return;
   }
   await row.click({ timeout: 5_000 });
-  await frame.getByRole('button', { name: /^next$/i }).or(frame.getByText(/^Next$/)).first().click({ timeout: 10_000 });
-  await frame.getByText(/select session mode/i).first().waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
+  await advanceStudentLedToStep2(frame, {
+    log: (m) => logger.event(m),
+    nextTimeout: NAV_TIMEOUT,
+    step2Timeout: NAV_TIMEOUT,
+  });
   await reconShot(tt, 'student-led-step2');
 
   // Step 2: is "IEP Goals" present/selectable, and what does it list?

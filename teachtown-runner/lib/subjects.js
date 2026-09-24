@@ -1,6 +1,8 @@
 'use strict';
 /*
- * enCORE Student-Led, step 2 ("Select Session Mode"): the subject checkboxes.
+ * enCORE Student-Led, step 2 (the lesson picker — subject checkboxes).
+ * The stepper can still say "Select Session Mode" on every step; that title
+ * is not how the runner detects this screen (see lib/student-led.js).
  *
  * The runner's job on that screen is exactly what a human does today by hand
  * after Start Session — uncheck every subject except the one being taught.

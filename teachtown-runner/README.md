@@ -39,8 +39,13 @@ Settings → *Student-Led learner*) and never leaves the machine.
 What a button does, in order:
 
 1. enCORE → Start a Session → Student-Led → *Get started*.
-2. Step 1 *Select Student*: clicks Luis's row, then Next.
-3. Step 2 *Select Session Mode*: reads every subject checkbox, unchecks the
+2. Step 1 *Select Student*: clicks Luis's row. On SLZUSD that click opens
+   step 2 by itself (there is no Next). On a tenant that still shows Next,
+   the runner clicks it. Arrival is the lesson picker ("Select lessons
+   for…", "domain selections below", or "Recommended Lessons") — the
+   stepper title "Select Session Mode" stays on every step, so it is not
+   the signal.
+3. Step 2: reads every subject checkbox, unchecks the
    three that aren't the button's subject (checks the button's subject if
    the app had it off), re-reads to **verify**, and logs
    `SUBJECTS after: ELA [ ]  Math [x]  Science [ ]  Social Skills [ ]`.
@@ -64,8 +69,10 @@ starts a REAL logged session).
   the first time on the live tenant — checklist in
   `docs/student-led-dry-run-checklist.md`.
 - **Tests**: `npm test` — the checkbox planner (which boxes to click for
-  each subject, lesson rows never touched, missing/duplicate boxes) and a
-  headless-browser run against a mock of the step-2 screen
+  each subject, lesson rows never touched, missing/duplicate boxes), the
+  step 1→2 advance (SLZUSD auto-advance and an explicit Next, against
+  `test/fixtures/student-led-step1.html` inside a mock enCORE iframe), and
+  a headless-browser run against a mock of the step-2 screen
   (`test/fixtures/student-led-step2.html`, native and `role=checkbox`
   variants). The browser tests skip with a notice if
   `npx playwright install chromium` was never run.
