@@ -8,8 +8,9 @@ in the header of `runner.js`.
 
 `npm run ui` starts a local page with big buttons — Run Playlist, Custom
 Run, Teacher-Led (Set up only vs the visually distinct START LIVE SESSION),
-the four Student-Led subject buttons for Luis (ELA / Math / Social Skills /
-Science), Sign In, Refresh Roster, a Dry Run toggle, a Settings screen that edits
+the Student-Led buttons for Luis (ELA, Math, Science, Social Studies,
+and Social Skills — Social Studies and Social Skills are different),
+Sign In, Refresh Roster, a Dry Run toggle, a Settings screen that edits
 config.json with validation + a .bak, and a Run view with the live log and
 a STOP button that does the same clean shutdown as Ctrl+C.
 
@@ -25,16 +26,28 @@ a STOP button that does the same clean shutdown as Ctrl+C.
   never asks for or stores a password — sign-in stays in the real browser
   window — and everything it does, the CLI flags still do too.
 
-## Student-Led subject buttons (one learner: "Luis")
+## Lessons for one learner ("Luis")
 
-enCORE Student-Led sessions used to mean Start Session, pick the student,
-then hand-uncheck Math / ELA / Science / Social Skills down to the one
-being taught. Now that is one button per subject — **ELA, Math, Social
-Skills, Science** — each for a single learner. The learner is called
-**Luis** everywhere this repo can see (code, flags, buttons, logs); the
-display name Luis stands for is typed once into the gitignored
-`config.json` (`npm run init-config` asks for it, or `npm run ui` →
-Settings → *Student-Led learner*) and never leaves the machine.
+There are five ways to start a lesson for Luis. Four of them are school
+subjects in enCORE Student-Led. The fifth is a different activity.
+
+| Button | What it is | Command |
+| --- | --- | --- |
+| ELA | School subject | `--subject ela` |
+| Math | School subject | `--subject math` |
+| Science | School subject | `--subject science` |
+| Social Studies | School subject (history and the world) | `--subject social-studies` |
+| Social Skills | A different TeachTown activity. Not Social Studies. | `--subject social-skills` |
+
+Social Studies and Social Skills are not two names for the same button. A
+box labeled Social Studies is never treated as Social Skills. If the lesson
+screen has no box that says Social Skills, the Social Skills button stops
+and clicks nothing.
+
+The learner is called **Luis** everywhere this repo can see (code, flags,
+buttons, logs). The display name Luis stands for is typed once into the
+gitignored `config.json` (`npm run init-config` asks for it, or `npm run ui`
+→ Settings → *Student-Led learner*) and never leaves the machine.
 
 What a button does, in order:
 
@@ -45,10 +58,12 @@ What a button does, in order:
    for…", "domain selections below", or "Recommended Lessons") — the
    stepper title "Select Session Mode" stays on every step, so it is not
    the signal.
-3. Step 2: reads every subject checkbox, unchecks the
-   three that aren't the button's subject (checks the button's subject if
-   the app had it off), re-reads to **verify**, and logs
-   `SUBJECTS after: ELA [ ]  Math [x]  Science [ ]  Social Skills [ ]`.
+3. Step 2: reads every subject checkbox, unchecks the ones that aren't
+   the button's subject (checks that subject if the app had it off),
+   re-reads to **verify**, and logs a line like
+   `SUBJECTS after: ELA [ ]  Math [x]  Science [ ]  Social Studies [ ]`.
+   Social Skills, when that box is on the screen, is listed on its own
+   and is not the same as Social Studies.
 4. Stops at `READY — Math for "Luis"`. **You** press Next and launch. If
    verification fails it says `SUBJECT CHECK FAILED`, presses nothing
    further, and leaves the screen for you to fix by hand.
@@ -59,10 +74,13 @@ never clicked. `studentLed.autoBegin: true` additionally presses Next and
 the step-3 launch button (that screen is unverified — best effort, and it
 starts a REAL logged session).
 
-- **UI**: `npm run ui` → the four buttons under *enCORE — Student-Led for
-  Luis*. They stay disabled until the learner's display name is saved.
-- **CLI**: `npm start -- --student-led --subject ela|math|social-skills|science`
-  (`--subject=Math`, `"Social Skills"`, `social_skills` all work).
+- **UI**: `npm run ui` → *School subjects for Luis* (ELA, Math, Science,
+  Social Studies) and, under that, *Social Skills for Luis*. The buttons
+  stay off until the learner's display name is saved. The two social
+  buttons use different colors so they are easy to tell apart.
+- **CLI**: `npm start -- --student-led --subject ela|math|science|social-studies|social-skills`
+  (`--subject=Math`, `"Social Studies"`, `social_skills` all work.
+  `"Social Studies"` does not start Social Skills.)
 - **Dry run** (`--dry-run`, or the Dry Run toggle): walks to step 2, sets and
   verifies the boxes, prints them, backs out to the home screen and exits
   `SESSION COMPLETE`. No session is started even with `autoBegin`. Use it
@@ -80,8 +98,8 @@ starts a REAL logged session).
 ### Windows desktop shortcuts
 
 `windows/` ships one double-clickable launcher per subject —
-`Luis-ELA.cmd`, `Luis-Math.cmd`, `Luis-Social-Skills.cmd`,
-`Luis-Science.cmd` — each of which runs
+`Luis-ELA.cmd`, `Luis-Math.cmd`, `Luis-Science.cmd`,
+`Luis-Social-Studies.cmd`, and `Luis-Social-Skills.cmd`. Each runs
 `node runner.js --student-led --subject <key>` from the project folder in
 its own console window (Ctrl+C or closing the window ends the run the
 usual clean way). They check for Node, `node_modules`, and `config.json`
@@ -94,7 +112,8 @@ in *Setup on a new machine*):
 1. Double-click `windows\Install Desktop Shortcuts.cmd`. It runs
    `install-shortcuts.ps1` for that one process (`-ExecutionPolicy Bypass`,
    no machine-wide policy change) and puts **Luis - ELA**, **Luis - Math**,
-   **Luis - Social Skills**, **Luis - Science** on the Desktop.
+   **Luis - Science**, **Luis - Social Studies**, and **Luis - Social Skills**
+   on the Desktop. Social Studies and Social Skills are separate shortcuts.
 2. If PowerShell is locked down and step 1 reports an error: right-click
    each `Luis-*.cmd` → *Send to* → *Desktop (create shortcut)*, then rename
    the shortcuts as you like. The `.cmd` files must stay in `windows\`
@@ -102,7 +121,7 @@ in *Setup on a new machine*):
 3. First click: the browser may show the TeachTown sign-in — type it in the
    **browser window**, as always; the runner never handles credentials.
 4. Re-run the installer after moving the project folder; it overwrites the
-   four shortcuts.
+   five shortcuts.
 
 A dry run from a shortcut: drag it to a console window, or run
 `windows\Luis-Math.cmd --dry-run` from Git Bash / cmd. The `.cmd`/`.ps1`

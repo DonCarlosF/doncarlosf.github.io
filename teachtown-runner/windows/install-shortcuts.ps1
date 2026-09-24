@@ -1,5 +1,14 @@
-# Creates four Desktop shortcuts - one per subject - pointing at the
-# Luis-<Subject>.cmd launchers in this folder. Re-running overwrites them.
+# Creates five Desktop shortcuts pointing at the Luis-<Subject>.cmd
+# launchers in this folder. Re-running overwrites them.
+#
+#   Luis - ELA
+#   Luis - Math
+#   Luis - Science
+#   Luis - Social Studies
+#   Luis - Social Skills
+#
+# Social Studies is a school subject. Social Skills is a different
+# activity. The shortcuts are not aliases.
 #
 #   Double-click "Install Desktop Shortcuts.cmd" (same folder), or:
 #   powershell -NoProfile -ExecutionPolicy Bypass -File .\install-shortcuts.ps1
@@ -14,10 +23,11 @@ $desktop = [Environment]::GetFolderPath('Desktop')
 $shell = New-Object -ComObject WScript.Shell
 
 $subjects = @(
-  @{ Name = 'ELA';           File = 'Luis-ELA.cmd' },
-  @{ Name = 'Math';          File = 'Luis-Math.cmd' },
-  @{ Name = 'Social Skills'; File = 'Luis-Social-Skills.cmd' },
-  @{ Name = 'Science';       File = 'Luis-Science.cmd' }
+  @{ Name = 'ELA';            File = 'Luis-ELA.cmd';            About = 'School subject for Luis. Only ELA stays checked, then it waits for you.' },
+  @{ Name = 'Math';           File = 'Luis-Math.cmd';           About = 'School subject for Luis. Only Math stays checked, then it waits for you.' },
+  @{ Name = 'Science';        File = 'Luis-Science.cmd';        About = 'School subject for Luis. Only Science stays checked, then it waits for you.' },
+  @{ Name = 'Social Studies'; File = 'Luis-Social-Studies.cmd'; About = 'School subject for Luis. Only Social Studies stays checked, then it waits for you. This is not Social Skills.' },
+  @{ Name = 'Social Skills';  File = 'Luis-Social-Skills.cmd';  About = 'Social Skills for Luis. This is not Social Studies.' }
 )
 
 foreach ($s in $subjects) {
@@ -27,13 +37,16 @@ foreach ($s in $subjects) {
   $sc = $shell.CreateShortcut($lnk)
   $sc.TargetPath = $target
   $sc.WorkingDirectory = $runnerDir
-  $sc.Description = "TeachTown enCORE Student-Led: only " + $s.Name + " checked, stops at READY"
+  $sc.Description = $s.About
   $sc.IconLocation = "$env:SystemRoot\System32\imageres.dll,76"
   $sc.Save()
   Write-Host ("created  " + $lnk)
 }
 
 Write-Host ''
-Write-Host "Done. Four shortcuts are on the Desktop. Each opens a console window,"
-Write-Host "drives the browser to Student-Led step 2 with one subject checked, and"
-Write-Host "waits for you to press Next on screen."
+Write-Host "Done. Five shortcuts are on the Desktop:"
+Write-Host "  Luis - ELA, Luis - Math, Luis - Science,"
+Write-Host "  Luis - Social Studies, and Luis - Social Skills."
+Write-Host "Social Studies and Social Skills are different shortcuts."
+Write-Host "Each opens a window, sets up that one subject, and waits"
+Write-Host "for you to press Next on the TeachTown screen."

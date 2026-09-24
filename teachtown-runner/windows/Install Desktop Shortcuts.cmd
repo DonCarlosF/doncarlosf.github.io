@@ -1,5 +1,6 @@
 @echo off
-rem Puts the four "Luis - <Subject>" shortcuts on this user's Desktop.
+rem Puts five "Luis - <Subject>" shortcuts on this user's Desktop.
+rem Social Studies and Social Skills are two different shortcuts.
 rem Runs install-shortcuts.ps1 next to this file with script execution
 rem allowed for this one process only (no machine-wide policy change).
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0install-shortcuts.ps1"

@@ -38,8 +38,11 @@
   .btn.danger { background: var(--danger); border-color: var(--dangerDark); }
   .btn.danger small { color: #ffd9d6; }
   .btn.ok { background: var(--ok); border-color: #1d7a4e; }
-  .grid.subjects { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-  .btn.subject { min-height: 96px; font-size: 28px; background: #2a3646; border-color: #3d5068; }
+  .grid.subjects { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .btn.subject { min-height: 128px; font-size: 32px; background: #2a3646; border-color: #3d5068; }
+  .btn.subject small { font-size: 18px; line-height: 1.35; color: #d5e2ee; }
+  .btn.subject.studies { background: #3a3420; border-color: #c4a15a; }
+  .btn.subject.skills { background: #1c3330; border-color: #3d8f78; }
   .btn.subject:disabled { opacity: .45; }
   .learner { color: var(--text); }
   fieldset { border: 1px solid var(--line); border-radius: 12px; margin: 0 0 16px; padding: 14px 16px; }
@@ -82,7 +85,8 @@
 <main>
 
 <section class="screen active" id="screen-home">
-  <h2>Social Skills</h2>
+  <h2>Social Skills — group</h2>
+  <p class="note">The group activity. This is not the Social Studies school subject.</p>
   <div class="grid">
     <button class="btn primary" data-run="playlist" style="grid-column: 1 / -1;">
       ▶ Run Playlist
@@ -113,26 +117,36 @@
     </button>
   </div>
 
-  <h2>enCORE — Student-Led for <span class="learner">Luis</span></h2>
+  <h2>School subjects for <span class="learner">Luis</span></h2>
+  <p class="note">ELA, Math, Science, and Social Studies. Each button picks <span class="learner">Luis</span> and leaves only that subject checked, then waits. You press Next on the TeachTown screen.</p>
   <div class="grid subjects">
     <button class="btn subject" data-run="studentled-subject" data-subject="ela">
       ELA
-      <small>only ELA stays checked · stops at READY</small>
+      <small>Reading and writing. Only ELA stays checked.</small>
     </button>
     <button class="btn subject" data-run="studentled-subject" data-subject="math">
       Math
-      <small>only Math stays checked · stops at READY</small>
-    </button>
-    <button class="btn subject" data-run="studentled-subject" data-subject="social-skills">
-      Social Skills
-      <small>only Social Skills stays checked · stops at READY</small>
+      <small>Numbers. Only Math stays checked.</small>
     </button>
     <button class="btn subject" data-run="studentled-subject" data-subject="science">
       Science
-      <small>only Science stays checked · stops at READY</small>
+      <small>Science class. Only Science stays checked.</small>
+    </button>
+    <button class="btn subject studies" data-run="studentled-subject" data-subject="social-studies">
+      Social Studies
+      <small>History and the world. This is not Social Skills.</small>
     </button>
   </div>
-  <p class="note" id="slNote">Picks <span class="learner">Luis</span> on step 1, unchecks the other three subjects on step 2, verifies, and waits — you press Next and launch on screen. Turn on Dry Run to verify the checkboxes and back out without starting anything.</p>
+
+  <h2>Social Skills for <span class="learner">Luis</span></h2>
+  <p class="note">A different activity from Social Studies. Use this when the lesson screen has a box that says Social Skills. It will not check Social Studies.</p>
+  <div class="grid subjects">
+    <button class="btn subject skills" data-run="studentled-subject" data-subject="social-skills">
+      Social Skills
+      <small>Not Social Studies. Only the Social Skills box stays checked.</small>
+    </button>
+  </div>
+  <p class="note" id="slNote">Picks <span class="learner">Luis</span>, leaves only the subject you picked checked, and waits. You press Next on the screen. Turn on Dry Run to look at the boxes and back out without starting a lesson.</p>
   <p class="note" id="slMissing" style="display:none;">Buttons are off until <span class="learner">Luis</span>'s display name is entered under Settings → Student-Led learner (local config.json only).</p>
 
   <h2>Utilities</h2>
@@ -197,7 +211,7 @@
         <option value="benchmark">Benchmark Assessments</option>
       </select>
     </label>
-    <p class="note">The four Student-Led buttons on Home run for this one learner. The buttons, logs, and this page only ever show the pseudonym.</p>
+    <p class="note">The lesson buttons on Home run for this one learner. Social Studies and Social Skills are different buttons. The buttons, logs, and this page only ever show the pseudonym.</p>
   </fieldset>
   <button class="btn primary" id="saveBtn" style="width:100%;">Save settings</button>
   <p class="note">Saving validates first and keeps the previous config as config.json.bak. Invalid input is refused with the reason — nothing broken is ever written.</p>

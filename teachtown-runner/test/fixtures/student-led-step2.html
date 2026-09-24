@@ -12,8 +12,10 @@
   ?mode=native  hidden <input type=checkbox> styled through its <label>
                 (default — the common Angular/Bootstrap custom-checkbox shape)
   ?mode=aria    <div role="checkbox" aria-checked> widgets, no <input> at all
-  ?label=studies  show "Social Studies" instead of "Social Skills"
+  ?domains=encore  ELA, Math, Science, Social Studies only (SLZUSD school subjects)
+  ?domains=skills  ELA, Math, Science, Social Skills only (no Social Studies box)
   ?missing=science  drop the Science box entirely
+  Default shows all five. Social Studies and Social Skills are different boxes.
 -->
 <style>
   body { font: 16px system-ui, sans-serif; margin: 24px; }
@@ -48,16 +50,19 @@
 <script>
   const q = new URLSearchParams(location.search);
   const mode = q.get('mode') || 'native';
-  const social = q.get('label') === 'studies' ? 'Social Studies' : 'Social Skills';
+  const domains = q.get('domains') || 'all';
   const missing = q.get('missing');
-  const state = { ELA: true, Math: true, Science: true, [social]: true };
+  const state = { ELA: true, Math: true, Science: true };
+  if (domains !== 'skills') state['Social Studies'] = true;
+  if (domains !== 'encore') state['Social Skills'] = true;
   if (missing === 'science') delete state.Science;
 
   const LESSONS = [
     ['ELA', 'ELA: Letter sounds A–E'],
     ['Math', 'Math: Add within 20'],
     ['Science', 'Science Vocabulary — Weather'],
-    [social, social + ': Taking turns'],
+    ['Social Studies', 'Social Studies: Communities'],
+    ['Social Skills', 'Social Skills: Taking turns'],
   ];
 
   function renderSubjects() {

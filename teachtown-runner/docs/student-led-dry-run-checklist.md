@@ -1,10 +1,20 @@
-# Student-Led subject buttons — dry-run checklist
+# Lesson buttons — dry-run checklist
 
-Run this once on the live enCORE tenant before trusting the four buttons in
-front of a class. It is the real screen with the real learner, but the
-runner backs out of the wizard on step 2 and starts nothing (no session is
-logged, `autoBegin` is ignored in a dry run). Budget: four runs of about a
-minute each after sign-in.
+Use this before a class, once, on the real TeachTown screen. The runner
+walks to the lesson step, checks the boxes, then backs out. It does not
+start a lesson.
+
+There are five buttons. Four are school subjects. Social Skills is separate.
+
+| Button | School subject? |
+| --- | --- |
+| ELA | Yes |
+| Math | Yes |
+| Science | Yes |
+| Social Studies | Yes. History and the world. |
+| Social Skills | No. A different activity. Not another name for Social Studies. |
+
+Budget: one short run per button after sign-in.
 
 The learner is "Luis" in every command and every log line below. The
 display name behind that pseudonym lives only in your local `config.json`
@@ -17,8 +27,8 @@ into a commit or an issue.
 - [ ] `config.json` has the display name: `studentLed.learners.Luis` is the
       name **exactly** as enCORE's student list shows it
       (`npm start -- --recon-roster` prints that list into `recon/`).
-- [ ] `npm test` passes (32 tests; the browser ones may print a skip notice
-      if `npx playwright install chromium` was never run — that's fine).
+- [ ] `npm test` passes (the browser ones may print a skip notice if
+      `npx playwright install chromium` was never run — that's fine).
 - [ ] `npm start -- --login` has been done on this machine (zero-touch
       profile). If not, the first dry run below will pause on
       `MANUAL SIGN-IN NEEDED` — sign in **in the browser window**.
@@ -30,10 +40,10 @@ Use whichever entry point you will actually use in class:
 | Entry point | Command |
 | --- | --- |
 | CLI (Git Bash / Terminal) | `npm start -- --student-led --subject math --dry-run` |
-| UI | Dry Run toggle ON → Home → *Math* button |
+| UI | Dry Run toggle ON → Home → *Math* |
 | Windows shortcut | `windows\Luis-Math.cmd --dry-run` (from a console) |
 
-Repeat for `ela`, `social-skills`, `science`. For **each** run tick:
+Repeat for ELA, Science, and Social Studies. For **each** of those runs tick:
 
 - [ ] `SESSION START (dry run) (student-led) — enCORE Student-Led, learner "Luis", subject=<key> …`
 - [ ] `Selected learner "Luis"` — and on screen, exactly one row highlighted,
@@ -44,19 +54,21 @@ Repeat for `ela`, `social-skills`, `science`. For **each** run tick:
       radio). The bar at the top can still say "Select Session Mode" — that
       title is on every step. On SLZUSD the log says
       `Step 2 opened on the learner click (no Next on step 1)`.
-- [ ] `SUBJECTS before:` shows four boxes. Note which are `[x]` — on a fresh
-      wizard the app checks all four.
+- [ ] `SUBJECTS before:` shows the school-subject boxes. Note which are
+      `[x]` — on a fresh wizard the app checks all of them. The usual four
+      are ELA, Math, Science, and Social Studies.
 - [ ] `SUBJECTS after:` shows **only** this run's subject as `[x]`:
 
   | Run | Expected `SUBJECTS after:` |
   | --- | --- |
-  | `ela` | `ELA [x]  Math [ ]  Science [ ]  Social Skills [ ]` |
-  | `math` | `ELA [ ]  Math [x]  Science [ ]  Social Skills [ ]` |
-  | `social-skills` | `ELA [ ]  Math [ ]  Science [ ]  Social Skills [x]` |
-  | `science` | `ELA [ ]  Math [ ]  Science [x]  Social Skills [ ]` |
+  | `ela` | `ELA [x]  Math [ ]  Science [ ]  Social Studies [ ]` |
+  | `math` | `ELA [ ]  Math [x]  Science [ ]  Social Studies [ ]` |
+  | `science` | `ELA [ ]  Math [ ]  Science [x]  Social Studies [ ]` |
+  | `social-studies` | `ELA [ ]  Math [ ]  Science [ ]  Social Studies [x]` |
 
-  (Box order follows the screen; if the tenant labels the last one
-  "Social Studies" the line says so and the button still works.)
+  Box order follows the screen. The words must say **Social Studies**, not
+  Social Skills. If a Social Skills box is also on the screen, it should
+  be `[ ]` for every school-subject run.
 - [ ] The screen agrees with the log line — look at the actual boxes before
       the runner backs out.
 - [ ] The lesson checklist under the subjects was **not** clicked by the
@@ -78,7 +90,26 @@ Repeat for `ela`, `social-skills`, `science`. For **each** run tick:
 | `WARN Next still looks disabled after selecting the learner` | This tenant still has a Next on step 1, and it stayed disabled. The runner clicks it anyway; if the lesson step never appears the run fails with a screenshot in `logs/`. | Re-run; report if it repeats. |
 | `MANUAL SIGN-IN NEEDED` | Zero-touch profile not warm on this machine. | Sign in **in the browser**. Normal on a first run. |
 
-## After all four pass
+## Social Skills (separate from Social Studies)
+
+Run this only after the four school subjects above look right.
+
+| Entry point | Command |
+| --- | --- |
+| CLI | `npm start -- --student-led --subject social-skills --dry-run` |
+| UI | Dry Run ON → heading *Social Skills for Luis* → *Social Skills* |
+| Windows shortcut | `windows\Luis-Social-Skills.cmd --dry-run` |
+
+- [ ] If the lesson screen has a box that says **Social Skills**,
+      `SUBJECTS after:` shows only that box as `[x]`, and Social Studies
+      is `[ ]`.
+- [ ] If the lesson screen has **Social Studies** and no Social Skills box,
+      the run stops with `no "Social Skills" checkbox` and does not click
+      Social Studies. That is correct. Use the Social Studies button for
+      that box. The group Social Skills activity is the *Social Skills —
+      group* section on Home (Run Playlist), not this button.
+
+## After the school subjects pass
 
 - [ ] Run one subject **without** `--dry-run` at a quiet moment: it should
       end at `READY — <Subject> for "Luis". Press Next on screen…` with the
@@ -87,4 +118,5 @@ Repeat for `ela`, `social-skills`, `science`. For **each** run tick:
       exit closes the browser. No session was logged unless you launched
       one yourself on step 3.
 - [ ] Install the Desktop shortcuts (`windows\Install Desktop Shortcuts.cmd`)
-      and click one — same `READY` line expected.
+      and click one — same `READY` line expected. **Luis - Social Studies**
+      and **Luis - Social Skills** are two shortcuts.
