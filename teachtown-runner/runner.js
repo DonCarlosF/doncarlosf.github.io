@@ -2495,6 +2495,12 @@ async function studentLedSetup(tt, sl, dryRun, logger) {
   await row.click({ timeout: 5_000 });
   logger.event(`Selected learner "${who}"`);
 
+  // Step 1 → 2. The stepper header shows "Select Session Mode" on EVERY step,
+  // so step 2 is recognized by its own content (the "Select lessons for …"
+  // title / lesson-source radios), never by the stepper label. Live SLZUSD
+  // (2026-09-23) opens step 2 on the learner click itself — there is no Next
+  // on step 1; the July recon saw one. Check for step 2 first so a forward
+  // button on step 2 is never mistaken for step 1's Next.
   await advanceStudentLedToStep2(frame, {
     log: (m) => logger.event(m),
     nextTimeout: NAV_TIMEOUT,

@@ -42,8 +42,8 @@ Repeat for `ela`, `social-skills`, `science`. For **each** run tick:
 - [ ] The wizard is on the lesson step: **Select lessons for …'s
       Student-Led Session** (subject boxes and the Recommended Lessons
       radio). The bar at the top can still say "Select Session Mode" — that
-      title is on every step. The log either says the learner click
-      advanced the wizard, or `Clicked Next on Student-Led step 1`.
+      title is on every step. On SLZUSD the log says
+      `Step 2 opened on the learner click (no Next on step 1)`.
 - [ ] `SUBJECTS before:` shows four boxes. Note which are `[x]` — on a fresh
       wizard the app checks all four.
 - [ ] `SUBJECTS after:` shows **only** this run's subject as `[x]`:
@@ -76,7 +76,6 @@ Repeat for `ela`, `social-skills`, `science`. For **each** run tick:
 | `SUBJECTS after:` still has two `[x]` and `SUBJECT CHECK FAILED` | A click didn't register (the app redraws the lesson list on each toggle). The runner already retried once. | Re-run the dry run. If it repeats, the click path needs the live DOM — send the `SUBJECTS` lines. |
 | `Student-Led step 1: the display name configured for "Luis" is not in the student list` | Name mismatch. | Copy the name from the `recon/roster-report-*.txt` produced by `--recon-roster`. |
 | `WARN Next still looks disabled after selecting the learner` | This tenant still has a Next on step 1, and it stayed disabled. The runner clicks it anyway; if the lesson step never appears the run fails with a screenshot in `logs/`. | Re-run; report if it repeats. |
-| `Student-Led step 1: no Next button, and the lesson step did not appear` | The learner click did not open step 2, and there was no Next to press. | Screenshot in `logs/`. The row may not have selected. |
 | `MANUAL SIGN-IN NEEDED` | Zero-touch profile not warm on this machine. | Sign in **in the browser**. Normal on a first run. |
 
 ## After all four pass

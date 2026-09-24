@@ -74,32 +74,21 @@ async function advanceStudentLedToStep2(root, opts = {}) {
   const step2Timeout = Number.isFinite(opts.step2Timeout) ? opts.step2Timeout : 60_000;
   const enabledTimeout = Number.isFinite(opts.enabledTimeout) ? opts.enabledTimeout : 10_000;
 
+  // Step 2 first. A forward control already on step 2 must not be clicked
+  // as if it were step 1's Next. Same order as the 2026-09-23 SLZUSD patch.
   const step2 = root.getByText(step2TextRe()).first();
   if (await visibleSoon(step2, autoAdvanceMs)) {
-    log('Student-Led step 2 is up — the learner click advanced the wizard (no Next on step 1)');
+    log('Step 2 opened on the learner click (no Next on step 1)');
     return { via: 'auto' };
   }
 
   const next = root.getByRole('button', { name: /^next$/i }).or(root.getByText(/^\s*Next\s*$/)).first();
-  try {
-    await next.waitFor({ state: 'visible', timeout: nextTimeout });
-  } catch (err) {
-    const detail = String(err && err.message ? err.message : err).split('\n')[0];
-    throw new Error(
-      'Student-Led step 1: no Next button, and the lesson step did not appear after selecting the learner. ' + detail
-    );
-  }
+  await next.waitFor({ state: 'visible', timeout: nextTimeout });
   if (!(await waitForEnabled(next, enabledTimeout))) {
     log('WARN Next still looks disabled after selecting the learner — trying anyway');
   }
   await next.click({ timeout: 10_000 });
-  log('Clicked Next on Student-Led step 1');
-  if (!(await visibleSoon(step2, step2Timeout))) {
-    throw new Error(
-      'Student-Led step 1: Next was clicked but the lesson step did not appear ' +
-        '(looked for "select lessons for", "domain selections below", or "Recommended Lessons").'
-    );
-  }
+  await step2.waitFor({ state: 'visible', timeout: step2Timeout });
   return { via: 'next' };
 }
 
