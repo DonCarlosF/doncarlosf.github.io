@@ -31,6 +31,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { spawn, execSync, execFileSync } = require('child_process');
 const { SUBJECT_KEYS, normalizeSubjectKey } = require('./lib/subjects');
+const { describeRun } = require('./lib/home-status');
 
 const DIR = __dirname;
 const CONFIG = path.join(DIR, 'config.json');
@@ -49,7 +50,7 @@ function buildVersion() {
   // content hash: same code → same hash on every machine. Git SHA is
   // appended where a .git dir exists (nice to have, never required).
   const h = crypto.createHash('sha256');
-  for (const f of ['runner.js', 'ui-server.js', 'ui.html', 'privacy-check.js', 'init-config.js', 'lib/subjects.js']) {
+  for (const f of ['runner.js', 'ui-server.js', 'ui.html', 'privacy-check.js', 'init-config.js', 'lib/subjects.js', 'lib/home-status.js']) {
     try {
       h.update(fs.readFileSync(path.join(DIR, f)));
     } catch {}
@@ -157,7 +158,7 @@ function startRun(body) {
     stdio: ['pipe', 'pipe', 'pipe'],
   });
   child.proc = proc;
-  child.action = body.action + (body.dry ? ' (dry run)' : '');
+  child.action = describeRun(body);
   child.startedAt = Date.now();
   child.exitCode = null;
   child.lines = [];
@@ -313,6 +314,11 @@ const server = http.createServer(async (req, res) => {
       const html = fs.readFileSync(path.join(DIR, 'ui.html'));
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
       return res.end(html);
+    }
+    if (req.method === 'GET' && url === '/home-status.js') {
+      const js = fs.readFileSync(path.join(DIR, 'lib', 'home-status.js'));
+      res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8' });
+      return res.end(js);
     }
     if (req.method === 'GET' && url === '/api/version') return json(res, 200, { version: VERSION });
     if (req.method === 'GET' && url === '/api/status') return json(res, 200, statusPayload());

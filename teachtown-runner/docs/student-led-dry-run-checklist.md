@@ -40,8 +40,9 @@ Use whichever entry point you will actually use in class:
 | Entry point | Command |
 | --- | --- |
 | CLI (Git Bash / Terminal) | `npm start -- --student-led --subject math --dry-run` |
-| UI | Dry Run toggle ON → Home → *Math* |
+| Home page | Turn on the big **Dry run** switch, then press *Math*. The status line should say Working, then Finished. Last action should say Math, not another subject. |
 | Windows shortcut | `windows\Luis-Math.cmd --dry-run` (from a console) |
+| Mac app | `npm run mac:dev`, then Lesson → Dry run, then press *Math* (or Lesson → Start Math while Dry run is on). |
 
 Repeat for ELA, Science, and Social Studies. For **each** of those runs tick:
 

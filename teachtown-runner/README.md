@@ -6,15 +6,19 @@ in the header of `runner.js`.
 
 ## Button interface (no typing in front of the class)
 
-`npm run ui` starts a local page with big buttons — Run Playlist, Custom
-Run, Teacher-Led (Set up only vs the visually distinct START LIVE SESSION),
-the Student-Led buttons for Luis (ELA, Math, Science, Social Studies,
-and Social Skills — Social Studies and Social Skills are different),
-Sign In, Refresh Roster, a Dry Run toggle, a Settings screen that edits
-config.json with validation + a .bak, and a Run view with the live log and
-a STOP button that does the same clean shutdown as Ctrl+C.
+`npm run ui` starts a local page with big buttons. School subjects for Luis
+come first: ELA, Math, Science, and Social Studies. Social Skills is its
+own button under a separate heading — it is not another name for Social
+Studies. A Dry run switch on that page practices the setup and starts
+nothing. A status line says Waiting, Working, Ready, Needs a look, or
+Finished, with the last action and a few log lines, so you are not left
+looking at a blank console. Further down, under *Also on this computer*,
+are the group playlist, Teacher-Led, Sign In, and Refresh Roster.
+Settings edits config.json with validation + a .bak. The Run view has
+the full log and a STOP button that does the same clean shutdown as Ctrl+C.
 
-- **Mac (Terminal)**: `cd teachtown-runner && npm run ui`
+- **Mac app**: `cd teachtown-runner && npm run mac:dev` (see below)
+- **Mac (browser)**: `cd teachtown-runner && npm run ui`
 - **Windows (PowerShell or Git Bash)**: `cd teachtown-runner; npm run ui`
 - The browser opens by itself; the URL (http://127.0.0.1:4317/) also prints
   in the terminal. Leave that terminal window open — closing it stops the UI.
@@ -74,10 +78,12 @@ never clicked. `studentLed.autoBegin: true` additionally presses Next and
 the step-3 launch button (that screen is unverified — best effort, and it
 starts a REAL logged session).
 
-- **UI**: `npm run ui` → *School subjects for Luis* (ELA, Math, Science,
-  Social Studies) and, under that, *Social Skills for Luis*. The buttons
-  stay off until the learner's display name is saved. The two social
-  buttons use different colors so they are easy to tell apart.
+- **UI**: `npm run ui` → the status line and the **Dry run** switch, then
+  *School subjects for Luis* (ELA, Math, Science, Social Studies) and,
+  under that, *Social Skills for Luis*. The buttons stay off until the
+  learner's display name is saved. The two social buttons use different
+  colors so they are easy to tell apart. Dry run on the Home page and
+  the switch in the top bar are the same switch.
 - **CLI**: `npm start -- --student-led --subject ela|math|science|social-studies|social-skills`
   (`--subject=Math`, `"Social Studies"`, `social_skills` all work.
   `"Social Studies"` does not start Social Skills.)
@@ -106,7 +112,7 @@ usual clean way). They check for Node, `node_modules`, and `config.json`
 first and say what to do if one is missing.
 
 Install on the district PC (Node 18+ and Google Chrome already installed;
-`npm install`, `npm run init-config`, `npm start -- --login` done once as
+`npm install --omit=dev`, `npm run init-config`, `npm start -- --login` done once as
 in *Setup on a new machine*):
 
 1. Double-click `windows\Install Desktop Shortcuts.cmd`. It runs
@@ -128,9 +134,37 @@ A dry run from a shortcut: drag it to a console window, or run
 files are the one place the repo keeps CRLF line endings (see
 `.gitattributes`) — cmd.exe wants them that way.
 
+### Mac app
+
+On a MacBook Air, TeachTown Runner can open as its own window. Same
+buttons as the browser page. The Lesson menu can start ELA, Math,
+Science, Social Studies, or Social Skills, turn Dry run on or off, open
+Settings, or quit. Social Studies and Social Skills are separate menu
+items.
+
+You sign in yourself in the browser window the runner opens. The app
+does not store a password. The learner is shown as Luis. The real
+display name stays in `config.json` on that Mac.
+
+1. `cd teachtown-runner && npm install`
+2. `npm run mac:dev` — opens the window from source. Leave it open while
+   you use the buttons.
+3. To make a double-clickable app: `npm run mac:build`. The app is
+   written under `dist/` (for example `dist/mac-arm64/TeachTown Runner.app`
+   on Apple Silicon). It is not signed or notarized. The first time,
+   macOS may ask you to right-click the app and choose Open.
+
+Build that `.app` on the Mac. A Windows or Linux machine cannot produce
+it. If the build asks for an Apple certificate, stop it and run
+`CSC_IDENTITY_AUTO_DISCOVERY=false npm run mac:build` instead.
+
+The school PC does not need the Mac packages. There, `npm install --omit=dev`
+is enough for the runner, the browser page, and the Desktop shortcuts.
+
 ## Setup on a new machine
 
 1. `npm install` (Google Chrome must be installed — the runner drives it).
+   On the school PC, `npm install --omit=dev` skips the Mac app packages.
 2. `npm run init-config` — copies the committed template (which carries every
    real setting **except names**) to the gitignored `config.json` and asks
    for student names right there in the terminal, including the display

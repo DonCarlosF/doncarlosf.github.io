@@ -12,3 +12,6 @@ node_modules/
 # In case profileDir is ever pointed inside the project folder
 profile/
 .teachtown-runner/
+
+# Mac app build output (npm run mac:build)
+dist/
