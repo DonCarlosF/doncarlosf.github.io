@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mock enCORE — Student-Led step 2</title>
+<!--
+  Stand-in for the live "Select Session Mode" screen (recon 2026-07): lesson
+  source radios on the left; subject checkboxes + a lesson checklist on the
+  right. Every subject starts CHECKED, like the real app. Toggling a subject
+  re-renders the lesson list (so clicks can land mid-redraw, as live).
+
+  ?mode=native  hidden <input type=checkbox> styled through its <label>
+                (default — the common Angular/Bootstrap custom-checkbox shape)
+  ?mode=aria    <div role="checkbox" aria-checked> widgets, no <input> at all
+  ?label=studies  show "Social Studies" instead of "Social Skills"
+  ?missing=science  drop the Science box entirely
+-->
+<style>
+  body { font: 16px system-ui, sans-serif; margin: 24px; }
+  .row { display: flex; gap: 40px; }
+  .subjects input[type=checkbox] { position: absolute; opacity: 0; width: 0; height: 0; } /* hidden native input */
+  .subjects label { display: block; padding: 6px 10px; border: 1px solid #999; margin: 4px 0; cursor: pointer; }
+  .subjects label::before { content: "[ ] "; }
+  .subjects label.on::before { content: "[x] "; }
+  [role=checkbox] { display: block; padding: 6px 10px; border: 1px solid #999; margin: 4px 0; cursor: pointer; }
+  [role=checkbox]::before { content: "[ ] "; }
+  [role=checkbox][aria-checked=true]::before { content: "[x] "; }
+</style>
+</head>
+<body>
+<h1>Select Session Mode</h1>
+<div class="row">
+  <div>
+    <h3>Lesson source</h3>
+    <label><input type="radio" name="src" checked> Recommended Lessons</label><br>
+    <label><input type="radio" name="src"> IEP Goals</label><br>
+    <label><input type="radio" name="src"> Facilitator-Selected Lessons</label><br>
+    <label><input type="radio" name="src"> Benchmark Assessments</label>
+  </div>
+  <div>
+    <h3>Subjects</h3>
+    <div class="subjects" id="subjects"></div>
+    <h3>Lessons</h3>
+    <label><input type="checkbox" id="selectAll" checked> Select all lessons</label>
+    <ul id="lessonlist"></ul>
+  </div>
+</div>
+<script>
+  const q = new URLSearchParams(location.search);
+  const mode = q.get('mode') || 'native';
+  const social = q.get('label') === 'studies' ? 'Social Studies' : 'Social Skills';
+  const missing = q.get('missing');
+  const state = { ELA: true, Math: true, Science: true, [social]: true };
+  if (missing === 'science') delete state.Science;
+
+  const LESSONS = [
+    ['ELA', 'ELA: Letter sounds A–E'],
+    ['Math', 'Math: Add within 20'],
+    ['Science', 'Science Vocabulary — Weather'],
+    [social, social + ': Taking turns'],
+  ];
+
+  function renderSubjects() {
+    const host = document.getElementById('subjects');
+    host.innerHTML = '';
+    for (const name of Object.keys(state)) {
+      if (mode === 'aria') {
+        const d = document.createElement('div');
+        d.setAttribute('role', 'checkbox');
+        d.setAttribute('aria-checked', String(state[name]));
+        d.textContent = name;
+        d.addEventListener('click', () => toggle(name));
+        host.appendChild(d);
+      } else {
+        const l = document.createElement('label');
+        const i = document.createElement('input');
+        i.type = 'checkbox';
+        i.checked = state[name];
+        i.addEventListener('change', () => toggle(name));
+        l.className = state[name] ? 'on' : '';
+        l.appendChild(i);
+        l.appendChild(document.createTextNode(' ' + name + ' '));
+        const count = document.createElement('span');
+        count.textContent = '(' + LESSONS.filter((x) => x[0] === name).length + ')';
+        l.appendChild(count);
+        host.appendChild(l);
+      }
+    }
+  }
+  function renderLessons() {
+    const ul = document.getElementById('lessonlist');
+    ul.innerHTML = '';
+    for (const [subj, title] of LESSONS) {
+      if (!state[subj]) continue;
+      const li = document.createElement('li');
+      const l = document.createElement('label');
+      const i = document.createElement('input');
+      i.type = 'checkbox';
+      i.checked = subj !== 'Science'; // one lesson row starts unchecked, and must stay that way
+      l.appendChild(i);
+      l.appendChild(document.createTextNode(' ' + title));
+      li.appendChild(l);
+      ul.appendChild(li);
+    }
+  }
+  function toggle(name) {
+    state[name] = !state[name];
+    // Re-render asynchronously, like a framework digest cycle.
+    setTimeout(() => { renderSubjects(); renderLessons(); }, 60);
+  }
+  window.__mockState = () => ({ ...state });
+  renderSubjects();
+  renderLessons();
+</script>
+</body>
+</html>

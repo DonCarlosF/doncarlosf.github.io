@@ -1,0 +1,14 @@
+{
+  "_note": "ACTIVE district profile — San Lorenzo USD. F1 RESOLVED (8/2026): TeachTown login is DIRECT on the TeachTown site for this account — no Clever portal. First run: sign in manually on the TeachTown page when the runner prompts; the persistent browser profile keeps later runs automatic (the runner never touches credential fields). cleverEntryUrl is kept only in case the district fronts TeachTown with a portal later (set loginMode back to \"clever\"). The roster lives ONLY in the local gitignored config.json — never in this file.",
+  "active": true,
+  "district": "slzusd",
+  "loginMode": "direct",
+  "teachtownEntryUrl": "https://www.teachtown.com/nav/",
+  "cleverEntryUrl": "https://clever.com/in/slzusd",
+  "cleverEntryUrlVerified": false,
+  "ssoButtonText": ["San Lorenzo", "SLZUSD", "San Lorenzo Unified"],
+  "encoreAppHash": "#/apps/encr",
+  "browserProfileDir": ".profiles/slzusd",
+  "groups": [],
+  "roster": []
+}

@@ -1,0 +1,20 @@
+# Committed sources stay LF on every OS. The git hooks are sh scripts whose
+# shebang lines break under CRLF, and privacy-check.js must read its own
+# sources byte-identically across machines — a Windows checkout with
+# core.autocrlf=true must not rewrite any of these.
+#
+# config.json, logs/, recon/, and .profiles/ are gitignored: git never
+# applies any CRLF conversion to untracked files, so local data files are
+# untouched by definition.
+*.js     text eol=lf
+*.json   text eol=lf
+*.md     text eol=lf
+*.txt    text eol=lf
+*.aspx   text eol=lf
+hooks/*  text eol=lf
+
+# Windows launchers are the one exception: cmd.exe and PowerShell want CRLF
+# (an LF-only .cmd can mis-parse labels and multi-line if-blocks). git stores
+# them normalized and checks them out CRLF on every OS.
+*.cmd    text eol=crlf
+*.ps1    text eol=crlf

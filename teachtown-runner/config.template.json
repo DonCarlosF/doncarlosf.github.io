@@ -1,0 +1,30 @@
+{
+  "_note": "Committed template: every setting carries the real SLZUSD values EXCEPT students/roster, which are names and stay local. Run `npm run init-config` to copy this to config.json (gitignored) and enter names there — never put names in this file.",
+  "district": "slzusd",
+  "students": [],
+  "roster": [],
+  "autoSubmitPrefilledLogin": true,
+  "playlist": [
+    { "mode": "movie", "count": 5, "once": true },
+    { "mode": "activity", "target": "Apologize When You Make a Mistake" }
+  ],
+  "_playlistNote": "Ordered sequence per student, overriding mode/targetActivity when non-empty. Entries: {\"mode\":\"movie\"|\"activity\",\"target\":\"Exact Activity Name\"} for one named item, or {\"mode\":\"movie\",\"count\":5} for the first 5 in list order (activity entries skip anything at 100%; movies play regardless). \"once\":true = first student of the session only (content the group watches together). Set \"playlist\": [] for one activity per student.",
+  "targetActivity": null,
+  "mode": "activity",
+  "afterRotation": "stop",
+  "teacherLed": {
+    "_note": "enCORE Teacher-Led setup, used by afterRotation:\"teacherLed\" or `npm start -- --teacher-led`. group takes precedence over students. autoBegin:true clicks Begin Session itself — a REAL logged session; false stops at the button. encoreAppHash null = district profile's hash (slzusd: #/apps/encr).",
+    "encoreAppHash": null,
+    "group": "",
+    "students": [],
+    "sessionLengthMin": 15,
+    "autoBegin": false
+  },
+  "studentLed": {
+    "_note": "enCORE Student-Led for ONE learner: `npm start -- --student-led --subject ela|math|social-skills|science` (the UI's four Student-Led buttons and windows/*.cmd pass the subject). learnerPseudonym names the entry in `learners`; in your local config.json fill that entry with the learner's display name EXACTLY as enCORE shows it — never here in the template. Only the chosen subject stays checked on step 2; the runner stops at READY and you press Next/launch. lessonSource: recommended (app default) | iep | facilitator | benchmark. autoBegin:true also presses Next and the step-3 launch button (unverified screen) — a REAL logged session.",
+    "learnerPseudonym": "Luis",
+    "learners": { "Luis": "" },
+    "lessonSource": "recommended",
+    "autoBegin": false
+  }
+}
