@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mock enCORE — Student-Led step 1</title>
+<!--
+  Stand-in for the Student-Led wizard's first two steps. The learner row is
+  the pseudonym "Luis" — the same label the runner logs. No real names.
+
+  The stepper header reads "Select Session Mode" on BOTH steps, matching
+  SLZUSD live (2026-09). That title must not count as "we are on step 2".
+
+  ?advance=auto     clicking Luis reveals step 2; there is no Next (SLZUSD)
+  ?advance=next     clicking Luis reveals Next; Next reveals step 2 (July recon)
+  ?advance=both     clicking Luis reveals Next immediately AND step 2 shortly
+                    after — step 2 must win, Next must not be clicked
+  ?advance=stuck    neither Next nor step 2 ever appears
+  ?advance=next-dead  Next appears and is clicked, but step 2 never appears
+  ?delay=N          ms before auto step 2 (default 200; used by auto and both)
+-->
+<style>
+  body { font: 16px system-ui, sans-serif; margin: 24px; }
+  .stepper { font-weight: 700; margin-bottom: 12px; }
+  button { font: inherit; padding: 8px 14px; margin: 4px 8px 4px 0; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="stepper">Select Session Mode</div>
+<div id="step1">
+  <h1>Select Student</h1>
+  <p>Choose one learner, then continue.</p>
+  <button type="button" id="luis">Luis</button>
+  <button type="button" id="next" hidden>Next</button>
+</div>
+<div id="step2" hidden>
+  <h1>Select lessons for Luis's Student-Led Session</h1>
+  <p>Use the domain selections below to choose what this session covers.</p>
+  <h3>Lesson source</h3>
+  <label><input type="radio" name="src" value="iep"> IEP Goals</label><br>
+  <label><input type="radio" name="src" value="facilitator"> Facilitator-Selected</label><br>
+  <label><input type="radio" name="src" value="recommended" checked> Recommended Lessons</label><br>
+  <label><input type="radio" name="src" value="benchmark"> Benchmark</label>
+  <h3>Subjects</h3>
+  <label><input type="checkbox" checked> ELA</label>
+  <label><input type="checkbox" checked> Math</label>
+  <label><input type="checkbox" checked> Science</label>
+  <label><input type="checkbox" checked> Social Studies</label>
+</div>
+<script>
+  const q = new URLSearchParams(location.search);
+  const advance = q.get('advance') || 'auto';
+  const delay = Number(q.get('delay') || 200);
+  const next = document.getElementById('next');
+  window.__step = 1;
+  window.__nextClicks = 0;
+
+  function showStep2() {
+    document.getElementById('step1').hidden = true;
+    document.getElementById('step2').hidden = false;
+    window.__step = 2;
+  }
+  function showNext() {
+    next.hidden = false;
+  }
+
+  document.getElementById('luis').addEventListener('click', () => {
+    document.getElementById('luis').setAttribute('aria-pressed', 'true');
+    if (advance === 'auto') setTimeout(showStep2, delay);
+    else if (advance === 'next' || advance === 'next-dead') showNext();
+    else if (advance === 'both') {
+      showNext();
+      setTimeout(showStep2, delay);
+    }
+  });
+  next.addEventListener('click', () => {
+    window.__nextClicks += 1;
+    if (advance !== 'next-dead') showStep2();
+  });
+</script>
+</body>
+</html>

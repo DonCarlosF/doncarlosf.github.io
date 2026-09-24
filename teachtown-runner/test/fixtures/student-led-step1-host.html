@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mock enCORE host</title>
+<style>
+  html, body { margin: 0; height: 100%; }
+  iframe { width: 100%; height: 100%; border: 0; }
+</style>
+</head>
+<body>
+<!-- The runner talks to enCORE through a frame, not the top document. -->
+<iframe id="encore" title="enCORE"></iframe>
+<script>
+  document.getElementById('encore').src = 'student-led-step1.html' + location.search;
+</script>
+</body>
+</html>

@@ -17,7 +17,7 @@ into a commit or an issue.
 - [ ] `config.json` has the display name: `studentLed.learners.Luis` is the
       name **exactly** as enCORE's student list shows it
       (`npm start -- --recon-roster` prints that list into `recon/`).
-- [ ] `npm test` passes (26 tests; the browser ones may print a skip notice
+- [ ] `npm test` passes (32 tests; the browser ones may print a skip notice
       if `npx playwright install chromium` was never run — that's fine).
 - [ ] `npm start -- --login` has been done on this machine (zero-touch
       profile). If not, the first dry run below will pause on
@@ -39,7 +39,11 @@ Repeat for `ela`, `social-skills`, `science`. For **each** run tick:
 - [ ] `Selected learner "Luis"` — and on screen, exactly one row highlighted,
       Luis's. (Anything else: the display name in `config.json` doesn't
       match the app. Fix it; nothing further happened.)
-- [ ] The wizard advanced to **Select Session Mode** on its own.
+- [ ] The wizard is on the lesson step: **Select lessons for …'s
+      Student-Led Session** (subject boxes and the Recommended Lessons
+      radio). The bar at the top can still say "Select Session Mode" — that
+      title is on every step. The log either says the learner click
+      advanced the wizard, or `Clicked Next on Student-Led step 1`.
 - [ ] `SUBJECTS before:` shows four boxes. Note which are `[x]` — on a fresh
       wizard the app checks all four.
 - [ ] `SUBJECTS after:` shows **only** this run's subject as `[x]`:
@@ -71,7 +75,8 @@ Repeat for `ela`, `social-skills`, `science`. For **each** run tick:
 | `WARN subjects: 2 checkboxes look like …` | Two boxes carry the same subject label (e.g. a "select all" row reusing the word). The runner keeps the first and unchecks the other. | Check the screen agrees; report the second label's text. |
 | `SUBJECTS after:` still has two `[x]` and `SUBJECT CHECK FAILED` | A click didn't register (the app redraws the lesson list on each toggle). The runner already retried once. | Re-run the dry run. If it repeats, the click path needs the live DOM — send the `SUBJECTS` lines. |
 | `Student-Led step 1: the display name configured for "Luis" is not in the student list` | Name mismatch. | Copy the name from the `recon/roster-report-*.txt` produced by `--recon-roster`. |
-| `WARN Next still looks disabled after selecting the learner` | The row click didn't select. Usually still advances; if the wizard stays on step 1 the run fails with a screenshot in `logs/`. | Re-run; report if it repeats. |
+| `WARN Next still looks disabled after selecting the learner` | This tenant still has a Next on step 1, and it stayed disabled. The runner clicks it anyway; if the lesson step never appears the run fails with a screenshot in `logs/`. | Re-run; report if it repeats. |
+| `Student-Led step 1: no Next button, and the lesson step did not appear` | The learner click did not open step 2, and there was no Next to press. | Screenshot in `logs/`. The row may not have selected. |
 | `MANUAL SIGN-IN NEEDED` | Zero-touch profile not warm on this machine. | Sign in **in the browser**. Normal on a first run. |
 
 ## After all four pass
