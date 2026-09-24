@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CalendarDays, MapPin, ArrowRight } from "lucide-react";
 import { Container } from "@/components/ui/Container";
-import { formatEventDate } from "@/lib/utils/format";
+import { formatUpcomingWhen } from "@/lib/utils/format";
 import type { EventBanner as EventBannerType, ChurchEvent } from "@/lib/content/types";
 
 /** True when the banner's human-readable date is parseable and already past
@@ -28,7 +28,9 @@ export function EventBanner({ banner, fallbackEvent }: { banner?: EventBannerTyp
           <span className="inline-flex items-center gap-2 font-semibold">
             <CalendarDays size={16} aria-hidden /> {e.title}
           </span>
-          <span className="font-medium">· {e.recurrence || formatEventDate(e.start, e.allDay)}</span>
+          <span className="font-medium">
+            · {formatUpcomingWhen(e)}
+          </span>
           {e.location && (
             <span className="inline-flex items-center gap-1.5 opacity-90">
               <MapPin size={15} aria-hidden /> {e.location}

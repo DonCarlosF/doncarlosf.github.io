@@ -105,7 +105,8 @@ export const events: ChurchEvent[] = [
     _id: "evt-prayer",
     title: "Saturday Morning Prayer",
     slug: "saturday-morning-prayer",
-    start: "2026-06-13T15:00:00.000Z",
+    // 9:00 AM Pacific — matches the Saturday service time (stored as UTC).
+    start: "2026-06-13T16:00:00.000Z",
     recurrence: "Every Saturday",
     location: "1431 17th Avenue, Oakland, CA",
     description: "Start the weekend in prayer with the KBCF family.",
@@ -125,7 +126,8 @@ export const events: ChurchEvent[] = [
     _id: "evt-wed",
     title: "Wednesday Bible Study",
     slug: "wednesday-bible-study",
-    start: "2026-06-17T19:00:00.000Z",
+    // 7:00 PM Pacific — matches the Wednesday Bible Study time (stored as UTC).
+    start: "2026-06-18T02:00:00.000Z",
     recurrence: "Every Wednesday · 7:00 PM",
     location: "1431 17th Avenue, Oakland, CA",
     description: "Go deeper in the Word midweek.",
@@ -137,7 +139,7 @@ export const events: ChurchEvent[] = [
     slug: "sample-event",
     start: "2026-07-04T17:00:00.000Z",
     location: "1431 17th Avenue, Oakland, CA",
-    description: "This is a sample event to show the events layout. Add real events in the CMS or Planning Center.",
+    description: "This is a sample event to show the events layout. Add real events in the CMS.",
     registrationUrl: undefined,
     image: { alt: "Event image placeholder", placeholder: true },
     source: "cms",

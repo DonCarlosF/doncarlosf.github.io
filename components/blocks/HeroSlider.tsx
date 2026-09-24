@@ -15,14 +15,15 @@ import type { HeroSlide } from "@/lib/content/types";
 export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   const items = slides?.length ? slides : [{ title: "Welcome", accent: "" }];
   const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    if (items.length < 2) return;
+    if (paused || items.length < 2) return;
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return;
     const id = setInterval(() => setActive((a) => (a + 1) % items.length), 6500);
     return () => clearInterval(id);
-  }, [items.length]);
+  }, [items.length, paused]);
 
   return (
     <section
@@ -71,7 +72,8 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
         </div>
 
         {items.length > 1 && (
-          <div className="mt-8 flex gap-2" role="tablist" aria-label="Choose a slide">
+          <div className="mt-8 flex flex-wrap items-center gap-2">
+          <div className="flex gap-2" role="tablist" aria-label="Choose a slide">
             {items.map((s, i) => (
               <button
                 key={i}
@@ -91,6 +93,15 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                 />
               </button>
             ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setPaused((value) => !value)}
+            aria-pressed={paused}
+            className="ml-2 rounded-full border border-white/40 px-3 py-1 text-xs font-semibold text-white/90 hover:bg-white/10 motion-reduce:hidden"
+          >
+            {paused ? "Play slideshow" : "Pause slideshow"}
+          </button>
           </div>
         )}
       </Container>

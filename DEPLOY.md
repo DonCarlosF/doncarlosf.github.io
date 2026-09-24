@@ -6,9 +6,8 @@ point DNS — it's for review only.
 ## 1. Deploy to Vercel (preview)
 
 1. Go to **vercel.com → Add New → Project** and import
-   `DonCarlosF/doncarlosf.github.io`, branch `claude/cool-fermi-vzbnc2`.
-   - One-click import URL:
-     `https://vercel.com/new/clone?repository-url=https://github.com/DonCarlosF/doncarlosf.github.io/tree/claude/cool-fermi-vzbnc2`
+   `DonCarlosF/doncarlosf.github.io`. Preview deploys come from pull-request
+   branches. Do not attach the production domain.
 2. Framework preset auto-detects **Next.js**. No build settings to change.
 3. Add the env vars below (all optional — the site renders on seed data without
    them), then **Deploy**. You'll get a `*.vercel.app` preview URL.

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Menu, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils/cn";
 
@@ -16,8 +17,16 @@ const NAV = [
 ];
 
 export function Header() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [menuPath, setMenuPath] = useState(pathname);
+  if (menuPath !== pathname) {
+    setMenuPath(pathname);
+    setOpen(false);
+  }
+
+  const current = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -31,6 +40,15 @@ export function Header() {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
 
   return (
     <header
@@ -52,13 +70,24 @@ export function Header() {
 
         <nav aria-label="Primary" className="hidden items-center gap-8 lg:flex">
           {NAV.map((n) => (
-            <Link key={n.href} href={n.href} className="text-[15px] font-medium text-fg/80 transition-colors hover:text-primary">
+            <Link
+              key={n.href}
+              href={n.href}
+              aria-current={current(n.href) ? "page" : undefined}
+              className={cn(
+                "text-[15px] font-medium transition-colors hover:text-primary",
+                current(n.href) ? "text-primary" : "text-fg/80",
+              )}
+            >
               {n.label}
             </Link>
           ))}
         </nav>
 
         <div className="flex items-center gap-3">
+          <Link href="/search" aria-label="Search" className="inline-flex rounded-md p-2 text-fg/80 hover:text-primary">
+            <Search size={20} aria-hidden />
+          </Link>
           <Link href="/new-here" className="hidden text-sm font-semibold text-primary hover:underline sm:inline">
             I&apos;m New
           </Link>
@@ -85,12 +114,19 @@ export function Header() {
               <Link
                 key={n.href}
                 href={n.href}
+                aria-current={current(n.href) ? "page" : undefined}
                 onClick={() => setOpen(false)}
-                className="rounded-md px-3 py-3 text-base font-medium hover:bg-surface-2"
+                className={cn(
+                  "rounded-md px-3 py-3 text-base font-medium hover:bg-surface-2",
+                  current(n.href) && "text-primary",
+                )}
               >
                 {n.label}
               </Link>
             ))}
+            <Link href="/search" onClick={() => setOpen(false)} className="rounded-md px-3 py-3 text-base font-medium hover:bg-surface-2">
+              Search
+            </Link>
             <Button href="/new-here" className="mt-2 w-full" onClick={() => setOpen(false)}>
               Plan Your Visit
             </Button>

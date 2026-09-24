@@ -58,6 +58,8 @@ export function GroupsExplorer({ groups }: { groups: Group[] }) {
               <dl className="mt-3 space-y-1 text-sm text-muted">
                 {g.schedule && <div className="flex items-center gap-2"><Clock size={14} aria-hidden /> {g.schedule}</div>}
                 {g.location && <div className="flex items-center gap-2"><MapPin size={14} aria-hidden /> {g.location}</div>}
+                {g.leaderName && <div>Led by {g.leaderName}</div>}
+                {g.semester && <div>{g.semester}</div>}
               </dl>
               <div className="mt-5">
                 <Button href={g.joinUrl || "/contact"} variant="outline" size="sm">Join this group</Button>

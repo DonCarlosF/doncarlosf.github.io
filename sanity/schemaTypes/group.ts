@@ -13,6 +13,18 @@ export const group = defineType({
     defineField({ name: "schedule", type: "string", description: 'e.g. "Tuesdays, 7:00 PM"' }),
     defineField({ name: "location", type: "string" }),
     defineField({ name: "description", type: "text", rows: 3 }),
+    defineField({
+      name: "leaderName",
+      title: "Leader",
+      type: "string",
+      description: "Name of the group leader. Leave blank until the pastoral team confirms it.",
+    }),
+    defineField({
+      name: "semester",
+      title: "Semester",
+      type: "string",
+      description: 'Optional term label, e.g. "Fall 2026". Leave blank for an ongoing group.',
+    }),
     defineField({ name: "joinUrl", title: "Join / contact URL", type: "url" }),
     defineField({ name: "image", type: "accessibleImage" }),
   ],

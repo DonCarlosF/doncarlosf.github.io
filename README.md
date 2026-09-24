@@ -12,17 +12,11 @@ content without touching code.
 > doctrine/statement-of-faith and bios are explicit placeholders awaiting
 > approved copy. No invented testimonials, stats, or quotes.
 
-## Two art directions, one codebase
+## Design
 
-Both approved directions ship as swappable themes via CSS tokens
-(`app/globals.css`):
-
-- **Sanctuary** — warm editorial (Fraunces + Inter; garnet/gold on ivory)
-- **Movement** — bold & kinetic (Space Grotesk + Inter; indigo/coral on near-black)
-
-A floating switcher (bottom-right) flips between them live. To lock one in,
-delete `components/theme/ThemeSwitcher.tsx` from the layout and set the default
-`data-theme` in `app/layout.tsx`. Static mockups live in `/design`.
+**Sanctuary** is the locked theme: Fraunces + Inter, garnet and gold on ivory,
+via the CSS tokens in `app/globals.css`. The Movement direction remains a static
+mockup in `/design` only. There is no live theme switcher.
 
 ## Local development
 
@@ -48,7 +42,7 @@ testimonials, editable pages, and site settings.
 | **Sanity CMS** | `lib/content/*`, schemas in `sanity/schemaTypes/*` | Set `NEXT_PUBLIC_SANITY_*` |
 | **BoxCast** (live) | `components/watch/BoxcastEmbed.tsx` (channel `wsiikymmlhksnkgmc24r`) | Confirm embed code |
 | **Giving** (Clover) | `components/give/CloverGiving.tsx`, URL in site settings | Provider-agnostic; swap URL |
-| **Planning Center** | `lib/integrations/planningcenter.ts` (events + groups) | Set `PCO_APP_ID` / `PCO_SECRET` |
+| **Events & groups** | CMS-native `event` and `group` documents. Planning Center is not used. | Edit in `/studio` |
 | **Connect form** | `app/api/connect` → staff only, never the visitor | Set `STAFF_EMAIL` + `RESEND_API_KEY` |
 | **Mailing list** | `app/api/subscribe` (acknowledges only) | Connect Mailchimp/ConvertKit + approve copy |
 | **Maps** | `components/map/MapEmbed.tsx` (keyless) | — |

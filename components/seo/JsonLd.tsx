@@ -53,8 +53,11 @@ export function ChurchJsonLd({ settings }: { settings: SiteSettings }) {
     url: siteUrl,
     potentialAction: {
       "@type": "SearchAction",
-      target: `${siteUrl}/search?q={query}`,
-      "query-input": "required name=query",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${siteUrl}/search?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
     },
   };
 

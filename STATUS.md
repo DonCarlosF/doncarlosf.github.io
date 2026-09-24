@@ -15,12 +15,12 @@ fallback; every getter switches to live CMS data automatically once the project
 | Home | **BUILT** | Hero slideshow, event banner (auto-expiring, event fallback), service bar, welcome, pathways, pastors, click-to-load live facade, clips, events, testimonial, Dream Center (3 H's + 500+ stat), giving. |
 | About | **BUILT** | Supplied intro/mission/Five Pillars/Core Values; "Our Story" intentionally placeholder. |
 | Leadership | **PARTIAL** | Lives at About `#leadership` (Dr. LJ full bio; Dr. Karen extended bio pending). No staff/ministry leads yet. |
-| New Here / Plan Your Visit | **PARTIAL** | Working connect form; what-to-expect copy is AI-drafted and awaits approval (see §6). |
+| New Here / Plan Your Visit | **PARTIAL** | Working connect form. What-to-expect cards stay on the page with a visible draft banner until pastoral approval (see §6). |
 | Watch / Sermons | **BUILT** | BoxCast live + past-broadcast playlist, CMS sermon archive, series browse, playable clip rail, per-sermon pages. |
 | Serve / Dream Center | **BUILT** | Three H's, 8 owner-supplied programs w/ real stats, ~40-unit Eastmont/MacArthur housing story, working volunteer form. |
 | Give | **BUILT** | Clover link-out by locked decision (embed impossible: `frame-ancestors *.clover.com`); structured for a future platform swap. |
-| Events + detail | **BUILT** | CMS-native list/calendar/detail with Event JSON-LD. |
-| Groups + directory | **PARTIAL** | Directory + filter + join CTA; schema still lacks leader/semester fields; sample data only. |
+| Events + detail | **BUILT** | CMS-native list/calendar/detail with Event JSON-LD. Weekly gatherings roll forward in America/Los_Angeles; past one-off events drop off the upcoming list. |
+| Groups + directory | **PARTIAL** | Directory + filter + join CTA. Optional leader and semester fields are in the schema and render when set. Sample data only — no invented leaders. |
 | Kids & Youth | **REMOVED (locked)** | Owner's 2026-06-16 instruction stands. |
 | Blog + detail | **BUILT** | Fresh start, Portable Text; 1 flagged sample post. |
 | Contact | **BUILT** | Map/directions, prayer line, working form, phone set; **canonical email = owner TODO**. |
