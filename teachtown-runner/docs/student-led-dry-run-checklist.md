@@ -17,7 +17,7 @@ into a commit or an issue.
 - [ ] `config.json` has the display name: `studentLed.learners.Luis` is the
       name **exactly** as enCORE's student list shows it
       (`npm start -- --recon-roster` prints that list into `recon/`).
-- [ ] `npm test` passes (26 tests; the browser ones may print a skip notice
+- [ ] `npm test` passes (44 tests; the browser ones may print a skip notice
       if `npx playwright install chromium` was never run — that's fine).
 - [ ] `npm start -- --login` has been done on this machine (zero-touch
       profile). If not, the first dry run below will pause on
@@ -33,7 +33,7 @@ Use whichever entry point you will actually use in class:
 | UI | Dry Run toggle ON → Home → *Math* button |
 | Windows shortcut | `windows\Luis-Math.cmd --dry-run` (from a console) |
 
-Repeat for `ela`, `social-skills`, `science`. For **each** run tick:
+Repeat for `ela`, `social-studies`, `science`. For **each** run tick:
 
 - [ ] `SESSION START (dry run) (student-led) — enCORE Student-Led, learner "Luis", subject=<key> …`
 - [ ] `Selected learner "Luis"` — and on screen, exactly one row highlighted,
@@ -46,13 +46,13 @@ Repeat for `ela`, `social-skills`, `science`. For **each** run tick:
 
   | Run | Expected `SUBJECTS after:` |
   | --- | --- |
-  | `ela` | `ELA [x]  Math [ ]  Science [ ]  Social Skills [ ]` |
-  | `math` | `ELA [ ]  Math [x]  Science [ ]  Social Skills [ ]` |
-  | `social-skills` | `ELA [ ]  Math [ ]  Science [ ]  Social Skills [x]` |
-  | `science` | `ELA [ ]  Math [ ]  Science [x]  Social Skills [ ]` |
+  | `ela` | `ELA [x]  Math [ ]  Science [ ]  Social Studies [ ]` |
+  | `math` | `ELA [ ]  Math [x]  Science [ ]  Social Studies [ ]` |
+  | `social-studies` | `ELA [ ]  Math [ ]  Science [ ]  Social Studies [x]` |
+  | `science` | `ELA [ ]  Math [ ]  Science [x]  Social Studies [ ]` |
 
   (Box order follows the screen; if the tenant labels the last one
-  "Social Studies" the line says so and the button still works.)
+  "Social Skills" the line says so and the button still works.)
 - [ ] The screen agrees with the log line — look at the actual boxes before
       the runner backs out.
 - [ ] The lesson checklist under the subjects was **not** clicked by the
@@ -82,5 +82,13 @@ Repeat for `ela`, `social-skills`, `science`. For **each** run tick:
       wizard accepts the state, then Ctrl+C (or STOP in the UI) — a clean
       exit closes the browser. No session was logged unless you launched
       one yourself on step 3.
-- [ ] Install the Desktop shortcuts (`windows\Install Desktop Shortcuts.cmd`)
-      and click one — same `READY` line expected.
+- [ ] Install the Desktop shortcut (`windows\Install Desktop Shortcuts.cmd`),
+      double-click **TeachTown Buttons**, pick the learner, tap one subject —
+      the page walks Open enCORE → Find → Only <Subject> → **Ready! Go to
+      the enCORE window.** (same `READY` line under *Details for your
+      teacher*). *Session over — close enCORE* → *Yes* ends it cleanly.
+- [ ] Learners with a Social Skills routine: the para page has no dry run,
+      so try the routine button once at a quiet moment. Expect *Log in
+      <pseudonym>* → *movie 1 of N* … → *Do the Activity* → *All done*. If
+      the activity is already at 100% it is skipped and the page says so.
+      *Stop* logs the learner out and closes the browser at any point.

@@ -17,6 +17,13 @@
  *    child without running its cleanup.
  *  - The server writes exactly two files, both gitignored: config.json and
  *    config.json.bak. No logs, caches, or session files of its own.
+ *  - Two pages: / is the full dashboard (teacher), /para is the para
+ *    educator's page — per-learner subject buttons and Social Skills
+ *    routines, plain-language progress, nothing else. `--para` opens /para.
+ *    /api/para gives that page pseudonyms only, never display names.
+ *  - One server per machine: if the port already answers as this UI, a new
+ *    launch just opens the page on it and exits (a double-clicked shortcut
+ *    must never start a second server that could run a second runner).
  *
  * Test hooks (used by the mock suite, harmless otherwise):
  *   TT_UI_PORT     fixed port instead of 4317+scan
@@ -31,6 +38,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { spawn, execSync, execFileSync } = require('child_process');
 const { SUBJECT_KEYS, normalizeSubjectKey } = require('./lib/subjects');
+const para = require('./lib/para-config');
 
 const DIR = __dirname;
 const CONFIG = path.join(DIR, 'config.json');
@@ -41,6 +49,7 @@ const RUNNER = process.env.TT_UI_RUNNER || path.join(DIR, 'runner.js');
 const HOST = '127.0.0.1'; // loopback ONLY — see header
 const BASE_PORT = Number(process.env.TT_UI_PORT) || 4317;
 const PORT_IS_FIXED = !!process.env.TT_UI_PORT_STRICT; // default: busy port → try the next one
+const START_PAGE = process.argv.includes('--para') ? 'para' : '';
 
 /* ------------------------------ version ----------------------------- */
 
@@ -49,7 +58,17 @@ function buildVersion() {
   // content hash: same code → same hash on every machine. Git SHA is
   // appended where a .git dir exists (nice to have, never required).
   const h = crypto.createHash('sha256');
-  for (const f of ['runner.js', 'ui-server.js', 'ui.html', 'privacy-check.js', 'init-config.js', 'lib/subjects.js']) {
+  for (const f of [
+    'runner.js',
+    'ui-server.js',
+    'ui.html',
+    'para.html',
+    'privacy-check.js',
+    'init-config.js',
+    'lib/subjects.js',
+    'lib/para-config.js',
+    'lib/para-status.js',
+  ]) {
     try {
       h.update(fs.readFileSync(path.join(DIR, f)));
     } catch {}
@@ -73,6 +92,8 @@ const VERSION = buildVersion();
 const child = {
   proc: null,
   action: null,
+  learner: null, // pseudonym, para-page runs only
+  subject: null, // subject key, Student-Led runs only
   startedAt: 0,
   exitCode: null,
   lines: [], // ring buffer replayed to (re)connecting pages
@@ -95,6 +116,8 @@ function statusPayload() {
     type: 'status',
     running: !!child.proc,
     action: child.action,
+    learner: child.learner,
+    subject: child.subject,
     startedAt: child.startedAt,
     exitCode: child.exitCode,
   };
@@ -130,16 +153,59 @@ function buildRun(body) {
     case 'recon-roster':
       return { args: ['--recon-roster'] };
     case 'studentled-subject': {
-      // One button per subject; the learner is fixed by config
-      // (studentLed.learnerPseudonym). The subject key is a curriculum word,
-      // not a name, so it is safe on argv. Stops at READY — never launches.
+      // One button per subject. The subject key is a curriculum word, not a
+      // name, so it is safe on argv. Stops at READY — never launches. The
+      // learner defaults to studentLed.learnerPseudonym; the para page names
+      // one explicitly (a pseudonym — it rides in the env overrides anyway,
+      // since a local pseudonym can be a nickname).
       const subject = normalizeSubjectKey(body.subject);
       if (!subject) return { error: `Student-Led needs a subject: ${SUBJECT_KEYS.join(', ')}` };
-      return { args: ['--student-led', '--subject', subject, ...flags], overrides: { studentLed: { autoBegin: false } } };
+      const studentLed = { autoBegin: false };
+      let learner = null;
+      if (body.learner != null) {
+        const got = learnerFromConfig(body.learner);
+        if (got.error) return got;
+        learner = studentLed.learnerPseudonym = got.pseudonym;
+      }
+      return { args: ['--student-led', '--subject', subject, ...flags], overrides: { studentLed }, learner, subject };
+    }
+    case 'social-routine': {
+      // Para page: one learner's Social Skills routine (socialSkillsRoutines
+      // in config.json) as a one-student playlist — the same thing a Custom
+      // Run does, with the display name resolved HERE so the page never
+      // holds it. afterRotation is forced to "stop": exactly one pass.
+      const got = learnerFromConfig(body.learner);
+      if (got.error) return got;
+      const routine = para.routineFor(got.cfg, got.pseudonym);
+      if (!routine) return { error: `No Social Skills routine is set up for "${got.pseudonym}" (Settings → Para page learners).` };
+      return {
+        args: flags,
+        overrides: { students: [got.name], playlist: para.routinePlaylist(routine), afterRotation: 'stop' },
+        learner: got.pseudonym,
+      };
     }
     default:
       return { error: `unknown action "${body.action}"` };
   }
+}
+
+// Resolve a pseudonym the page sent against config.json: it must be one of
+// the configured learners and have a display name.
+function learnerFromConfig(raw) {
+  const pseudonym = typeof raw === 'string' ? raw.trim() : '';
+  if (!pseudonym) return { error: 'No learner was named.' };
+  let cfg;
+  try {
+    const r = readConfigForUi();
+    if (r.missing) return { error: 'config.json is missing — run `npm run init-config` or save Settings once.' };
+    cfg = r.config;
+  } catch (err) {
+    return { error: `config.json is unreadable: ${err.message}` };
+  }
+  if (!para.learnerPseudonyms(cfg).includes(pseudonym)) return { error: `"${pseudonym}" is not a configured learner.` };
+  const name = para.displayNameFor(cfg, pseudonym);
+  if (!name) return { error: `Enter ${pseudonym}'s display name in Settings first.` };
+  return { cfg, pseudonym, name };
 }
 
 function startRun(body) {
@@ -158,6 +224,8 @@ function startRun(body) {
   });
   child.proc = proc;
   child.action = body.action + (body.dry ? ' (dry run)' : '');
+  child.learner = plan.learner || null;
+  child.subject = plan.subject || null;
   child.startedAt = Date.now();
   child.exitCode = null;
   child.lines = [];
@@ -265,6 +333,16 @@ function validateConfig(cfg) {
         errs.push('studentLed.lessonSource must be recommended, iep, facilitator, or benchmark');
     }
   }
+  // socialSkillsRoutines is optional too: pseudonym → { target, movieTimes, thenActivity }.
+  const ssr = cfg.socialSkillsRoutines;
+  if (ssr !== undefined) {
+    if (typeof ssr !== 'object' || ssr === null || Array.isArray(ssr)) errs.push('"socialSkillsRoutines" must be an object of pseudonym → routine');
+    else
+      for (const [k, r] of Object.entries(ssr)) {
+        if (!k.trim()) errs.push('socialSkillsRoutines has an entry with an empty pseudonym');
+        errs.push(...para.routineErrors(r, `socialSkillsRoutines["${k}"]`));
+      }
+  }
   return errs;
 }
 
@@ -309,10 +387,24 @@ function readBody(req) {
 const server = http.createServer(async (req, res) => {
   try {
     const url = req.url.split('?')[0];
-    if (req.method === 'GET' && (url === '/' || url === '/index.html')) {
-      const html = fs.readFileSync(path.join(DIR, 'ui.html'));
+    const page = { '/': 'ui.html', '/index.html': 'ui.html', '/para': 'para.html', '/para.html': 'para.html' }[url];
+    if (req.method === 'GET' && page) {
+      const html = fs.readFileSync(path.join(DIR, page));
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
       return res.end(html);
+    }
+    if (req.method === 'GET' && url === '/para-status.js') {
+      const js = fs.readFileSync(path.join(DIR, 'lib', 'para-status.js'));
+      res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8' });
+      return res.end(js);
+    }
+    if (req.method === 'GET' && url === '/api/para') {
+      try {
+        const r = readConfigForUi();
+        return json(res, 200, para.paraInfo(r.config, { configMissing: r.missing }));
+      } catch (err) {
+        return json(res, 500, { error: `config.json is unreadable: ${err.message}` });
+      }
     }
     if (req.method === 'GET' && url === '/api/version') return json(res, 200, { version: VERSION });
     if (req.method === 'GET' && url === '/api/status') return json(res, 200, statusPayload());
@@ -386,13 +478,39 @@ server.on('listening', () => {
   console.log('');
   console.log(`TeachTown runner UI — ${VERSION}`);
   console.log(`Serving on ${url} (this machine only — never the network)`);
+  console.log(`Para page: ${url}para`);
   console.log('Leave this window open; Ctrl+C here shuts the UI down.');
   console.log('');
-  openBrowser(url);
+  openBrowser(url + START_PAGE);
 });
 
+// Does this port already answer as a TeachTown runner UI?
+function isOurServer(port) {
+  return new Promise((resolve) => {
+    const req = http.get({ host: HOST, port, path: '/api/version', timeout: 1500 }, (res) => {
+      let data = '';
+      res.on('data', (d) => (data += d));
+      res.on('end', () => {
+        try {
+          resolve(res.statusCode === 200 && /· code [0-9a-f]{8}/.test(JSON.parse(data).version));
+        } catch {
+          resolve(false);
+        }
+      });
+    });
+    req.on('timeout', () => req.destroy());
+    req.on('error', () => resolve(false));
+  });
+}
+
 function listen(port) {
-  server.once('error', (err) => {
+  server.once('error', async (err) => {
+    if (err.code === 'EADDRINUSE' && (await isOurServer(port))) {
+      const url = `http://${HOST}:${port}/${START_PAGE}`;
+      console.log(`The TeachTown runner UI is already running — opening ${url}`);
+      openBrowser(url);
+      process.exit(0);
+    }
     if (err.code === 'EADDRINUSE' && !PORT_IS_FIXED && port < BASE_PORT + 20) {
       console.log(`port ${port} is busy — trying ${port + 1}`);
       listen(port + 1);

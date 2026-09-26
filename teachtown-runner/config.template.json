@@ -21,10 +21,12 @@
     "autoBegin": false
   },
   "studentLed": {
-    "_note": "enCORE Student-Led for ONE learner: `npm start -- --student-led --subject ela|math|social-skills|science` (the UI's four Student-Led buttons and windows/*.cmd pass the subject). learnerPseudonym names the entry in `learners`; in your local config.json fill that entry with the learner's display name EXACTLY as enCORE shows it — never here in the template. Only the chosen subject stays checked on step 2; the runner stops at READY and you press Next/launch. lessonSource: recommended (app default) | iep | facilitator | benchmark. autoBegin:true also presses Next and the step-3 launch button (unverified screen) — a REAL logged session.",
+    "_note": "enCORE Student-Led, one learner per run: `npm start -- --student-led --subject ela|math|social-studies|science` (the UI's Student-Led buttons, the para page, and windows/*.cmd pass the subject). `learners` maps pseudonym → display name; learnerPseudonym is the default learner (the CLI, the .cmd launchers, the dashboard buttons). In your local config.json fill each entry with the learner's display name EXACTLY as enCORE shows it — never here in the template. More learners = more entries (Settings → Learners); each gets a tab on the para page (npm run para). Only the chosen subject stays checked on step 2; the runner stops at READY and you press Next/launch. lessonSource: recommended (app default) | iep | facilitator | benchmark. autoBegin:true also presses Next and the step-3 launch button (unverified screen) — a REAL logged session.",
     "learnerPseudonym": "Luis",
     "learners": { "Luis": "" },
     "lessonSource": "recommended",
     "autoBegin": false
-  }
+  },
+  "socialSkillsRoutines": {},
+  "_socialSkillsRoutinesNote": "Per-learner Social Skills button on the para page, keyed by the same pseudonym as studentLed.learners: { \"<pseudonym>\": { \"target\": \"Movie Name\", \"movieTimes\": 5, \"thenActivity\": true } } logs the learner in (display name from studentLed.learners), watches target movieTimes times, then Does the Activity once (skipped if already at 100%). One pass, then it stops. Fill it in your local config.json or Settings → Learners."
 }

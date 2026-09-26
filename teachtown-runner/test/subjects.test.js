@@ -19,14 +19,14 @@ const allChecked = () => [
   { label: 'ELA', checked: true },
   { label: 'Math', checked: true },
   { label: 'Science', checked: true },
-  { label: 'Social Skills', checked: true },
+  { label: 'Social Studies', checked: true },
   { label: 'Math: Add within 20', checked: true },
   { label: 'Science Vocabulary — Weather', checked: false },
   { label: 'Select all lessons', checked: true },
 ];
 
-test('the four button keys are exactly ELA, Math, Social Skills, Science', () => {
-  assert.deepEqual(SUBJECT_KEYS, ['ela', 'math', 'social-skills', 'science']);
+test('the four button keys are exactly ELA, Math, Social Studies, Science', () => {
+  assert.deepEqual(SUBJECT_KEYS, ['ela', 'math', 'social-studies', 'science']);
 });
 
 test('normalizeSubjectKey accepts the spellings a human or a shortcut will pass', () => {
@@ -34,8 +34,10 @@ test('normalizeSubjectKey accepts the spellings a human or a shortcut will pass'
     ['ela', 'ela'], ['ELA', 'ela'], [' English Language Arts ', 'ela'],
     ['math', 'math'], ['Math', 'math'], ['Mathematics', 'math'],
     ['science', 'science'], ['Science', 'science'],
-    ['social-skills', 'social-skills'], ['Social Skills', 'social-skills'], ['social_skills', 'social-skills'],
-    ['SocialSkills', 'social-skills'], ['social', 'social-skills'], ['Social Studies', 'social-skills'],
+    ['social-studies', 'social-studies'], ['Social Studies', 'social-studies'], ['social_studies', 'social-studies'],
+    ['SocialStudies', 'social-studies'], ['social', 'social-studies'],
+    // the first-shipped key and label keep working (old shortcuts, old notes)
+    ['social-skills', 'social-studies'], ['Social Skills', 'social-studies'], ['SocialSkills', 'social-studies'],
   ]) {
     assert.equal(normalizeSubjectKey(raw), key, `"${raw}"`);
   }
@@ -49,8 +51,8 @@ test('classifySubjectLabel matches whole labels only — lesson rows never count
   assert.equal(classifySubjectLabel(' Math '), 'math');
   assert.equal(classifySubjectLabel('Math (12)'), 'math'); // lesson counters
   assert.equal(classifySubjectLabel('Science:'), 'science');
-  assert.equal(classifySubjectLabel('Social Skills'), 'social-skills');
-  assert.equal(classifySubjectLabel('Social Studies'), 'social-skills'); // 2026-07 recon spelling
+  assert.equal(classifySubjectLabel('Social Studies'), 'social-studies'); // 2026-07 recon spelling
+  assert.equal(classifySubjectLabel('Social Skills'), 'social-studies');
   assert.equal(classifySubjectLabel('Math: Add within 20'), null);
   assert.equal(classifySubjectLabel('Science Vocabulary — Weather'), null);
   assert.equal(classifySubjectLabel('Select all lessons'), null);
@@ -64,7 +66,7 @@ for (const key of SUBJECT_KEYS) {
     const plan = planSubjectSelection(boxes, key);
     assert.equal(plan.key, key);
     assert.notEqual(plan.target, null);
-    assert.equal(boxes[plan.target].label === 'Social Skills' ? 'social-skills' : boxes[plan.target].label.toLowerCase(), key);
+    assert.equal(boxes[plan.target].label.toLowerCase().replace(' ', '-'), key);
     // Exactly three toggles: the three other subject boxes, none of the lesson rows.
     assert.equal(plan.toggles.length, 3);
     for (const i of plan.toggles) assert.ok(i < 4, `toggle ${i} is not a subject box`);
@@ -81,7 +83,7 @@ test('an already-correct screen plans zero toggles and passes verification', () 
   const boxes = allChecked();
   boxes[0].checked = false; // ELA
   boxes[2].checked = false; // Science
-  boxes[3].checked = false; // Social Skills
+  boxes[3].checked = false; // Social Studies
   const plan = planSubjectSelection(boxes, 'math');
   assert.deepEqual(plan.toggles, []);
   assert.equal(subjectStateIsCorrect(boxes, 'math'), true);
@@ -103,10 +105,10 @@ test('a missing target box is reported, not guessed', () => {
 });
 
 test('duplicate-looking target boxes warn and use the first', () => {
-  const boxes = [...allChecked(), { label: 'Social Studies', checked: true }];
-  const plan = planSubjectSelection(boxes, 'social-skills');
+  const boxes = [...allChecked(), { label: 'Social Skills', checked: true }];
+  const plan = planSubjectSelection(boxes, 'social-studies');
   assert.equal(plan.target, 3);
-  assert.match(plan.warnings.join('\n'), /2 checkboxes look like "Social Skills"/);
+  assert.match(plan.warnings.join('\n'), /2 checkboxes look like "Social Studies"/);
   assert.ok(plan.toggles.includes(7), 'the second look-alike is unchecked too');
 });
 
@@ -125,6 +127,6 @@ test('an unknown subject key throws instead of clicking anything', () => {
 test('describeSubjectState lists only the subject boxes with their state', () => {
   const boxes = allChecked();
   boxes[1].checked = false;
-  assert.equal(describeSubjectState(boxes), 'ELA [x]  Math [ ]  Science [x]  Social Skills [x]');
+  assert.equal(describeSubjectState(boxes), 'ELA [x]  Math [ ]  Science [x]  Social Studies [x]');
   assert.equal(describeSubjectState([]), '(no subject checkboxes recognized)');
 });

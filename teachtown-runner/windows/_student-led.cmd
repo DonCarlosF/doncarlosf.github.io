@@ -3,7 +3,7 @@ setlocal
 rem ---------------------------------------------------------------------
 rem Shared launcher behind the four "Luis-<Subject>.cmd" files.
 rem
-rem   _student-led.cmd ela|math|social-skills|science [--dry-run]
+rem   _student-led.cmd ela|math|social-studies|science [--dry-run]
 rem
 rem Starts the runner in enCORE Student-Led mode for the configured learner
 rem (studentLed.learnerPseudonym in config.json -- "Luis") with ONLY the
@@ -17,7 +17,7 @@ rem ---------------------------------------------------------------------
 
 set "SUBJECT=%~1"
 if "%SUBJECT%"=="" (
-  echo usage: %~nx0 ela^|math^|social-skills^|science [--dry-run]
+  echo usage: %~nx0 ela^|math^|social-studies^|science [--dry-run]
   pause
   exit /b 1
 )

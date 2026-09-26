@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TeachTown Buttons</title>
+<!--
+  The para educator's page (served at /para). One learner at a time: pick
+  the learner, tap a subject (enCORE Student-Led, only that subject checked)
+  or the learner's Social Skills routine, then follow the plain-language
+  steps. Everything else — dry runs, rotations, Teacher-Led, settings —
+  stays on the teacher's dashboard at /.
+
+  Pseudonyms only: /api/para never sends display names. The raw runner log
+  (which can) sits in the collapsed "Details for your teacher" panel.
+-->
+<style>
+  :root {
+    --bg: #f5f6fa; --card: #ffffff; --text: #18202b; --muted: #5a6474; --line: #dfe3ec;
+    --focus: #1d4ed8;
+    --c-social-studies: #b45309; --c-ela: #1d4ed8; --c-math: #15803d; --c-science: #7e22ce; --c-routine: #0f766e;
+    --ok-bg: #e7f6ed; --ok-line: #b5e2c6; --ok-text: #14532d;
+    --warn-bg: #fff5dd; --warn-line: #f1d188; --warn-text: #734700;
+    --err-bg: #fdecec; --err-line: #f0b8b8; --err-text: #8a1c1c;
+    --done: #15803d; --todo: #c5cbd6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1318; --card: #171d25; --text: #eef2f7; --muted: #9ba7b6; --line: #2b3440;
+      --focus: #7aa7ff;
+      --ok-bg: #102619; --ok-line: #1f5134; --ok-text: #bdefcf;
+      --warn-bg: #2b220f; --warn-line: #5e4717; --warn-text: #ffe1a0;
+      --err-bg: #2d1515; --err-line: #5f2a2a; --err-text: #ffc8c8;
+      --done: #3fb872; --todo: #3a4452;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 20px/1.45 system-ui, "Segoe UI", Helvetica, Arial, sans-serif; }
+  main { max-width: 900px; margin: 0 auto; padding: 28px 16px 12px; }
+  button { font: inherit; color: inherit; }
+  button:focus-visible, summary:focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; }
+  [hidden] { display: none !important; }
+
+  /* learner toggle */
+  .learners { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 26px; }
+  .learners button { min-height: 60px; min-width: 150px; padding: 8px 26px; border-radius: 999px; cursor: pointer;
+                     border: 2px solid var(--line); background: var(--card); font-size: 24px; font-weight: 600; }
+  .learners button[aria-selected="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+  h1.who { font-size: 42px; line-height: 1.1; margin: 0 0 26px; }
+
+  .section { font-size: 17px; font-weight: 700; letter-spacing: .02em; color: var(--muted); margin: 0 0 12px; }
+  .section + .hint { margin-top: -6px; }
+  .hint { color: var(--muted); font-size: 18px; margin: 0 0 14px; }
+
+  /* the buttons */
+  .subjects { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 34px; }
+  .big { position: relative; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start;
+         min-height: 164px; padding: 20px 22px; border: 0; border-radius: 22px; cursor: pointer; text-align: left;
+         background: var(--c); color: #fff; box-shadow: 0 2px 0 rgba(0,0,0,.08);
+         transition: transform .08s ease, filter .15s ease; }
+  .big:hover { filter: brightness(1.07); }
+  .big:active { transform: scale(.98); }
+  .big:disabled { cursor: not-allowed; filter: grayscale(.85) opacity(.45); transform: none; }
+  .big svg { position: absolute; top: 18px; left: 20px; width: 46px; height: 46px; }
+  .big .name { font-size: 34px; font-weight: 700; line-height: 1.1; }
+  .big .sub { font-size: 18px; opacity: .92; margin-top: 4px; }
+  .routine { width: 100%; min-height: 150px; margin-bottom: 34px; }
+
+  .note { border-radius: 14px; padding: 14px 18px; margin: 0 0 22px; border: 2px solid var(--line); background: var(--card); }
+  .note[data-tone="ok"] { background: var(--ok-bg); border-color: var(--ok-line); color: var(--ok-text); }
+  .note[data-tone="warn"] { background: var(--warn-bg); border-color: var(--warn-line); color: var(--warn-text); }
+  .note[data-tone="error"] { background: var(--err-bg); border-color: var(--err-line); color: var(--err-text); }
+
+  /* run screen */
+  .badge { display: inline-flex; align-items: center; gap: 10px; padding: 8px 18px 8px 12px; border-radius: 999px;
+           background: var(--c, var(--text)); color: #fff; font-size: 22px; font-weight: 700; margin-bottom: 26px; }
+  .badge svg { width: 30px; height: 30px; }
+  .steps { list-style: none; display: grid; grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); gap: 8px;
+           padding: 0; margin: 0 0 26px; counter-reset: step; }
+  .steps li { position: relative; text-align: center; font-size: 17px; color: var(--muted); padding-top: 52px; }
+  .steps li::before { counter-increment: step; content: counter(step); position: absolute; top: 0; left: 50%;
+                      transform: translateX(-50%); width: 42px; height: 42px; border-radius: 50%;
+                      display: grid; place-items: center; font-weight: 700; font-size: 19px;
+                      background: var(--card); border: 3px solid var(--todo); color: var(--muted); }
+  .steps li::after { content: ""; position: absolute; top: 20px; left: calc(50% + 27px); right: calc(-50% + 27px);
+                     height: 3px; background: var(--todo); border-radius: 2px; }
+  .steps li:last-child::after { display: none; }
+  .steps li.done { color: var(--text); }
+  .steps li.done::before { content: "✓"; background: var(--done); border-color: var(--done); color: #fff; }
+  .steps li.done::after { background: var(--done); }
+  .steps li.now { color: var(--text); font-weight: 700; }
+  .steps li.now::before { border-color: var(--c, var(--focus)); color: var(--text); animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--c, var(--focus)) 28%, transparent); } }
+  @media (prefers-reduced-motion: reduce) { .steps li.now::before { animation: none; } .big { transition: none; } }
+
+  .msg { border-radius: 20px; padding: 24px 26px; border: 2px solid var(--line); background: var(--card); margin-bottom: 22px; }
+  .msg[data-tone="ok"] { background: var(--ok-bg); border-color: var(--ok-line); color: var(--ok-text); }
+  .msg[data-tone="warn"] { background: var(--warn-bg); border-color: var(--warn-line); color: var(--warn-text); }
+  .msg[data-tone="error"] { background: var(--err-bg); border-color: var(--err-line); color: var(--err-text); }
+  .msg h1 { font-size: 36px; line-height: 1.15; margin: 0 0 10px; }
+  .msg p { font-size: 21px; margin: 0; }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .btn { min-height: 64px; padding: 10px 28px; border-radius: 16px; cursor: pointer; font-size: 22px; font-weight: 600;
+         border: 2px solid var(--line); background: var(--card); }
+  .btn.primary { background: var(--c, var(--text)); border-color: transparent; color: #fff; }
+  .btn.danger { background: #b42318; border-color: #b42318; color: #fff; }
+  .confirm { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; width: 100%;
+             padding: 16px; border-radius: 16px; border: 2px solid var(--warn-line); background: var(--warn-bg); color: var(--warn-text); }
+  .confirm p { margin: 0 8px 0 0; font-weight: 600; flex: 1 1 260px; }
+
+  details { margin-top: 30px; color: var(--muted); }
+  summary { cursor: pointer; font-size: 16px; padding: 6px 0; }
+  pre { font: 14px/1.5 ui-monospace, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere;
+        background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px;
+        max-height: 40vh; overflow-y: auto; color: var(--text); }
+  footer { max-width: 900px; margin: 0 auto; padding: 8px 16px 28px; color: var(--muted); font-size: 16px; }
+
+  @media (max-width: 560px) {
+    body { font-size: 18px; }
+    .subjects { grid-template-columns: minmax(0, 1fr); }
+    .big { min-height: 120px; }
+    .big .name { font-size: 28px; }
+    .big svg { width: 38px; height: 38px; }
+    .learners button { min-width: 0; flex: 1 1 auto; }
+    .msg h1 { font-size: 28px; }
+    .steps li { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <nav class="learners" id="learners" role="tablist" aria-label="Learner" hidden></nav>
+
+  <section id="pick">
+    <h1 class="who" id="who" hidden></h1>
+    <div class="note" id="note" role="status" hidden></div>
+    <div class="note" id="setup" data-tone="warn" hidden></div>
+
+    <h2 class="section">enCORE Student-Led</h2>
+    <p class="hint">Tap a subject. Only that subject gets checked.</p>
+    <div class="subjects" id="subjects"></div>
+
+    <div id="routineWrap" hidden>
+      <h2 class="section">Social Skills</h2>
+      <button class="big routine" id="routineBtn" style="--c: var(--c-routine)">
+        <span class="name" id="routineName"></span>
+        <span class="sub" id="routineSub"></span>
+      </button>
+    </div>
+  </section>
+
+  <section id="run" hidden>
+    <div class="badge" id="badge"></div>
+    <ol class="steps" id="steps"></ol>
+    <div class="msg" id="msg" aria-live="polite">
+      <h1 id="title"></h1>
+      <p id="detail"></p>
+    </div>
+    <div class="actions">
+      <button class="btn" id="stopBtn" hidden></button>
+      <button class="btn primary" id="retryBtn" hidden>Try again</button>
+      <button class="btn" id="backBtn" hidden>Back to the buttons</button>
+      <div class="confirm" id="confirm" hidden>
+        <p id="confirmText"></p>
+        <button class="btn danger" id="confirmYes">Yes</button>
+        <button class="btn" id="confirmNo">Not yet</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="offline" hidden>
+    <div class="msg" data-tone="warn">
+      <h1>The TeachTown helper is closed</h1>
+      <p>Double-click <b>TeachTown Buttons</b> on the Desktop to start it again. This page reconnects by itself.</p>
+    </div>
+  </section>
+
+  <details id="details">
+    <summary>Details for your teacher</summary>
+    <pre id="log"></pre>
+  </details>
+</main>
+<footer>Keep the minimized “TeachTown helper” window open while you work — it runs these buttons.</footer>
+
+<script src="/para-status.js"></script>
+<script>
+'use strict';
+const $ = (s) => document.querySelector(s);
+
+// 24×24 line icons, drawn with currentColor.
+const svg = (body) =>
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+const ICONS = {
+  'social-studies': svg('<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/>'),
+  ela: svg('<path d="M4 5.5c2.5-1 5.5-.9 8 1 2.5-1.9 5.5-2 8-1v13c-2.5-1-5.5-.9-8 1-2.5-1.9-5.5-2-8-1z"/><path d="M12 6.5v13"/>'),
+  math: svg('<path d="M7 4v6M4 7h6M14 7h6M4.8 14.8l4.4 4.4M9.2 14.8l-4.4 4.4M14 15.5h6M14 18.5h6"/>'),
+  science: svg('<path d="M9 3h6M10 3v6.5l-5.4 8.7A1.8 1.8 0 0 0 6.1 21h11.8a1.8 1.8 0 0 0 1.5-2.8L14 9.5V3M7.5 15h9"/>'),
+  routine: svg('<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor"/>'),
+};
+const color = (key) => `var(--c-${key})`;
+
+let info = null; // GET /api/para
+let selected = null; // pseudonym on screen
+let st = ParaStatus.initialState();
+let online = true;
+let busyClick = false; // a start request is in flight, or accepted but not yet reported running
+let awaitTimer = null;
+let dismissed = null; // runId whose failure/note the para cleared
+let startError = null;
+
+const store = {
+  get() { try { return localStorage.getItem('para.learner'); } catch { return null; } },
+  set(v) { try { localStorage.setItem('para.learner', v); } catch {} },
+};
+
+function ctx() {
+  const routines = {};
+  const subjects = {};
+  if (info) {
+    info.learners.forEach((l) => { if (l.routine) routines[l.pseudonym] = l.routine; });
+    info.subjects.forEach((s) => { subjects[s.key] = s.label; });
+  }
+  return { defaultLearner: info && info.learners[0] ? info.learners[0].pseudonym : null, subjects, routines };
+}
+const learnerInfo = (p) => (info ? info.learners.find((l) => l.pseudonym === p) : null) || null;
+
+async function loadInfo() {
+  try {
+    const r = await fetch('/api/para');
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `HTTP ${r.status}`);
+    info = await r.json();
+  } catch (err) {
+    startError = `Could not read the settings: ${err.message}`;
+  }
+  if (info && !learnerInfo(selected)) {
+    const saved = store.get();
+    selected = learnerInfo(saved) ? saved : info.learners[0].pseudonym;
+  }
+  render();
+}
+
+/* ------------------------------ actions ------------------------------ */
+
+async function start(body) {
+  if (busyClick) return;
+  busyClick = true;
+  startError = null;
+  dismissed = null;
+  render();
+  let accepted = false;
+  try {
+    const r = await fetch('/api/run', { method: 'POST', body: JSON.stringify(body) });
+    if (r.ok) accepted = true;
+    else startError = (await r.json().catch(() => ({}))).error || 'Could not start.';
+  } catch {
+    startError = 'Could not reach the TeachTown helper.';
+  }
+  // Accepted: stay locked until the stream reports the run (or 5 s pass),
+  // so a second tap can't land in between.
+  if (accepted) awaitTimer = setTimeout(unlock, 5000);
+  else unlock();
+}
+function unlock() {
+  clearTimeout(awaitTimer);
+  busyClick = false;
+  render();
+}
+function startSubject(subject) { start({ action: 'studentled-subject', learner: selected, subject }); }
+function startRoutine() { start({ action: 'social-routine', learner: selected }); }
+function retry() {
+  if (st.kind === 'routine') start({ action: 'social-routine', learner: st.learner });
+  else start(Object.assign({ action: 'studentled-subject', subject: st.subject }, st.learner ? { learner: st.learner } : {}));
+}
+async function stop() {
+  $('#confirm').hidden = true;
+  try { await fetch('/api/stop', { method: 'POST' }); } catch {}
+}
+
+$('#routineBtn').addEventListener('click', startRoutine);
+$('#retryBtn').addEventListener('click', retry);
+$('#backBtn').addEventListener('click', () => { dismissed = st.runId; render(); });
+$('#confirmYes').addEventListener('click', stop);
+$('#confirmNo').addEventListener('click', () => { $('#confirm').hidden = true; $('#stopBtn').hidden = false; $('#stopBtn').focus(); });
+$('#stopBtn').addEventListener('click', () => {
+  const v = ParaStatus.view(st, ctx());
+  if (v.stop && v.stop.confirm) {
+    $('#confirmText').textContent = v.stop.confirm;
+    $('#confirm').hidden = false;
+    $('#stopBtn').hidden = true;
+    $('#confirmNo').focus();
+  } else {
+    stop();
+  }
+});
+
+/* ------------------------------ render ------------------------------- */
+
+function renderLearners() {
+  const nav = $('#learners');
+  const many = info.learners.length > 1;
+  nav.hidden = !many;
+  $('#who').hidden = many;
+  $('#who').textContent = selected;
+  if (!many) return;
+  if (nav.dataset.keys !== info.learners.map((l) => l.pseudonym).join('\n')) {
+    nav.innerHTML = '';
+    info.learners.forEach((l) => {
+      const b = document.createElement('button');
+      b.setAttribute('role', 'tab');
+      b.textContent = l.pseudonym;
+      b.addEventListener('click', () => { selected = l.pseudonym; store.set(selected); dismissed = st.runId; startError = null; render(); });
+      nav.appendChild(b);
+    });
+    nav.dataset.keys = info.learners.map((l) => l.pseudonym).join('\n');
+  }
+  Array.from(nav.children).forEach((b) => b.setAttribute('aria-selected', String(b.textContent === selected)));
+}
+
+function renderPick(v) {
+  const l = learnerInfo(selected);
+  renderLearners();
+  const setup = info.configMissing
+    ? 'Not set up yet. Ask your teacher to open Settings on this computer.'
+    : l && !l.ready
+      ? `Ask your teacher to enter ${selected}'s name in Settings first.`
+      : null;
+  $('#setup').hidden = !setup;
+  $('#setup').textContent = setup || '';
+
+  const note = startError ? { tone: 'error', text: startError } : dismissed === st.runId ? null : v.note;
+  $('#note').hidden = !note;
+  if (note) { $('#note').dataset.tone = note.tone; $('#note').textContent = note.text; }
+
+  const off = !!setup || busyClick;
+  const grid = $('#subjects');
+  if (!grid.children.length) {
+    info.subjects.forEach((s) => {
+      const b = document.createElement('button');
+      b.className = 'big';
+      b.style.setProperty('--c', color(s.key));
+      b.dataset.subject = s.key;
+      b.innerHTML = ICONS[s.key] + '<span class="name"></span>';
+      b.querySelector('.name').textContent = s.label;
+      b.addEventListener('click', () => startSubject(s.key));
+      grid.appendChild(b);
+    });
+  }
+  Array.from(grid.children).forEach((b) => { b.disabled = off; });
+
+  const r = l && l.routine;
+  $('#routineWrap').hidden = !r;
+  if (r) {
+    $('#routineName').textContent = r.target;
+    const parts = [];
+    if (r.movieTimes) parts.push(`Movie ${r.movieTimes === 1 ? 'once' : `${r.movieTimes} times`}`);
+    if (r.thenActivity) parts.push(parts.length ? 'then Do the Activity' : 'Do the Activity');
+    $('#routineSub').textContent = parts.join(', ');
+    if (!$('#routineBtn').querySelector('svg')) $('#routineBtn').insertAdjacentHTML('afterbegin', ICONS.routine);
+    $('#routineBtn').disabled = off;
+  }
+  document.title = `${selected} · TeachTown`;
+}
+
+function renderRun(v) {
+  const key = v.kind === 'routine' ? 'routine' : v.subject;
+  const tint = key ? color(key) : 'var(--text)';
+  $('#run').style.setProperty('--c', tint);
+  const label = v.kind === 'routine' ? (ctx().routines[v.learner] || {}).target || 'Social Skills' : ctx().subjects[v.subject] || '';
+  $('#badge').hidden = v.screen === 'busy';
+  $('#badge').innerHTML = (ICONS[key] || '') + '<span></span>';
+  $('#badge span').textContent = label ? `${label} · ${v.learner}` : v.learner || '';
+
+  const ol = $('#steps');
+  ol.hidden = !v.steps || v.screen === 'failed';
+  if (!ol.hidden) {
+    ol.style.setProperty('--n', v.steps.length);
+    ol.innerHTML = '';
+    v.steps.forEach((text, i) => {
+      const li = document.createElement('li');
+      li.textContent = text;
+      if (i + 1 < v.step) li.className = 'done';
+      else if (i + 1 === v.step && v.screen === 'progress') li.className = 'now';
+      ol.appendChild(li);
+    });
+  }
+  $('#msg').dataset.tone = v.tone;
+  $('#title').textContent = v.title;
+  $('#detail').textContent = v.detail;
+
+  const confirmOpen = !$('#confirm').hidden;
+  if (!v.stop) $('#confirm').hidden = true;
+  $('#stopBtn').hidden = !v.stop || (confirmOpen && !!v.stop);
+  if (v.stop) {
+    $('#stopBtn').textContent = v.stop.label;
+    if (confirmOpen) $('#confirmText').textContent = v.stop.confirm || '';
+  }
+  $('#retryBtn').hidden = !v.retry;
+  $('#backBtn').hidden = v.screen !== 'failed';
+  document.title = `${v.title} · TeachTown`;
+}
+
+let queued = false;
+function render() {
+  if (queued) return;
+  queued = true;
+  requestAnimationFrame(() => {
+    queued = false;
+    $('#offline').hidden = online;
+    if (!online || !info) {
+      $('#pick').hidden = true;
+      $('#run').hidden = true;
+      return;
+    }
+    let v = ParaStatus.view(st, ctx());
+    if (v.screen === 'failed' && dismissed === st.runId) v = { screen: 'pick', note: null };
+    const picking = v.screen === 'pick';
+    $('#pick').hidden = !picking;
+    $('#run').hidden = picking;
+    $('#learners').hidden = true; // renderPick shows it again; never switchable mid-run
+    if (picking) renderPick(v);
+    else renderRun(v);
+
+    const log = $('#log');
+    const stuck = log.scrollTop + log.clientHeight >= log.scrollHeight - 30;
+    log.textContent = st.lines.join('\n');
+    if (stuck) log.scrollTop = log.scrollHeight;
+  });
+}
+
+/* ----------------------------- live stream ---------------------------- */
+
+let offlineTimer = null;
+function setOnline(on) {
+  clearTimeout(offlineTimer);
+  offlineTimer = null;
+  if (online !== on) { online = on; render(); }
+}
+function connect() {
+  const es = new EventSource('/api/stream');
+  let fresh = true; // every connection replays status + lines from scratch
+  es.onmessage = (ev) => {
+    const d = JSON.parse(ev.data);
+    if (fresh) { st = ParaStatus.initialState(); fresh = false; }
+    setOnline(true);
+    const wasRunning = st.running;
+    st = ParaStatus.reduce(st, d);
+    if (d.type === 'status') {
+      if (st.running && busyClick) unlock();
+      if (st.running && st.learner && learnerInfo(st.learner)) selected = st.learner;
+      if (wasRunning && !st.running) loadInfo(); // settings may have changed meanwhile
+    }
+    render();
+  };
+  es.onerror = () => {
+    es.close();
+    if (!offlineTimer && online) offlineTimer = setTimeout(() => setOnline(false), 2500);
+    setTimeout(connect, 1500);
+  };
+}
+
+loadInfo();
+connect();
+window.addEventListener('focus', loadInfo);
+</script>
+</body>
+</html>

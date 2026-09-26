@@ -32,7 +32,7 @@
  *                                   After this, normal runs are zero-touch.
  *                                   Combined with any other mode flag, that
  *                                   mode wins (it signs in first anyway).
- *      npm start -- --student-led --subject ela|math|social-skills|science
+ *      npm start -- --student-led --subject ela|math|social-studies|science
  *                                   enCORE Student-Led for ONE learner (the
  *                                   studentLed.learnerPseudonym entry — "Luis"
  *                                   — whose display name lives only in local
@@ -209,20 +209,26 @@ function loadConfig(flags) {
   // lists are world-readable on shared machines and these can carry student
   // names) and never a file (names live in gitignored config.json and
   // nowhere else on disk). Whitelisted keys only; teacherLed merges per-key
-  // so unspecified fields keep their config values.
+  // so unspecified fields keep their config values. afterRotation lets the
+  // para page's one-learner Social Skills routine run exactly one pass.
   if (process.env.TT_UI === '1' && process.env.TT_UI_OVERRIDES) {
     try {
       const o = JSON.parse(process.env.TT_UI_OVERRIDES);
-      for (const k of ['students', 'playlist', 'mode', 'targetActivity', 'district', 'autoSubmitPrefilledLogin']) {
+      for (const k of ['students', 'playlist', 'mode', 'targetActivity', 'afterRotation', 'district', 'autoSubmitPrefilledLogin']) {
         if (k in o) cfg[k] = o[k];
       }
       if (o.teacherLed && typeof o.teacherLed === 'object') {
         cfg.teacherLed = Object.assign({}, cfg.teacherLed || {}, o.teacherLed);
       }
       if (o.studentLed && typeof o.studentLed === 'object') {
-        // Only run-shaping keys — the learner map stays whatever config.json says.
+        // Only run-shaping keys — the learner map stays whatever config.json
+        // says; learnerPseudonym picks which of its entries this run uses.
         const pick = {};
-        for (const k of ['subject', 'autoBegin', 'lessonSource']) if (k in o.studentLed) pick[k] = o.studentLed[k];
+        for (const k of ['subject', 'autoBegin', 'lessonSource', 'learnerPseudonym']) if (k in o.studentLed) pick[k] = o.studentLed[k];
+        // The legacy "student" field is the config's OWN learner's name —
+        // it must never stand in for a different learner's empty entry.
+        const own = String((cfg.studentLed && cfg.studentLed.learnerPseudonym) || 'Luis').trim();
+        if (typeof pick.learnerPseudonym === 'string' && pick.learnerPseudonym.trim() !== own) pick.student = '';
         cfg.studentLed = Object.assign({}, cfg.studentLed || {}, pick);
       }
     } catch (err) {

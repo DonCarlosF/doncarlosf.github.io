@@ -91,19 +91,19 @@ test('switching subjects re-checks the new one and unchecks the previous', async
   try {
     assert.equal((await selectOnlySubject(page, 'ela', { settleMs: 120 })).ok, true);
     assert.equal((await selectOnlySubject(page, 'science', { settleMs: 120 })).ok, true);
-    assert.deepEqual(await mockState(page), { ELA: false, Math: false, Science: true, 'Social Skills': false });
+    assert.deepEqual(await mockState(page), { ELA: false, Math: false, Science: true, 'Social Studies': false });
   } finally {
     await page.close();
   }
 });
 
-test('the "Social Studies" spelling still resolves the Social Skills button', async (t) => {
+test('a "Social Skills" label still resolves the Social Studies button', async (t) => {
   if (!browser) return t.skip(launchError.message);
-  const page = await openStep2('label=studies');
+  const page = await openStep2('label=skills');
   try {
-    const result = await selectOnlySubject(page, 'social-skills', { settleMs: 120 });
+    const result = await selectOnlySubject(page, 'social-studies', { settleMs: 120 });
     assert.equal(result.ok, true);
-    assert.deepEqual(await mockState(page), { ELA: false, Math: false, Science: false, 'Social Studies': true });
+    assert.deepEqual(await mockState(page), { ELA: false, Math: false, Science: false, 'Social Skills': true });
   } finally {
     await page.close();
   }
@@ -119,7 +119,7 @@ test('a missing target box reports ok:false and clicks nothing', async (t) => {
     assert.equal(result.plan.target, null);
     assert.equal(result.attempts, 0);
     assert.match(lines.join('\n'), /no "Science" checkbox found/);
-    assert.deepEqual(await mockState(page), { ELA: true, Math: true, 'Social Skills': true }, 'untouched');
+    assert.deepEqual(await mockState(page), { ELA: true, Math: true, 'Social Studies': true }, 'untouched');
   } finally {
     await page.close();
   }

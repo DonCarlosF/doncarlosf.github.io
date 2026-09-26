@@ -16,20 +16,22 @@
  */
 
 // Keys are what the CLI / UI / Windows launchers pass (`--subject KEY`).
-// Order = the order the buttons are laid out (ELA, Math, Social Skills,
-// Science). "Social Skills" also accepts the "Social Studies" spelling the
-// 2026-07 recon captured; a tenant shows one or the other, never both.
+// Order is the planner's canonical order; the para page lays its buttons out
+// in its own order. enCORE's fourth subject is "Social Studies" (2026-07
+// recon); the key was first shipped as `social-skills`, so that key and the
+// "Social Skills" label still resolve to the same box — a tenant shows one
+// or the other, never both.
 const SUBJECTS = {
   ela: { label: 'ELA', match: /^(ela|english language arts)$/i },
   math: { label: 'Math', match: /^math(ematics)?$/i },
-  'social-skills': { label: 'Social Skills', match: /^social[ -]?(skills|studies)$/i },
+  'social-studies': { label: 'Social Studies', match: /^social[ -]?(studies|skills)$/i },
   science: { label: 'Science', match: /^science$/i },
 };
 const SUBJECT_KEYS = Object.keys(SUBJECTS);
 
 // Loose user input → canonical key (null when it isn't a subject we know).
-// "ELA", "ela", "Math", "social skills", "social_skills", "SocialSkills",
-// "social", "Social Studies", "science" all resolve.
+// "ELA", "ela", "Math", "Social Studies", "social_studies", "SocialStudies",
+// "social", "social-skills" (the old key), "science" all resolve.
 function normalizeSubjectKey(raw) {
   if (typeof raw !== 'string') return null;
   const s = raw.trim().toLowerCase().replace(/[\s_]+/g, '-');
@@ -37,7 +39,7 @@ function normalizeSubjectKey(raw) {
   if (s === 'ela' || s === 'english-language-arts' || s === 'english') return 'ela';
   if (s === 'math' || s === 'mathematics' || s === 'maths') return 'math';
   if (s === 'science' || s === 'sci') return 'science';
-  if (/^social(-?(skills|studies))?$/.test(s) || s === 'socialskills' || s === 'socialstudies' || s === 'ss') return 'social-skills';
+  if (/^social(-?(studies|skills))?$/.test(s) || s === 'ss') return 'social-studies';
   return null;
 }
 
@@ -112,7 +114,7 @@ function subjectStateIsCorrect(boxes, wantKey) {
   return plan.target != null && plan.toggles.length === 0;
 }
 
-// One-line state summary for the log: "ELA [ ]  Math [x]  Social Skills [ ]  Science [ ]".
+// One-line state summary for the log: "ELA [ ]  Math [x]  Social Studies [ ]  Science [ ]".
 function describeSubjectState(boxes) {
   const parts = [];
   for (const b of Array.isArray(boxes) ? boxes : []) {

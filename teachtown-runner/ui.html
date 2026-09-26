@@ -19,6 +19,7 @@
   .tab { min-height: 52px; padding: 8px 22px; font-size: 20px; border-radius: 10px;
          border: 1px solid var(--line); background: var(--panel2); color: var(--text); cursor: pointer; }
   .tab.active { background: var(--accent); border-color: var(--accent); }
+  a.tab { display: inline-flex; align-items: center; text-decoration: none; }
   #drywrap { margin-left: auto; display: flex; align-items: center; gap: 10px;
              background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; }
   #drywrap input { width: 26px; height: 26px; }
@@ -77,6 +78,7 @@
   <button class="tab active" data-screen="home">Home</button>
   <button class="tab" data-screen="run">Run</button>
   <button class="tab" data-screen="settings">Settings</button>
+  <a class="tab" href="/para" target="_blank" rel="noopener" title="The simple button page for para educators">Para page ↗</a>
   <label id="drywrap"><input type="checkbox" id="dry"> <span>Dry Run — rehearse, launch nothing</span></label>
 </header>
 <main>
@@ -123,9 +125,9 @@
       Math
       <small>only Math stays checked · stops at READY</small>
     </button>
-    <button class="btn subject" data-run="studentled-subject" data-subject="social-skills">
-      Social Skills
-      <small>only Social Skills stays checked · stops at READY</small>
+    <button class="btn subject" data-run="studentled-subject" data-subject="social-studies">
+      Social Studies
+      <small>only Social Studies stays checked · stops at READY</small>
     </button>
     <button class="btn subject" data-run="studentled-subject" data-subject="science">
       Science
@@ -133,7 +135,8 @@
     </button>
   </div>
   <p class="note" id="slNote">Picks <span class="learner">Luis</span> on step 1, unchecks the other three subjects on step 2, verifies, and waits — you press Next and launch on screen. Turn on Dry Run to verify the checkboxes and back out without starting anything.</p>
-  <p class="note" id="slMissing" style="display:none;">Buttons are off until <span class="learner">Luis</span>'s display name is entered under Settings → Student-Led learner (local config.json only).</p>
+  <p class="note" id="slMissing" style="display:none;">Buttons are off until <span class="learner">Luis</span>'s display name is entered under Settings → Learners (local config.json only).</p>
+  <p class="note">Every learner — with their Social Skills routine — is on the <a href="/para" target="_blank" rel="noopener" style="color:var(--text);">para page</a>.</p>
 
   <h2>Utilities</h2>
   <div class="grid">
@@ -187,9 +190,13 @@
     <label class="row">enCORE app hash: <input type="text" id="tlHash" placeholder="empty = district default" style="max-width:280px;"></label>
   </fieldset>
   <fieldset>
-    <legend>Student-Led learner (display name stays in local config.json — never committed)</legend>
-    <label class="row"><span class="learner" id="slPseudonym">Luis</span> = <input type="text" id="slName" placeholder="display name exactly as enCORE shows it"></label>
-    <label class="row">Lesson source:
+    <legend>Learners — para page &amp; Student-Led (display names stay in local config.json — never committed)</legend>
+    <div id="learnerList" class="list"></div>
+    <div style="display:flex; gap:10px; margin-top:10px;">
+      <input type="text" id="newLearner" placeholder="Pseudonym for another learner (what the buttons show)">
+      <button class="mini" id="addLearner" style="min-width:120px;">Add</button>
+    </div>
+    <label class="row">enCORE lesson source:
       <select id="slSource">
         <option value="recommended">Recommended Lessons (app default)</option>
         <option value="iep">IEP Goals</option>
@@ -197,7 +204,7 @@
         <option value="benchmark">Benchmark Assessments</option>
       </select>
     </label>
-    <p class="note">The four Student-Led buttons on Home run for this one learner. The buttons, logs, and this page only ever show the pseudonym.</p>
+    <p class="note">Each learner gets the four enCORE subject buttons on the para page. A Social Skills routine adds one more: log in as the learner in Social Skills, watch that movie the set number of times, then (if ticked) Do the Activity once — an activity already at 100% is skipped, like everywhere else. The display name must match what enCORE and View Students show. The four Student-Led buttons on Home run the first learner. Buttons and the para page show only the pseudonym.</p>
   </fieldset>
   <button class="btn primary" id="saveBtn" style="width:100%;">Save settings</button>
   <p class="note">Saving validates first and keeps the previous config as config.json.bak. Invalid input is refused with the reason — nothing broken is ever written.</p>
@@ -348,10 +355,74 @@ function renderSettings() {
   $('#tlLen').value = tl.sessionLengthMin || 15;
   $('#tlHash').value = tl.encoreAppHash || '';
   const sl = studentLed();
-  $('#slName').value = sl.learners[sl.learnerPseudonym] || '';
+  renderLearnerRows();
   $('#slSource').value = sl.lessonSource || 'recommended';
   renderHome();
 }
+// Learners editor. Rows are built once per config load (so reordering
+// students doesn't discard typing) and written back on Save:
+// studentLed.learners[pseudonym] = display name, and a non-empty movie name
+// becomes socialSkillsRoutines[pseudonym].
+let learnerRows = [];
+function buildLearnerRows() {
+  const sl = studentLed();
+  const routines = cfg.socialSkillsRoutines && typeof cfg.socialSkillsRoutines === 'object' ? cfg.socialSkillsRoutines : {};
+  const names = [sl.learnerPseudonym, ...Object.keys(sl.learners), ...Object.keys(routines)].filter((p, i, a) => p && a.indexOf(p) === i);
+  learnerRows = names.map((p) => {
+    const r = routines[p] || null;
+    return {
+      pseudonym: p,
+      name: sl.learners[p] || '',
+      target: (r && r.target) || '',
+      times: r && Number.isInteger(r.movieTimes) ? r.movieTimes : 5,
+      then: r ? r.thenActivity !== false : true,
+    };
+  });
+}
+function learnerItem(row, i) {
+  const div = document.createElement('div');
+  div.className = 'item';
+  div.style.flexWrap = 'wrap';
+  div.innerHTML =
+    '<div class="grow">' +
+    '<label class="row"><b data-f="pseudo"></b> = <input type="text" data-f="name" placeholder="display name exactly as enCORE and View Students show it"></label>' +
+    '<div class="row" style="flex-wrap:wrap;">Social Skills routine: ' +
+    '<input type="text" data-f="target" placeholder="movie name — empty = none" style="max-width:280px;">' +
+    '<label class="row" style="min-height:auto;">movie × <input type="number" data-f="times" min="0" max="20" style="width:80px;"></label>' +
+    '<label class="row" style="min-height:auto;"><input type="checkbox" data-f="then"> then Do the Activity</label>' +
+    '</div></div>' +
+    (i > 0 ? '<button class="mini danger" data-a="rm" title="remove this learner">✕</button>' : '');
+  div.querySelector('[data-f=pseudo]').textContent = row.pseudonym;
+  div.querySelector('[data-f=name]').value = row.name;
+  div.querySelector('[data-f=target]').value = row.target;
+  div.querySelector('[data-f=times]').value = row.times;
+  div.querySelector('[data-f=then]').checked = row.then;
+  div.addEventListener('input', () => {
+    row.name = div.querySelector('[data-f=name]').value;
+    row.target = div.querySelector('[data-f=target]').value;
+    row.times = Math.max(0, parseInt(div.querySelector('[data-f=times]').value, 10) || 0);
+    row.then = div.querySelector('[data-f=then]').checked;
+  });
+  div.addEventListener('change', () => div.dispatchEvent(new Event('input')));
+  div.addEventListener('click', (ev) => {
+    if (!(ev.target.dataset && ev.target.dataset.a === 'rm')) return;
+    learnerRows.splice(i, 1);
+    renderLearnerRows();
+  });
+  return div;
+}
+function renderLearnerRows() {
+  const list = $('#learnerList');
+  list.innerHTML = '';
+  learnerRows.forEach((r, i) => list.appendChild(learnerItem(r, i)));
+}
+$('#addLearner').addEventListener('click', () => {
+  const p = $('#newLearner').value.trim();
+  if (!p || learnerRows.some((r) => r.pseudonym === p)) return;
+  learnerRows.push({ pseudonym: p, name: '', target: '', times: 5, then: true });
+  $('#newLearner').value = '';
+  renderLearnerRows();
+});
 // Configs written before Student-Led existed lack the block; the pseudonym
 // defaults match config.template.json so the buttons still read right.
 function studentLed() {
@@ -401,7 +472,12 @@ $('#saveBtn').addEventListener('click', async () => {
   cfg.teacherLed.sessionLengthMin = parseInt($('#tlLen').value, 10) || 15;
   cfg.teacherLed.encoreAppHash = $('#tlHash').value.trim() || null;
   const sl = studentLed();
-  sl.learners[sl.learnerPseudonym] = $('#slName').value.trim();
+  sl.learners = {};
+  cfg.socialSkillsRoutines = {};
+  learnerRows.forEach((r) => {
+    sl.learners[r.pseudonym] = r.name.trim();
+    if (r.target.trim()) cfg.socialSkillsRoutines[r.pseudonym] = { target: r.target.trim(), movieTimes: r.times, thenActivity: r.then };
+  });
   sl.lessonSource = $('#slSource').value;
   // Rotation names must exist in the roster; prune roster entries the user removed from both.
   const msg = $('#savemsg');
@@ -415,6 +491,7 @@ async function loadConfig() {
   const [c, d] = await Promise.all([fetch('/api/config').then((r) => r.json()), fetch('/api/districts').then((r) => r.json())]);
   districts = d.districts || [];
   cfg = c.config;
+  buildLearnerRows();
   if (c.missing) { $('#savemsg').className = 'err'; $('#savemsg').textContent = 'No config.json yet — this is the template. Add students and Save to create it.'; }
   renderSettings();
 }

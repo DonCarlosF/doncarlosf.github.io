@@ -12,7 +12,7 @@
   ?mode=native  hidden <input type=checkbox> styled through its <label>
                 (default — the common Angular/Bootstrap custom-checkbox shape)
   ?mode=aria    <div role="checkbox" aria-checked> widgets, no <input> at all
-  ?label=studies  show "Social Studies" instead of "Social Skills"
+  ?label=skills   show "Social Skills" instead of "Social Studies"
   ?missing=science  drop the Science box entirely
 -->
 <style>
@@ -48,7 +48,7 @@
 <script>
   const q = new URLSearchParams(location.search);
   const mode = q.get('mode') || 'native';
-  const social = q.get('label') === 'studies' ? 'Social Studies' : 'Social Skills';
+  const social = q.get('label') === 'skills' ? 'Social Skills' : 'Social Studies';
   const missing = q.get('missing');
   const state = { ELA: true, Math: true, Science: true, [social]: true };
   if (missing === 'science') delete state.Science;

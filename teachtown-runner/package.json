@@ -6,9 +6,10 @@
   "scripts": {
     "start": "node runner.js",
     "ui": "node ui-server.js",
+    "para": "node ui-server.js --para",
     "init-config": "node init-config.js",
     "privacy-check": "node privacy-check.js",
-    "test": "node --test test/subjects.test.js test/subjects.dom.test.js",
+    "test": "node --test test/subjects.test.js test/subjects.dom.test.js test/para.test.js",
     "install-hooks": "git config core.hooksPath teachtown-runner/hooks && echo \"privacy pre-commit hook installed\""
   },
   "engines": {
