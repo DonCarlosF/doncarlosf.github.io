@@ -7,9 +7,10 @@
   "scripts": {
     "start": "node runner.js",
     "ui": "node ui-server.js",
+    "para": "node ui-server.js --para",
     "init-config": "node init-config.js",
     "privacy-check": "node privacy-check.js",
-    "test": "node --test test/subjects.test.js test/subjects.dom.test.js test/student-led-step1.test.js test/student-led-step1.dom.test.js test/home-status.test.js test/mac-menu.test.js",
+    "test": "node --test test/subjects.test.js test/subjects.dom.test.js test/student-led-step1.test.js test/student-led-step1.dom.test.js test/home-status.test.js test/mac-menu.test.js test/para.test.js",
     "mac:dev": "electron mac/main.js",
     "mac:build": "electron-builder --mac --dir",
     "install-hooks": "git config core.hooksPath teachtown-runner/hooks && echo \"privacy pre-commit hook installed\""
@@ -32,6 +33,7 @@
       "runner.js",
       "ui-server.js",
       "ui.html",
+      "para.html",
       "init-config.js",
       "privacy-check.js",
       "lib/**/*",

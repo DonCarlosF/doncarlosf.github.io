@@ -4,6 +4,38 @@ Automation for TeachTown Social Skills group rotations, enCORE Teacher-Led
 sessions, and day-one district recon. All flags and behavior are documented
 in the header of `runner.js`.
 
+## Para page (what a para educator uses)
+
+`npm run para` — or the **TeachTown Buttons** Desktop shortcut on Windows —
+opens a deliberately small page at http://127.0.0.1:4317/para:
+
+- A tab per learner (pseudonyms only — Luis, plus whoever you add under
+  Settings → Learners). One learner = no tabs, just the name.
+- Four big buttons: **Social Studies, ELA, Math, Science**. Each starts an
+  enCORE Student-Led session for that learner with only that subject
+  checked, and stops at READY — the para presses Next on the enCORE screen.
+- A learner with a **Social Skills app routine** gets one more button, e.g.
+  *Tell the Truth — Movie 5 times, then Do the Activity*: logs the learner
+  in to Social Skills, plays the movie N times in a row, then launches Do
+  the Activity once (skipped if it's already at 100%, like every other
+  run), then logs out and closes the browser.
+- While it runs, the page shows four plain steps (Open enCORE → Find Luis →
+  Only Math → Your turn), a sign-in prompt when one is needed, and a
+  confirm-first *Session over — close enCORE* / *Stop* button. Failures
+  get a sentence and *Try again*; the raw log sits under *Details for your
+  teacher*.
+- No Dry Run toggle, no Teacher-Led, no settings — those stay on the
+  dashboard (`npm run ui`). A run started from the dashboard shows as
+  "Another TeachTown task is running" and locks the para buttons.
+- Double-clicking the shortcut again just reopens the page — one server per
+  machine, so two runs can never fight over the browser.
+
+Learners and routines live in the gitignored `config.json`
+(`studentLed.learners` = pseudonym → display name, `socialSkillsRoutines` =
+pseudonym → `{ target, movieTimes, thenActivity }`) and are edited under
+Settings → Learners. The page is served pseudonyms only; display names stay
+on the server.
+
 ## Button interface (no typing in front of the class)
 
 `npm run ui` starts a local page with big buttons. School subjects for Luis
@@ -16,6 +48,7 @@ looking at a blank console. Further down, under *Also on this computer*,
 are the group playlist, Teacher-Led, Sign In, and Refresh Roster.
 Settings edits config.json with validation + a .bak. The Run view has
 the full log and a STOP button that does the same clean shutdown as Ctrl+C.
+A *Para page ↗* link in the header opens the para page (see *Para page* above).
 
 - **Mac app**: `cd teachtown-runner && npm run mac:dev` (see below)
 - **Mac (browser)**: `cd teachtown-runner && npm run ui`
@@ -51,7 +84,7 @@ and clicks nothing.
 The learner is called **Luis** everywhere this repo can see (code, flags,
 buttons, logs). The display name Luis stands for is typed once into the
 gitignored `config.json` (`npm run init-config` asks for it, or `npm run ui`
-→ Settings → *Student-Led learner*) and never leaves the machine.
+→ Settings → *Learners*) and never leaves the machine.
 
 What a button does, in order:
 
@@ -78,6 +111,8 @@ never clicked. `studentLed.autoBegin: true` additionally presses Next and
 the step-3 launch button (that screen is unverified — best effort, and it
 starts a REAL logged session).
 
+- **Para page**: `npm run para` — every learner, the four school subjects
+  (Social Skills stays on the dashboard); see *Para page* above.
 - **UI**: `npm run ui` → the status line and the **Dry run** switch, then
   *School subjects for Luis* (ELA, Math, Science, Social Studies) and,
   under that, *Social Skills for Luis*. The buttons stay off until the
@@ -98,12 +133,21 @@ starts a REAL logged session).
   `test/fixtures/student-led-step1.html` inside a mock enCORE iframe), and
   a headless-browser run against a mock of the step-2 screen
   (`test/fixtures/student-led-step2.html`, native and `role=checkbox`
-  variants). The browser tests skip with a notice if
-  `npx playwright install chromium` was never run.
+  variants), and the para page logic (`test/para.test.js`: learners and
+  routines from config, runner log lines → the steps a para sees). The
+  browser tests skip with a notice if `npx playwright install chromium`
+  was never run.
 
 ### Windows desktop shortcuts
 
-`windows/` ships one double-clickable launcher per subject —
+`windows\TeachTown-Buttons.cmd` is the para's entry point: it checks for
+Node, `node_modules`, and `config.json` (and says what to do if one is
+missing), starts the UI server in a minimized **TeachTown helper** window,
+and opens the para page. Clicking it again while the helper runs just
+reopens the page. Closing the helper window closes the page's server.
+
+`windows/` also keeps one double-clickable console launcher per subject for
+the first learner —
 `Luis-ELA.cmd`, `Luis-Math.cmd`, `Luis-Science.cmd`,
 `Luis-Social-Studies.cmd`, and `Luis-Social-Skills.cmd`. Each runs
 `node runner.js --student-led --subject <key>` from the project folder in
@@ -117,17 +161,18 @@ in *Setup on a new machine*):
 
 1. Double-click `windows\Install Desktop Shortcuts.cmd`. It runs
    `install-shortcuts.ps1` for that one process (`-ExecutionPolicy Bypass`,
-   no machine-wide policy change) and puts **Luis - ELA**, **Luis - Math**,
-   **Luis - Science**, **Luis - Social Studies**, and **Luis - Social Skills**
-   on the Desktop. Social Studies and Social Skills are separate shortcuts.
+   no machine-wide policy change) and puts **TeachTown Buttons** on the
+   Desktop. Run it as `"Install Desktop Shortcuts.cmd" -PerSubject` to also
+   get **Luis - ELA**, **Luis - Math**, **Luis - Science**, **Luis - Social
+   Studies**, and **Luis - Social Skills** (separate shortcuts).
 2. If PowerShell is locked down and step 1 reports an error: right-click
-   each `Luis-*.cmd` → *Send to* → *Desktop (create shortcut)*, then rename
-   the shortcuts as you like. The `.cmd` files must stay in `windows\`
-   (they find the runner relative to themselves).
+   `TeachTown-Buttons.cmd` → *Send to* → *Desktop (create shortcut)*, then
+   rename the shortcut as you like. The `.cmd` files must stay in
+   `windows\` (they find the runner relative to themselves).
 3. First click: the browser may show the TeachTown sign-in — type it in the
    **browser window**, as always; the runner never handles credentials.
 4. Re-run the installer after moving the project folder; it overwrites the
-   five shortcuts.
+   shortcuts.
 
 A dry run from a shortcut: drag it to a console window, or run
 `windows\Luis-Math.cmd --dry-run` from Git Bash / cmd. The `.cmd`/`.ps1`

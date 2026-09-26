@@ -68,3 +68,11 @@ test('a run that stops with an error is Needs a look', () => {
   assert.equal(view.phase, 'attention');
   assert.equal(view.phaseLabel, 'Needs a look');
 });
+
+test('describeRun names the para page learner and keeps the Social Skills app routine distinct', () => {
+  assert.equal(describeRun({ action: 'studentled-subject', subject: 'math', learner: 'Tester' }), 'Math for Tester');
+  assert.equal(describeRun({ action: 'studentled-subject', subject: 'math', learner: '  ' }), 'Math for Luis');
+  const routine = describeRun({ action: 'social-routine', learner: 'Tester' });
+  assert.equal(routine, 'Social Skills app routine for Tester');
+  assert.notEqual(routine, describeRun({ action: 'studentled-subject', subject: 'social-skills', learner: 'Tester' }));
+});

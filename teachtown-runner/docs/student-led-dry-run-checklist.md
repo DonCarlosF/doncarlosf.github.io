@@ -118,6 +118,16 @@ Run this only after the four school subjects above look right.
       wizard accepts the state, then Ctrl+C (or STOP in the UI) — a clean
       exit closes the browser. No session was logged unless you launched
       one yourself on step 3.
-- [ ] Install the Desktop shortcuts (`windows\Install Desktop Shortcuts.cmd`)
-      and click one — same `READY` line expected. **Luis - Social Studies**
-      and **Luis - Social Skills** are two shortcuts.
+- [ ] Install the Desktop shortcuts (`"windows\Install Desktop Shortcuts.cmd" -PerSubject`
+      for the five Luis ones) and click one — same `READY` line expected.
+      **Luis - Social Studies** and **Luis - Social Skills** are two shortcuts.
+- [ ] Para page: double-click **TeachTown Buttons** (the same script installs
+      it, with or without `-PerSubject`), pick the learner, tap one subject —
+      the page walks Open enCORE → Find → Only <Subject> → **Ready! Go to
+      the enCORE window.** (same `READY` line under *Details for your
+      teacher*). *Session over — close enCORE* → *Yes* ends it cleanly.
+- [ ] Learners with a Social Skills app routine: the para page has no dry run,
+      so try the routine button once at a quiet moment. Expect *Log in
+      <pseudonym>* → *movie 1 of N* … → *Do the Activity* → *All done*. If
+      the activity is already at 100% it is skipped and the page says so.
+      *Stop* logs the learner out and closes the browser at any point.

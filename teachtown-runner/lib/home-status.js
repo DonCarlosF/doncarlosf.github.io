@@ -28,15 +28,20 @@
   };
 
   // What the Home "last action" line says. Social Studies and Social Skills
-  // stay different phrases so a parent can see which one was pressed.
+  // stay different phrases so a parent can see which one was pressed. The
+  // para page names its learner (a pseudonym); runs without one are Luis's.
+  // The para page's Social Skills APP routine is a third, separate phrase.
   function describeRun(body) {
     const action = body && body.action;
     const dry = !!(body && body.dry);
     const practice = dry ? ' — practice only' : '';
     const subject = SUBJECT_TITLES[body && body.subject];
+    const who = (body && typeof body.learner === 'string' && body.learner.trim()) || 'Luis';
     switch (action) {
       case 'studentled-subject':
-        return subject ? `${subject} for Luis${practice}` : `Lesson for Luis${practice}`;
+        return subject ? `${subject} for ${who}${practice}` : `Lesson for ${who}${practice}`;
+      case 'social-routine':
+        return `Social Skills app routine for ${who}${practice}`;
       case 'playlist':
         return `Group playlist${practice}`;
       case 'custom':
