@@ -167,10 +167,10 @@ in *Setup on a new machine*):
 
 1. Double-click `windows\Install Desktop Shortcuts.cmd`. It runs
    `install-shortcuts.ps1` for that one process (`-ExecutionPolicy Bypass`,
-   no machine-wide policy change) and puts **TeachTown Buttons** on the
-   Desktop. Run it as `"Install Desktop Shortcuts.cmd" -PerSubject` to also
-   get **Luis - ELA**, **Luis - Math**, **Luis - Science**, **Luis - Social
-   Studies**, and **Luis - Social Skills** (separate shortcuts).
+   no machine-wide policy change) and puts six shortcuts on the Desktop:
+   **TeachTown Buttons**, plus **Luis - ELA**, **Luis - Math**, **Luis -
+   Science**, **Luis - Social Studies**, and **Luis - Social Skills**
+   (Social Studies and Social Skills are separate shortcuts).
 2. If PowerShell is locked down and step 1 reports an error: right-click
    `TeachTown-Buttons.cmd` → *Send to* → *Desktop (create shortcut)*, then
    rename the shortcut as you like. The `.cmd` files must stay in

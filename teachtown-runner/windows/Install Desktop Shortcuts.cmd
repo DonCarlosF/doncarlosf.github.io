@@ -1,11 +1,10 @@
 @echo off
-rem Puts the "TeachTown Buttons" shortcut (the para page) on this user's Desktop.
-rem -PerSubject also adds the five "Luis - <Subject>" launchers; Social Studies
-rem and Social Skills are two different shortcuts.
+rem Puts six shortcuts on this user's Desktop: "TeachTown Buttons" (the para
+rem page) and one "Luis - <Subject>" console launcher per subject. Social
+rem Studies and Social Skills are two different shortcuts.
 rem Runs install-shortcuts.ps1 next to this file with script execution
 rem allowed for this one process only (no machine-wide policy change).
-rem Extra arguments pass through, e.g. -PerSubject for the four Luis launchers.
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0install-shortcuts.ps1" %*
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0install-shortcuts.ps1"
 if errorlevel 1 (
   echo.
   echo Could not create the shortcut automatically. Manual fallback:

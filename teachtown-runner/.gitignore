@@ -1,10 +1,14 @@
 # Local-only files. Real student data must never be committed.
 config.json
 config.json.bak
+config.session.json
 config/privacy-terms.txt
 logs/
 recon/
 node_modules/
+
+# Claude Code's own local, per-machine settings (never shared config)
+.claude/settings.local.json
 
 # Per-district persistent browser profiles (cookies/sessions)
 .profiles/
