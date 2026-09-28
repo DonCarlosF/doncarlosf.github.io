@@ -7,7 +7,16 @@ in the header of `runner.js`.
 ## Para page (what a para educator uses)
 
 `npm run para` — or the **TeachTown Buttons** Desktop shortcut on Windows —
-opens a deliberately small page at http://127.0.0.1:4317/para:
+opens a deliberately small page at http://127.0.0.1:4317/para. On Windows,
+if Chrome or Edge is installed, it opens as a standalone app-mode window
+(no tabs, no address bar) instead of a normal browser tab, using its own
+gitignored profile (`.profiles/app-window/`) so it never fights an
+already-open Chrome/Edge window. One caveat: Chrome's app mode always shows
+the URL in the window's title bar/taskbar entry rather than the page's own
+title — that's a Chrome security behavior (anti-spoofing), not something a
+launch flag can override. The full dashboard (`npm run ui`, no `--para`)
+gets the same treatment at a wider size. Neither browser found → falls back
+to opening the URL in the default browser, as before.
 
 - A tab per learner (pseudonyms only — Luis, plus whoever you add under
   Settings → Learners). One learner = no tabs, just the name.

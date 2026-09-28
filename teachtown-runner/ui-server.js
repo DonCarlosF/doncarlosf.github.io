@@ -473,11 +473,65 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+// App-mode window: Chrome/Edge's --app=<url> opens the page with no tabs,
+// no address bar, no browser chrome — a standalone-looking window instead
+// of "a webpage." (`start "" url`, the old behavior, always opened a normal
+// tab in whatever the default browser is — the whole point of the para page
+// was to feel like a simple tool for a para educator, not a browser tab.)
+// A dedicated, gitignored profile dir (same convention as the runner's own
+// .profiles/<district>) keeps this from fighting an already-open Chrome/Edge
+// window on the same machine — app mode needs its own browser process, and
+// reusing the user's regular profile can silently open a normal tab instead
+// if that browser is already running.
+//
+// Mac already has a real native window for this (mac/main.js, `npm run
+// mac:dev`/`mac:build`) — app mode here is a Windows-only fallback for the
+// browser-page path; darwin/linux keep the previous default-browser open.
+const APP_WINDOW_PROFILE = path.join(DIR, '.profiles', 'app-window');
+
+function findAppBrowser() {
+  if (process.platform !== 'win32') return null;
+  const roots = [process.env['ProgramFiles'], process.env['ProgramFiles(x86)'], process.env['LocalAppData']];
+  const rel = [
+    ['Google', 'Chrome', 'Application', 'chrome.exe'], // matches the README: "Google Chrome must be installed"
+    ['Microsoft', 'Edge', 'Application', 'msedge.exe'],
+  ];
+  for (const r of rel) {
+    for (const root of roots) {
+      if (!root) continue;
+      const p = path.join(root, ...r);
+      if (fs.existsSync(p)) return p;
+    }
+  }
+  return null;
+}
+
+function openAppWindow(browserPath, url, size) {
+  fs.mkdirSync(APP_WINDOW_PROFILE, { recursive: true });
+  const child = spawn(
+    browserPath,
+    [
+      `--app=${url}`,
+      `--user-data-dir=${APP_WINDOW_PROFILE}`,
+      `--window-size=${size.w},${size.h}`,
+      '--no-first-run',
+      '--no-default-browser-check',
+    ],
+    { detached: true, stdio: 'ignore' }
+  );
+  child.unref();
+}
+
 function openBrowser(url) {
   if (process.env.TT_UI_NO_OPEN) return;
   try {
+    const browser = findAppBrowser();
+    if (browser) {
+      openAppWindow(browser, url, url.endsWith('/para') ? { w: 480, h: 840 } : { w: 1180, h: 860 });
+      return;
+    }
     if (process.platform === 'darwin') execFileSync('open', [url], { stdio: 'ignore' });
-    else if (process.platform === 'win32') execSync(`start "" "${url}"`, { stdio: 'ignore' }); // start is a cmd built-in
+    else if (process.platform === 'win32') execSync(`start "" "${url}"`, { stdio: 'ignore' }); // start is a cmd built-in — Chrome/Edge not found, fall back to whatever default browser is set
     else console.log('(open the URL above in your browser)');
   } catch {
     console.log('(could not auto-open a browser — use the URL above)');
