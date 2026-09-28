@@ -21,7 +21,7 @@ cd /d "%~dp0.."
 where node >nul 2>nul
 if errorlevel 1 (
   echo Node.js was not found on PATH.
-  echo Install Node 18 or newer from https://nodejs.org (LTS), then run this again.
+  echo Install Node 18 or newer from https://nodejs.org ^(LTS^), then run this again.
   pause
   exit /b 1
 )
