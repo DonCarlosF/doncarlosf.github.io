@@ -126,6 +126,11 @@ Run this only after the four school subjects above look right.
       the page walks Open enCORE → Find → Only <Subject> → **Ready! Go to
       the enCORE window.** (same `READY` line under *Details for your
       teacher*). *Session over — close enCORE* → *Yes* ends it cleanly.
+- [ ] Learners with *One Student-Led button*: dry-run it once with
+      `npm start -- --student-led --subject default --dry-run` (that runs the
+      first learner — set `learnerPseudonym` to try another). Expect
+      `SUBJECTS as found: … — default settings, nothing clicked`: the boxes
+      are exactly what enCORE showed, and nothing on step 2 was clicked.
 - [ ] Learners with a Social Skills app routine: the para page has no dry run,
       so try the routine button once at a quiet moment. Expect *Log in
       <pseudonym>* → *movie 1 of N* … → *Do the Activity* → *All done*. If

@@ -14,6 +14,11 @@ opens a deliberately small page at http://127.0.0.1:4317/para:
 - Four big buttons: **Social Studies, ELA, Math, Science**. Each starts an
   enCORE Student-Led session for that learner with only that subject
   checked, and stops at READY — the para presses Next on the enCORE screen.
+- A learner who doesn't work by subject can instead get **one** Student-Led
+  button (Settings → Learners → *One Student-Led button*): it picks the
+  learner, leaves the lesson screen exactly as enCORE sets it up (no
+  subject box, no lesson source clicked — `--subject default`), and stops
+  at READY like the others.
 - A learner with a **Social Skills app routine** gets one more button, e.g.
   *Tell the Truth — Movie 5 times, then Do the Activity*: logs the learner
   in to Social Skills, plays the movie N times in a row, then launches Do
@@ -119,7 +124,8 @@ starts a REAL logged session).
   learner's display name is saved. The two social buttons use different
   colors so they are easy to tell apart. Dry run on the Home page and
   the switch in the top bar are the same switch.
-- **CLI**: `npm start -- --student-led --subject ela|math|science|social-studies|social-skills`
+- **CLI**: `npm start -- --student-led --subject ela|math|science|social-studies|social-skills|default`
+  (`default` = leave the lesson screen as enCORE sets it up.)
   (`--subject=Math`, `"Social Studies"`, `social_skills` all work.
   `"Social Studies"` does not start Social Skills.)
 - **Dry run** (`--dry-run`, or the Dry Run toggle): walks to step 2, sets and

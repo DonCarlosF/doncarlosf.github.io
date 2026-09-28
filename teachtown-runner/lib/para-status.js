@@ -157,10 +157,15 @@
     detail: 'Type the sign-in into the browser window. It keeps going by itself after that.',
   };
 
+  // Subject "default" (lib/subjects.js DEFAULT_SETTINGS): the learner's one
+  // Student-Led button — step 2 is left exactly as enCORE sets it up.
+  const DEFAULT_SETTINGS = 'default';
+
   function encoreView(state, who, ctx) {
+    const asIs = state.subject === DEFAULT_SETTINGS;
     const subj = (ctx.subjects && ctx.subjects[state.subject]) || 'the subject';
     const seen = state.seen;
-    const steps = ['Open enCORE', `Find ${who}`, `Only ${subj}`, 'Your turn'];
+    const steps = ['Open enCORE', `Find ${who}`, asIs ? 'Default settings' : `Only ${subj}`, 'Your turn'];
     const step = seen.subjectsOk || seen.ready ? 4 : seen.learner ? 3 : seen.encore ? 2 : 1;
     const base = { screen: 'progress', kind: 'encore', learner: who, subject: state.subject, steps, step, retry: false };
     const close = { label: 'Session over — close enCORE', confirm: `Close the enCORE window? ${who}'s session ends.` };
@@ -181,12 +186,16 @@
         return Object.assign(base, {
           tone: 'ok',
           title: 'Ready! Go to the enCORE window.',
-          detail: `Only ${subj} is checked for ${who}. Press Next there and start the session. When it's over, come back here and press the button below.`,
+          detail:
+            (asIs
+              ? `${who}'s session is set up with enCORE's default settings — nothing was changed.`
+              : `Only ${subj} is checked for ${who}.`) +
+            " Press Next there and start the session. When it's over, come back here and press the button below.",
           stop: close,
         });
       }
       if (state.signin) return Object.assign(base, SIGNIN, { stop: cancel });
-      const titles = { 1: 'Opening enCORE…', 2: `Finding ${who}…`, 3: `Checking only ${subj}…` };
+      const titles = { 1: 'Opening enCORE…', 2: `Finding ${who}…`, 3: asIs ? 'Getting the screen ready…' : `Checking only ${subj}…` };
       return Object.assign(base, {
         tone: 'info',
         title: titles[step],
@@ -197,7 +206,7 @@
 
     const failure = failureOf(state, who);
     if (failure) return Object.assign(base, { screen: 'failed', tone: 'error', stop: null, retry: true }, failure);
-    if (seen.ready || seen.fix) return pick('ok', `${subj} session for ${who} closed.`);
+    if (seen.ready || seen.fix) return pick('ok', `${asIs ? 'Student-Led' : subj} session for ${who} closed.`);
     return pick('info', 'Stopped — nothing was started.');
   }
 

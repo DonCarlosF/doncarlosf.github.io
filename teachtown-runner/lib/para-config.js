@@ -7,20 +7,24 @@
  *
  *   "studentLed": {
  *     "learnerPseudonym": "Luis",                 // listed first on the page
- *     "learners": { "Luis": "<display name>", "<pseudonym>": "<display name>" }
+ *     "learners": { "Luis": "<display name>", "<pseudonym>": "<display name>" },
+ *     "defaultSettings": ["<pseudonym>"]          // optional, see below
  *   },
  *   "socialSkillsRoutines": {
  *     "<pseudonym>": { "target": "Tell the Truth", "movieTimes": 5, "thenActivity": true }
  *   }
  *
- * Every learner gets the four enCORE Student-Led subject buttons. A learner
+ * Every learner gets the four enCORE Student-Led subject buttons — except a
+ * learner listed in studentLed.defaultSettings (one who doesn't work by
+ * subject), who gets ONE Student-Led button instead: pick the learner, leave
+ * step 2 exactly as enCORE sets it up (`--subject default`), READY. A learner
  * with a routine also gets one Social Skills button: log in as the learner
  * in Social Skills, watch `target` `movieTimes` times, then (thenActivity)
  * Do the Activity once. The display name is used for both apps and must
  * match what each shows (exact first, substring fallback — same as the
  * rest of the runner).
  *
- * Both maps live ONLY in the gitignored config.json. The page itself is
+ * All of it lives ONLY in the gitignored config.json. The page itself is
  * served pseudonyms and curriculum words; display names never leave the
  * server except inside the runner's own log lines.
  */
@@ -53,7 +57,7 @@ function displayNameFor(cfg, pseudonym) {
 }
 
 // Primary learner first, then the rest of studentLed.learners, then anyone
-// who only has a routine — each pseudonym once.
+// who only has a routine or a defaultSettings entry — each pseudonym once.
 function learnerPseudonyms(cfg) {
   const out = [primaryPseudonym(cfg)];
   const sl = isObj(cfg && cfg.studentLed) ? cfg.studentLed : {};
@@ -63,7 +67,23 @@ function learnerPseudonyms(cfg) {
   };
   if (isObj(sl.learners)) Object.keys(sl.learners).forEach(add);
   if (isObj(cfg && cfg.socialSkillsRoutines)) Object.keys(cfg.socialSkillsRoutines).forEach(add);
+  if (Array.isArray(sl.defaultSettings)) sl.defaultSettings.forEach(add);
   return out;
+}
+
+// studentLed.defaultSettings: optional list of pseudonyms ([] = valid).
+function defaultSettingsErrors(v) {
+  if (v === undefined) return [];
+  if (!Array.isArray(v) || v.some((p) => !str(p))) {
+    return ['studentLed.defaultSettings must be a list of learner pseudonyms'];
+  }
+  return [];
+}
+
+// True when this learner's Student-Led button uses enCORE's default settings.
+function usesDefaultSettings(cfg, pseudonym) {
+  const sl = isObj(cfg && cfg.studentLed) ? cfg.studentLed : {};
+  return Array.isArray(sl.defaultSettings) && sl.defaultSettings.some((p) => str(p) === pseudonym);
 }
 
 // Problems with one routine entry, as human-readable strings ([] = valid).
@@ -107,6 +127,7 @@ function paraInfo(cfg, { configMissing = false } = {}) {
   const learners = learnerPseudonyms(cfg).map((p) => ({
     pseudonym: p,
     ready: !configMissing && !!displayNameFor(cfg, p),
+    defaultSettings: usesDefaultSettings(cfg, p),
     routine: routineFor(cfg, p),
   }));
   return {
@@ -129,6 +150,8 @@ module.exports = {
   primaryPseudonym,
   displayNameFor,
   learnerPseudonyms,
+  defaultSettingsErrors,
+  usesDefaultSettings,
   routineErrors,
   routineFor,
   routinePlaylist,

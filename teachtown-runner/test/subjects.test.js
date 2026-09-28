@@ -202,3 +202,13 @@ test('Windows launchers pass distinct subject keys', () => {
   assert.match(installer, /Luis-Social-Studies\.cmd/);
   assert.match(installer, /Luis-Social-Skills\.cmd/);
 });
+
+test('"default" is not a subject: never normalized, planned, or listed — only labeled', () => {
+  const { DEFAULT_SETTINGS, studentLedLabel } = require('../lib/subjects');
+  assert.equal(DEFAULT_SETTINGS, 'default');
+  assert.equal(normalizeSubjectKey('default'), null);
+  assert.ok(!SUBJECT_KEYS.includes(DEFAULT_SETTINGS));
+  assert.throws(() => planSubjectSelection([], DEFAULT_SETTINGS), /unknown subject/);
+  assert.equal(studentLedLabel(DEFAULT_SETTINGS), 'Default settings');
+  assert.equal(studentLedLabel('social-studies'), 'Social Studies');
+});

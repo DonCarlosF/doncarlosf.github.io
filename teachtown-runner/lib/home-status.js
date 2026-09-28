@@ -35,7 +35,9 @@
     const action = body && body.action;
     const dry = !!(body && body.dry);
     const practice = dry ? ' — practice only' : '';
-    const subject = SUBJECT_TITLES[body && body.subject];
+    // "default" is not a subject: step 2 left as enCORE sets it up.
+    const subject =
+      body && body.subject === 'default' ? 'Student-Led (default settings)' : SUBJECT_TITLES[body && body.subject];
     const who = (body && typeof body.learner === 'string' && body.learner.trim()) || 'Luis';
     switch (action) {
       case 'studentled-subject':

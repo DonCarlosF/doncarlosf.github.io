@@ -253,7 +253,7 @@
         <option value="benchmark">Benchmark Assessments</option>
       </select>
     </label>
-    <p class="note">The lesson buttons on Home run for the first learner. Social Studies and Social Skills are different buttons. Every learner gets the four school-subject buttons (Social Studies, ELA, Math, Science) on the para page; a Social Skills app routine adds one more there: log in as the learner in the Social Skills app, watch that movie the set number of times, then (if ticked) Do the Activity once — an activity already at 100% is skipped, like everywhere else. The display name must match what enCORE and View Students show. The buttons, logs, and pages only ever show the pseudonym.</p>
+    <p class="note">The lesson buttons on Home run for the first learner. Social Studies and Social Skills are different buttons. Every learner gets the four school-subject buttons (Social Studies, ELA, Math, Science) on the para page — or, with “One Student-Led button”, a single button that picks the learner and leaves the lesson screen exactly as enCORE sets it up; a Social Skills app routine adds one more there: log in as the learner in the Social Skills app, watch that movie the set number of times, then (if ticked) Do the Activity once — an activity already at 100% is skipped, like everywhere else. The display name must match what enCORE and View Students show. The buttons, logs, and pages only ever show the pseudonym.</p>
   </fieldset>
   <button class="btn primary" id="saveBtn" style="width:100%;">Save settings</button>
   <p class="note">Saving validates first and keeps the previous config as config.json.bak. Invalid input is refused with the reason — nothing broken is ever written.</p>
@@ -452,13 +452,15 @@ function renderSettings() {
 }
 // Learners editor. Rows are built once per config load (so reordering
 // students doesn't discard typing) and written back on Save:
-// studentLed.learners[pseudonym] = display name, and a non-empty movie name
-// becomes socialSkillsRoutines[pseudonym].
+// studentLed.learners[pseudonym] = display name, a non-empty movie name
+// becomes socialSkillsRoutines[pseudonym], and "one button" puts the
+// pseudonym in studentLed.defaultSettings.
 let learnerRows = [];
 function buildLearnerRows() {
   const sl = studentLed();
   const routines = cfg.socialSkillsRoutines && typeof cfg.socialSkillsRoutines === 'object' ? cfg.socialSkillsRoutines : {};
-  const names = [sl.learnerPseudonym, ...Object.keys(sl.learners), ...Object.keys(routines)].filter((p, i, a) => p && a.indexOf(p) === i);
+  const plain = Array.isArray(sl.defaultSettings) ? sl.defaultSettings : [];
+  const names = [sl.learnerPseudonym, ...Object.keys(sl.learners), ...Object.keys(routines), ...plain].filter((p, i, a) => p && a.indexOf(p) === i);
   learnerRows = names.map((p) => {
     const r = routines[p] || null;
     return {
@@ -467,6 +469,7 @@ function buildLearnerRows() {
       target: (r && r.target) || '',
       times: r && Number.isInteger(r.movieTimes) ? r.movieTimes : 5,
       then: r ? r.thenActivity !== false : true,
+      plain: plain.includes(p),
     };
   });
 }
@@ -477,6 +480,7 @@ function learnerItem(row, i) {
   div.innerHTML =
     '<div class="grow">' +
     '<label class="row"><b data-f="pseudo"></b> = <input type="text" data-f="name" placeholder="display name exactly as enCORE and View Students show it"></label>' +
+    '<label class="row" style="min-height:auto;"><input type="checkbox" data-f="plain"> One Student-Led button — enCORE’s default settings, no subject to pick</label>' +
     '<div class="row" style="flex-wrap:wrap;">Social Skills routine: ' +
     '<input type="text" data-f="target" placeholder="movie name — empty = none" style="max-width:280px;">' +
     '<label class="row" style="min-height:auto;">movie × <input type="number" data-f="times" min="0" max="20" style="width:80px;"></label>' +
@@ -488,11 +492,13 @@ function learnerItem(row, i) {
   div.querySelector('[data-f=target]').value = row.target;
   div.querySelector('[data-f=times]').value = row.times;
   div.querySelector('[data-f=then]').checked = row.then;
+  div.querySelector('[data-f=plain]').checked = row.plain;
   div.addEventListener('input', () => {
     row.name = div.querySelector('[data-f=name]').value;
     row.target = div.querySelector('[data-f=target]').value;
     row.times = Math.max(0, parseInt(div.querySelector('[data-f=times]').value, 10) || 0);
     row.then = div.querySelector('[data-f=then]').checked;
+    row.plain = div.querySelector('[data-f=plain]').checked;
   });
   div.addEventListener('change', () => div.dispatchEvent(new Event('input')));
   div.addEventListener('click', (ev) => {
@@ -510,7 +516,7 @@ function renderLearnerRows() {
 $('#addLearner').addEventListener('click', () => {
   const p = $('#newLearner').value.trim();
   if (!p || learnerRows.some((r) => r.pseudonym === p)) return;
-  learnerRows.push({ pseudonym: p, name: '', target: '', times: 5, then: true });
+  learnerRows.push({ pseudonym: p, name: '', target: '', times: 5, then: true, plain: false });
   $('#newLearner').value = '';
   renderLearnerRows();
 });
@@ -564,6 +570,7 @@ $('#saveBtn').addEventListener('click', async () => {
   cfg.teacherLed.encoreAppHash = $('#tlHash').value.trim() || null;
   const sl = studentLed();
   sl.learners = {};
+  sl.defaultSettings = learnerRows.filter((r) => r.plain).map((r) => r.pseudonym);
   cfg.socialSkillsRoutines = {};
   learnerRows.forEach((r) => {
     sl.learners[r.pseudonym] = r.name.trim();

@@ -76,3 +76,10 @@ test('describeRun names the para page learner and keeps the Social Skills app ro
   assert.equal(routine, 'Social Skills app routine for Tester');
   assert.notEqual(routine, describeRun({ action: 'studentled-subject', subject: 'social-skills', learner: 'Tester' }));
 });
+
+test('describeRun names a default-settings run plainly', () => {
+  assert.equal(
+    describeRun({ action: 'studentled-subject', subject: 'default', learner: 'Tester' }),
+    'Student-Led (default settings) for Tester'
+  );
+});

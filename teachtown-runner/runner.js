@@ -43,7 +43,11 @@
  *                                   social-studies (Social Studies) is an
  *                                   enCORE school subject. social-skills
  *                                   (Social Skills) is a different activity
- *                                   and is not an alias for Social Studies. You
+ *                                   and is not an alias for Social Studies.
+ *                                   --subject default picks the learner and
+ *                                   leaves step 2 exactly as enCORE sets it
+ *                                   up (for a learner who doesn't work by
+ *                                   subject), then READY. You
  *                                   press Next / launch on screen. With
  *                                   --dry-run it
  *                                   verifies the checkboxes, prints them, and
@@ -424,14 +428,19 @@ function loadConfig(flags) {
   }
   sl.autoBegin = sl.autoBegin === true;
   const rawSubject = flags.subject != null ? flags.subject : sl.subject;
-  sl.subject = subjects.normalizeSubjectKey(rawSubject);
+  // "default" is not a subject: it leaves step 2 as enCORE sets it up.
+  sl.subject =
+    typeof rawSubject === 'string' && rawSubject.trim().toLowerCase() === subjects.DEFAULT_SETTINGS
+      ? subjects.DEFAULT_SETTINGS
+      : subjects.normalizeSubjectKey(rawSubject);
+  const subjectChoices = [...subjects.SUBJECT_KEYS, subjects.DEFAULT_SETTINGS];
   if (rawSubject != null && rawSubject !== '' && !sl.subject) {
-    fail(`unknown subject "${rawSubject}" — use one of: ${subjects.SUBJECT_KEYS.join(', ')}`);
+    fail(`unknown subject "${rawSubject}" — use one of: ${subjectChoices.join(', ')}`);
   }
   if (flags.studentLed) {
     if (!sl.subject) {
       fail(
-        '--student-led needs a subject: --subject ' + subjects.SUBJECT_KEYS.join('|') + '\n' +
+        '--student-led needs a subject: --subject ' + subjectChoices.join('|') + '\n' +
           '  (the UI buttons and the windows/*.cmd launchers pass it for you).'
       );
     }
@@ -2463,6 +2472,31 @@ async function runTeacherLed(tt, config, dryRun, logger) {
 
 /* ---------------------------- student-led ---------------------------- */
 
+// Step 2b — ONLY the requested subject stays checked. Read → plan → click
+// → re-read; the result is verified before anyone is told READY. A failed
+// check throws in a dry run and otherwise idles with the screen handed over.
+async function leaveOnlySubjectChecked(tt, frame, sl, subjectLabel, dryRun, logger) {
+  const before = await subjects.readCheckboxes(frame);
+  logger.event(`SUBJECTS before: ${subjects.describeSubjectState(before)}`);
+  const result = await subjects.selectOnlySubject(frame, sl.subject, { log: (m) => logger.event(m) });
+  logger.event(`SUBJECTS after:  ${subjects.describeSubjectState(result.boxes)}`);
+  if (!result.ok) {
+    await screenshot(tt, `studentled-subjects-${sl.subject}`);
+    const why =
+      result.plan.target == null
+        ? `no "${subjectLabel}" checkbox was recognized on this screen`
+        : `the boxes did not settle to only "${subjectLabel}" after ${result.attempts} attempt(s)`;
+    if (dryRun) {
+      throw new Error(`SUBJECT CHECK FAILED — ${why}. Nothing was started. See the screenshot in logs/.`);
+    }
+    logger.event(`SUBJECT CHECK FAILED — ${why}.`);
+    logger.event('STOPPED before Next — fix the subject boxes on screen yourself, then continue by hand. Nothing was started.');
+    logger.event('Idling — Ctrl+C here (or STOP in the UI) closes the browser.');
+    await new Promise(() => {});
+  }
+  logger.event(`SUBJECTS OK — only ${subjectLabel} is checked for "${sl.learnerPseudonym}"`);
+}
+
 // Student-Led wizard: 1) Select Student → 2) lesson picker (subject
 // checkboxes + lesson-source radios + lesson checklist) → 3) Prepare
 // Session (never entered by the July 2026 recon; assumed confirm-and-launch).
@@ -2480,10 +2514,15 @@ async function runTeacherLed(tt, config, dryRun, logger) {
 // and launches. studentLed.autoBegin:true additionally presses Next and the
 // step-3 launch button, best effort on an unverified screen. Between-question
 // navigation only: nothing here ever touches a lesson.
+//
+// `--subject default` (subjects.DEFAULT_SETTINGS) is for a learner who
+// doesn't work by subject: the same walk, but step 2 is left exactly as
+// enCORE sets it up — no lesson-source click, no subject box — and READY.
 async function studentLedSetup(tt, sl, dryRun, logger) {
   const frame = encoreLocator(tt);
   const who = sl.learnerPseudonym; // never the display name — logs and the UI show the pseudonym
-  const subjectLabel = subjects.SUBJECTS[sl.subject].label;
+  const subjectLabel = subjects.studentLedLabel(sl.subject);
+  const asIs = sl.subject === subjects.DEFAULT_SETTINGS;
 
   await openSessionFormat(tt, logger);
   await clickGetStarted(tt, /student-led/i, 1, 'Student-Led', logger);
@@ -2519,9 +2558,16 @@ async function studentLedSetup(tt, sl, dryRun, logger) {
   await dismissOnboarding(tt, logger);
   if (state.reconMode) await reconShot(tt, 'student-led-step2-before');
 
+  // Default settings: nothing on step 2 is clicked. The boxes are logged as
+  // found, for the record.
+  if (asIs) {
+    const found = await subjects.readCheckboxes(frame).catch(() => []);
+    logger.event(`SUBJECTS as found: ${subjects.describeSubjectState(found)} — default settings, nothing clicked`);
+  }
+
   // Step 2a — lesson source. The app defaults to Recommended; anything else
   // is a click on the radio's label, best effort.
-  if (sl.lessonSource !== 'recommended') {
+  if (!asIs && sl.lessonSource !== 'recommended') {
     const radio = frame.getByText(LESSON_SOURCES[sl.lessonSource]).first();
     if (await visibleSoon(radio, 5_000)) {
       await radio.click({ timeout: 5_000 }).catch(() => {});
@@ -2532,31 +2578,12 @@ async function studentLedSetup(tt, sl, dryRun, logger) {
     }
   }
 
-  // Step 2b — ONLY the requested subject stays checked. Read → plan → click
-  // → re-read; the result is verified before anyone is told READY.
-  const before = await subjects.readCheckboxes(frame);
-  logger.event(`SUBJECTS before: ${subjects.describeSubjectState(before)}`);
-  const result = await subjects.selectOnlySubject(frame, sl.subject, { log: (m) => logger.event(m) });
-  logger.event(`SUBJECTS after:  ${subjects.describeSubjectState(result.boxes)}`);
-  if (!result.ok) {
-    await screenshot(tt, `studentled-subjects-${sl.subject}`);
-    const why =
-      result.plan.target == null
-        ? `no "${subjectLabel}" checkbox was recognized on this screen`
-        : `the boxes did not settle to only "${subjectLabel}" after ${result.attempts} attempt(s)`;
-    if (dryRun) {
-      throw new Error(`SUBJECT CHECK FAILED — ${why}. Nothing was started. See the screenshot in logs/.`);
-    }
-    logger.event(`SUBJECT CHECK FAILED — ${why}.`);
-    logger.event('STOPPED before Next — fix the subject boxes on screen yourself, then continue by hand. Nothing was started.');
-    logger.event('Idling — Ctrl+C here (or STOP in the UI) closes the browser.');
-    await new Promise(() => {});
-    return;
-  }
-  logger.event(`SUBJECTS OK — only ${subjectLabel} is checked for "${who}"`);
+  if (!asIs) await leaveOnlySubjectChecked(tt, frame, sl, subjectLabel, dryRun, logger);
 
   if (dryRun) {
-    logger.event(`STUDENT-LED DRY RUN COMPLETE — ${subjectLabel} for "${who}" verified on step 2; backing out, nothing started.`);
+    logger.event(
+      `STUDENT-LED DRY RUN COMPLETE — ${subjectLabel} for "${who}" ${asIs ? 'reached' : 'verified on'} step 2; backing out, nothing started.`
+    );
     await tt.goto(state.ttNavBase + '#/home', { timeout: NAV_TIMEOUT }).catch(() => {});
     return;
   }
@@ -2595,7 +2622,7 @@ async function studentLedSetup(tt, sl, dryRun, logger) {
 
 async function runStudentLed(tt, config, dryRun, logger) {
   const sl = config.studentLed;
-  logger.event(`STUDENT-LED — entering enCORE (${subjects.SUBJECTS[sl.subject].label} for "${sl.learnerPseudonym}")`);
+  logger.event(`STUDENT-LED — entering enCORE (${subjects.studentLedLabel(sl.subject)} for "${sl.learnerPseudonym}")`);
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
       await enterEncore(tt, config, logger);

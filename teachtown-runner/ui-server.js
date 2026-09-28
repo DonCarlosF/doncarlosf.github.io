@@ -37,7 +37,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { spawn, execSync, execFileSync } = require('child_process');
-const { SUBJECT_KEYS, normalizeSubjectKey } = require('./lib/subjects');
+const { SUBJECT_KEYS, DEFAULT_SETTINGS, normalizeSubjectKey } = require('./lib/subjects');
 const { describeRun } = require('./lib/home-status');
 const para = require('./lib/para-config');
 
@@ -161,9 +161,10 @@ function buildRun(body) {
       // name, so it is safe on argv. Stops at READY — never launches. The
       // learner defaults to studentLed.learnerPseudonym; the para page names
       // one explicitly (a pseudonym — it rides in the env overrides anyway,
-      // since a local pseudonym can be a nickname).
-      const subject = normalizeSubjectKey(body.subject);
-      if (!subject) return { error: `Student-Led needs a subject: ${SUBJECT_KEYS.join(', ')}` };
+      // since a local pseudonym can be a nickname). "default" leaves step 2
+      // as enCORE sets it up (studentLed.defaultSettings learners).
+      const subject = body.subject === DEFAULT_SETTINGS ? DEFAULT_SETTINGS : normalizeSubjectKey(body.subject);
+      if (!subject) return { error: `Student-Led needs a subject: ${[...SUBJECT_KEYS, DEFAULT_SETTINGS].join(', ')}` };
       const studentLed = { autoBegin: false };
       let learner = null;
       if (body.learner != null) {
@@ -339,6 +340,7 @@ function validateConfig(cfg) {
       if (sl.autoBegin !== undefined && typeof sl.autoBegin !== 'boolean') errs.push('studentLed.autoBegin must be true or false');
       if (sl.lessonSource !== undefined && !['recommended', 'iep', 'facilitator', 'benchmark'].includes(sl.lessonSource))
         errs.push('studentLed.lessonSource must be recommended, iep, facilitator, or benchmark');
+      errs.push(...para.defaultSettingsErrors(sl.defaultSettings));
     }
   }
   // socialSkillsRoutines is optional too: pseudonym → { target, movieTimes, thenActivity }.

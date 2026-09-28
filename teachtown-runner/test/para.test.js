@@ -305,3 +305,75 @@ test('actionId (which button) wins over action (the Home screen\'s human label)'
   s = play([status({ action: 'Math for Luis — practice only', actionId: 'studentled-subject (dry run)', subject: 'math' })]);
   assert.equal(view(s, CTX).screen, 'busy', 'a dashboard dry run is the teacher\'s, not the para\'s');
 });
+
+/* ----------------------- default-settings learners ---------------------- */
+
+const { defaultSettingsErrors, usesDefaultSettings } = require('../lib/para-config');
+
+test('studentLed.defaultSettings marks one-button learners (and lists routine-less ones too)', () => {
+  const c = cfg();
+  c.studentLed.defaultSettings = ['Plain'];
+  c.studentLed.learners.Plain = DISPLAY;
+  const info = paraInfo(c);
+  assert.deepEqual(
+    info.learners.map((l) => [l.pseudonym, l.defaultSettings]),
+    [['Luis', false], ['Tester', false], ['Plain', true]]
+  );
+  assert.equal(usesDefaultSettings(c, 'Plain'), true);
+  assert.equal(usesDefaultSettings(c, 'Luis'), false);
+  // listed only in defaultSettings: still gets a tab (not ready until named)
+  const d = cfg();
+  d.studentLed.defaultSettings = ['OnlyHere'];
+  assert.deepEqual(paraInfo(d).learners.slice(-1), [{ pseudonym: 'OnlyHere', ready: false, defaultSettings: true, routine: null }]);
+});
+
+test('defaultSettings must be a list of pseudonyms', () => {
+  assert.deepEqual(defaultSettingsErrors(undefined), []);
+  assert.deepEqual(defaultSettingsErrors([]), []);
+  assert.deepEqual(defaultSettingsErrors(['Plain']), []);
+  assert.match(defaultSettingsErrors('Plain').join(), /list of learner pseudonyms/);
+  assert.match(defaultSettingsErrors(['']).join(), /list of learner pseudonyms/);
+});
+
+test('a default-settings run: same four steps, "Default settings" in place of "Only <subject>"', () => {
+  const DEFAULT_RUN = [
+    status({ action: 'Student-Led (default settings) for Plain', actionId: 'studentled-subject', learner: 'Plain', subject: 'default' }),
+    L('SESSION START (student-led) — enCORE Student-Led, learner "Plain", subject=default, lessonSource=recommended, autoBegin=false'),
+    L('TeachTown home loaded (#/home) — direct session active'),
+    L('STUDENT-LED — entering enCORE (Default settings for "Plain")'),
+    L('Selected learner "Plain"'),
+  ];
+  let v = view(play(DEFAULT_RUN), CTX);
+  assert.deepEqual(v.steps, ['Open enCORE', 'Find Plain', 'Default settings', 'Your turn']);
+  assert.equal(v.step, 3);
+  assert.equal(v.title, 'Getting the screen ready…');
+
+  const ready = [
+    ...DEFAULT_RUN,
+    L('SUBJECTS as found: ELA [x]  Math [x]  Science [x]  Social Studies [x] — default settings, nothing clicked'),
+    L('READY — Default settings for "Plain". Press Next on screen and launch when the group is ready.'),
+  ];
+  v = view(play(ready), CTX);
+  assert.equal(v.step, 4);
+  assert.match(v.title, /^Ready/);
+  assert.match(v.detail, /enCORE's default settings — nothing was changed/);
+  assert.doesNotMatch(v.detail, /Only/);
+
+  v = view(play([...ready, status({ action: 'x', actionId: 'studentled-subject', learner: 'Plain', subject: 'default', running: false, exitCode: 130 })]), CTX);
+  assert.deepEqual(v.note, { tone: 'ok', text: 'Student-Led session for Plain closed.' });
+});
+
+/* ------------------------------- pages ------------------------------- */
+
+// The dashboard and para page are one inline <script> each; a single stray
+// quote there breaks every button on the page, and no other test loads them.
+test('ui.html and para.html inline scripts parse', () => {
+  const fs = require('fs');
+  const path = require('path');
+  for (const page of ['ui.html', 'para.html']) {
+    const html = fs.readFileSync(path.join(__dirname, '..', page), 'utf8');
+    const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+    assert.ok(scripts.length > 0, `${page} has an inline script`);
+    for (const code of scripts) assert.doesNotThrow(() => new Function(code), SyntaxError, page);
+  }
+});

@@ -37,6 +37,18 @@ const SUBJECTS = {
 };
 const SUBJECT_KEYS = Object.keys(SUBJECTS);
 
+// Not a subject. `--subject default` means: leave step 2 exactly as enCORE
+// sets it up — every box as found, the app's own lesson source — for a
+// learner who doesn't work by subject. The planner never sees it, and it is
+// not in SUBJECT_KEYS (so no button or menu is generated for it).
+const DEFAULT_SETTINGS = 'default';
+
+// Label for a Student-Led run: a subject's label, or "Default settings".
+function studentLedLabel(key) {
+  if (key === DEFAULT_SETTINGS) return 'Default settings';
+  return SUBJECTS[key] ? SUBJECTS[key].label : String(key);
+}
+
 // Loose user input → canonical key (null when it isn't a subject we know).
 // "ELA", "Social Studies", "social_skills", "SocialSkills" resolve.
 // "social", "ss", "studies", and "skills" do not — those words are shared.
@@ -249,6 +261,8 @@ async function selectOnlySubject(root, wantKey, opts = {}) {
 module.exports = {
   SUBJECTS,
   SUBJECT_KEYS,
+  DEFAULT_SETTINGS,
+  studentLedLabel,
   CHECKBOX_SELECTOR,
   normalizeSubjectKey,
   classifySubjectLabel,
