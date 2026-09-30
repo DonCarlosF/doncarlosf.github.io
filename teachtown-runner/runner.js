@@ -3103,16 +3103,26 @@ async function shutdown(code) {
     logger.event('Recon mode: auth hops are screenshotted to recon/; an unrecognized page stops the run.');
   }
 
-  const context = await launchBrowser(profileDir);
-  state.context = context;
-  context.on('close', () => {
-    if (!state.shuttingDown && !state.finished) {
-      logger.event('Browser window was closed — exiting.');
-      process.exit(0);
-    }
-  });
-
   try {
+    // launchBrowser is inside this try deliberately: it's the one await in
+    // main() before the try block used to start, so ANY rejection from it —
+    // Chrome not installed, or the profile already locked by another
+    // session — was an unhandled promise rejection, not a caught error.
+    // Node's default for that is a bare stack trace on stderr and exit,
+    // completely bypassing Logger: no FATAL line, nothing in logs/. That's
+    // exactly what happened running two Student-Led sessions against the
+    // same district profile at once — the second one's own friendly
+    // "profile is already in use" message (thrown below) never made it to
+    // the log or the console the human was watching.
+    const context = await launchBrowser(profileDir);
+    state.context = context;
+    context.on('close', () => {
+      if (!state.shuttingDown && !state.finished) {
+        logger.event('Browser window was closed — exiting.');
+        process.exit(0);
+      }
+    });
+
     const portal = context.pages()[0] || (await context.newPage());
     let tt;
     if (config.loginMode === 'direct') {
