@@ -123,6 +123,62 @@ test('windows/*.cmd launchers parse and run through real cmd.exe', { skip: !isWi
       assert.match(r.stdout, /Node\.js was not found on PATH\./, `${file} should reach the shared node check`);
     });
   }
+
+  // The exit-code branch after the runner, through real cmd.exe. A temp copy
+  // of _student-led.cmd sits next to a STUB runner.js that just exits with
+  // the code it's told to — the real runner, config.json, and browser
+  // profile are never involved.
+  const stubTree = () => {
+    const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'ttcmd-'));
+    fs.mkdirSync(path.join(dir, 'windows'));
+    fs.copyFileSync(path.join(WIN_DIR, '_student-led.cmd'), path.join(dir, 'windows', '_student-led.cmd'));
+    fs.mkdirSync(path.join(dir, 'node_modules', 'playwright'), { recursive: true });
+    fs.writeFileSync(path.join(dir, 'config.json'), '{}');
+    fs.writeFileSync(
+      path.join(dir, 'runner.js'),
+      "console.log('STUB RUNNER'); process.exit(Number(process.env.STUB_EXIT || 0));\n"
+    );
+    return dir;
+  };
+  const runStub = (dir, code) => {
+    const withNode = [path.dirname(process.execPath), process.env.PATH || process.env.Path || ''].join(path.delimiter);
+    try {
+      const stdout = execFileSync('cmd.exe', ['/c', path.join(dir, 'windows', '_student-led.cmd'), 'math'], {
+        cwd: dir,
+        env: { ...process.env, PATH: withNode, Path: withNode, STUB_EXIT: String(code) },
+        input: '',
+        encoding: 'utf8',
+        timeout: 15_000,
+      });
+      return { code: 0, stdout };
+    } catch (err) {
+      return { code: err.status, stdout: String(err.stdout || '') };
+    }
+  };
+
+  await t.test('_student-led.cmd exit 3 (already running / kept it): no "Details" line, still pauses', () => {
+    const r = runStub(stubTree(), 3);
+    assertParsedCleanly(r);
+    assert.equal(r.code, 3);
+    assert.match(r.stdout, /STUB RUNNER/);
+    assert.doesNotMatch(r.stdout, /Details are in the logs/);
+    assert.match(r.stdout, /Press any key/i, 'the pause keeps the message on screen');
+  });
+
+  await t.test('_student-led.cmd exit 1: points at the logs and pauses', () => {
+    const r = runStub(stubTree(), 1);
+    assertParsedCleanly(r);
+    assert.equal(r.code, 1);
+    assert.match(r.stdout, /The runner exited with code 1\. Details are in the logs\\ folder\./);
+    assert.match(r.stdout, /Press any key/i);
+  });
+
+  await t.test('_student-led.cmd exit 0 (incl. a switch): window closes without a pause', () => {
+    const r = runStub(stubTree(), 0);
+    assertParsedCleanly(r);
+    assert.equal(r.code, 0);
+    assert.doesNotMatch(r.stdout, /Press any key|Details are in the logs/i);
+  });
 });
 
 // "Install Desktop Shortcuts.cmd" is deliberately not run here: its whole

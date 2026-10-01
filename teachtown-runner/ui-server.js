@@ -15,8 +15,13 @@
  *  - STOP writes "stop" to the child's stdin: the same clean shutdown as
  *    Ctrl+C, portable to Windows where kill('SIGINT') would terminate the
  *    child without running its cleanup.
- *  - The server writes exactly two files, both gitignored: config.json and
- *    config.json.bak. No logs, caches, or session files of its own.
+ *  - The server writes exactly three files, all gitignored: config.json,
+ *    config.json.bak, and — only when asked to end a session it didn't
+ *    start — the profile's stop request (<profile>.lock.stop, see
+ *    lib/session-lock.js). No logs, caches, or session files of its own.
+ *  - One TeachTown session per browser profile. Before spawning, the server
+ *    reads the runner's lock; a session started from a Desktop shortcut
+ *    gets a 409 and the page offers to switch (end it, then start).
  *  - Two pages: / is the full dashboard (teacher), /para is the para
  *    educator's page — per-learner subject buttons and Social Skills
  *    routines, plain-language progress, nothing else. `--para` opens /para.
@@ -34,12 +39,15 @@
 
 const http = require('http');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const { spawn, execSync, execFileSync } = require('child_process');
 const { SUBJECT_KEYS, DEFAULT_SETTINGS, normalizeSubjectKey } = require('./lib/subjects');
 const { describeRun } = require('./lib/home-status');
 const para = require('./lib/para-config');
+const sessionLock = require('./lib/session-lock');
+const { studentLedLabel } = require('./lib/subjects');
 
 const DIR = __dirname;
 const CONFIG = path.join(DIR, 'config.json');
@@ -70,6 +78,7 @@ function buildVersion() {
     'lib/home-status.js',
     'lib/para-config.js',
     'lib/para-status.js',
+    'lib/session-lock.js',
   ]) {
     try {
       h.update(fs.readFileSync(path.join(DIR, f)));
@@ -100,6 +109,8 @@ const child = {
   startedAt: 0,
   exitCode: null,
   lines: [], // ring buffer replayed to (re)connecting pages
+  switching: false, // waiting for a shortcut session to close before spawning
+  cancelSwitch: false, // STOP pressed during that wait: don't spawn afterwards
 };
 const sseClients = new Set();
 
@@ -124,8 +135,59 @@ function statusPayload() {
     subject: child.subject,
     startedAt: child.startedAt,
     exitCode: child.exitCode,
+    elsewhere: sessionElsewhere(), // a live session this server didn't start (a Desktop shortcut)
   };
 }
+
+/* ----------------------- one session per profile ---------------------- */
+
+// Same profile the runner will use (config.json + district file).
+function currentProfileDir() {
+  let cfg = {};
+  try {
+    cfg = readConfigForUi().config || {};
+  } catch {}
+  let district = null;
+  if (typeof cfg.district === 'string' && cfg.district) {
+    try {
+      district = JSON.parse(fs.readFileSync(path.join(DISTRICTS_DIR, `${cfg.district}.json`), 'utf8'));
+    } catch {}
+  }
+  return sessionLock.profileDirForConfig(DIR, cfg, district, os.homedir());
+}
+
+const MODE_LABELS = { 'teacher-led': 'Teacher-led', rotation: 'The rotation', login: 'Login setup', recon: 'Recon' };
+
+// The lock holder, if it is a live session that is NOT our own child. Only
+// pseudonyms and curriculum words — the lock never holds a display name.
+function sessionElsewhere() {
+  let holder;
+  try {
+    holder = sessionLock.inspect(currentProfileDir());
+  } catch {
+    return null;
+  }
+  if (!holder || (child.proc && holder.pid === child.proc.pid)) return null;
+  return {
+    pid: holder.pid,
+    label: holder.subject ? studentLedLabel(holder.subject) : MODE_LABELS[holder.mode] || 'Another session',
+    subject: holder.subject || null,
+    learner: holder.learner || null,
+    startedAt: holder.startedAt || null,
+    source: holder.source || null,
+  };
+}
+
+// Pages learn about a shortcut session starting or ending without a click.
+let lastElsewhere = null;
+const elsewhereTimer = setInterval(() => {
+  const now = JSON.stringify(sessionElsewhere());
+  if (now !== lastElsewhere) {
+    lastElsewhere = now;
+    broadcast(statusPayload());
+  }
+}, 2000);
+elsewhereTimer.unref();
 
 // Server-side mapping from button → flags + overrides. The client never
 // supplies argv; it names an action and the whitelist here decides.
@@ -213,10 +275,43 @@ function learnerFromConfig(raw) {
   return { cfg, pseudonym, name };
 }
 
-function startRun(body) {
+async function startRun(body) {
   if (child.proc) return { status: 409, error: 'A run is already in progress — STOP it first.' };
+  if (child.switching) return { status: 409, error: 'Still ending the other session — one moment.' };
   const plan = buildRun(body);
   if (plan.error) return { status: 400, error: plan.error };
+
+  // A session from a Desktop shortcut owns the browser profile. Launching
+  // anyway would open a blank window inside it — offer to switch instead.
+  const other = sessionElsewhere();
+  if (other) {
+    // Only end the session the para confirmed. If another one took the lock
+    // since the prompt was drawn, hand back the new holder and ask again.
+    if (body.switch !== true || body.switchPid !== other.pid) {
+      return { status: 409, error: `${other.label} is already running.`, elsewhere: other };
+    }
+    child.switching = true;
+    child.cancelSwitch = false;
+    try {
+      const profileDir = currentProfileDir();
+      pushLine(`[ui] SWITCH — asking ${other.label} to close first…`);
+      sessionLock.requestStop(profileDir, other);
+      if (!(await sessionLock.waitForRelease(profileDir, 30_000))) {
+        sessionLock.clearStopRequest(profileDir);
+        return { status: 409, error: `${other.label} didn't close. Close its window, then try again.`, elsewhere: other };
+      }
+    } finally {
+      child.switching = false;
+    }
+    // STOP pressed while we were waiting: end the shortcut session (already
+    // asked) but do NOT start the new run.
+    if (child.cancelSwitch) {
+      child.cancelSwitch = false;
+      pushLine('[ui] SWITCH cancelled — STOP was pressed; the new session was not started.');
+      return { status: 409, error: 'Cancelled — nothing was started.' };
+    }
+    if (child.proc) return { status: 409, error: 'A run is already in progress — STOP it first.' };
+  }
 
   const env = { ...process.env, TT_UI: '1' };
   if (plan.overrides) env.TT_UI_OVERRIDES = JSON.stringify(plan.overrides);
@@ -264,7 +359,20 @@ function startRun(body) {
 }
 
 function stopRun() {
-  if (!child.proc) return { status: 200, note: 'nothing running' };
+  if (child.switching) child.cancelSwitch = true;
+  if (!child.proc) {
+    // Not ours — a Desktop-shortcut session. Same clean shutdown, via the
+    // lock's stop request (the runner polls for it).
+    const other = sessionElsewhere();
+    if (!other) return { status: 200, note: 'nothing running' };
+    try {
+      sessionLock.requestStop(currentProfileDir(), other);
+    } catch (err) {
+      return { status: 200, note: `could not ask ${other.label} to stop: ${err.message}` };
+    }
+    pushLine(`[ui] STOP — asked ${other.label} (started from a shortcut) to clean up…`);
+    return { status: 200, note: 'asked the shortcut session to stop' };
+  }
   pushLine('[ui] STOP — asking the runner to clean up (popup → logout → browser)…');
   try {
     child.proc.stdin.write('stop\n');
@@ -338,6 +446,7 @@ function validateConfig(cfg) {
           }
       }
       if (sl.autoBegin !== undefined && typeof sl.autoBegin !== 'boolean') errs.push('studentLed.autoBegin must be true or false');
+      if (sl.pressNext !== undefined && typeof sl.pressNext !== 'boolean') errs.push('studentLed.pressNext must be true or false');
       if (sl.lessonSource !== undefined && !['recommended', 'iep', 'facilitator', 'benchmark'].includes(sl.lessonSource))
         errs.push('studentLed.lessonSource must be recommended, iep, facilitator, or benchmark');
       errs.push(...para.defaultSettingsErrors(sl.defaultSettings));
@@ -450,8 +559,8 @@ const server = http.createServer(async (req, res) => {
     }
     if (req.method === 'POST' && url === '/api/run') {
       const body = JSON.parse((await readBody(req)) || '{}');
-      const r = startRun(body);
-      return json(res, r.status, r.status === 200 ? statusPayload() : { error: r.error });
+      const r = await startRun(body);
+      return json(res, r.status, r.status === 200 ? statusPayload() : { error: r.error, elsewhere: r.elsewhere || null });
     }
     if (req.method === 'POST' && url === '/api/stop') {
       const r = stopRun();

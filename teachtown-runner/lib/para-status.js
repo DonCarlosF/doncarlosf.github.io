@@ -49,6 +49,7 @@
         learner: false,
         subjectsOk: false,
         ready: false,
+        nextPressed: false,
         fix: false,
         login: false,
         notFound: false,
@@ -98,6 +99,7 @@
     if (/\] Selected learner "/.test(t)) s.seen.learner = true;
     if (/\] SUBJECTS OK —/.test(t)) s.seen.subjectsOk = true;
     if (/\] (READY —|BEGIN clicked —)/.test(t)) s.seen.ready = true;
+    if (/\] READY — .*Next was pressed/.test(t)) s.seen.nextPressed = true; // only Start Session is left
     if (/\] SUBJECT CHECK FAILED/.test(t)) s.seen.fix = true;
 
     // Social Skills routine milestones
@@ -190,7 +192,8 @@
             (asIs
               ? `${who}'s session is set up with enCORE's default settings — nothing was changed.`
               : `Only ${subj} is checked for ${who}.`) +
-            " Press Next there and start the session. When it's over, come back here and press the button below.",
+            (seen.nextPressed ? ' Press Start Session there when the group is ready.' : ' Press Next there and start the session.') +
+            " When it's over, come back here and press the button below.",
           stop: close,
         });
       }

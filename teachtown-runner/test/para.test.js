@@ -129,6 +129,20 @@ test('enCORE run walks the four steps and ends on "Ready" with a confirm-to-clos
   assert.ok(v.stop.confirm, 'closing a live session asks first');
 });
 
+test('after Next is pressed the Ready screen says only Start Session is left', () => {
+  const lines = ENCORE_TO_READY.slice(0, -1).concat([
+    L('Next pressed (step 2 → 3)'),
+    L('READY — Math for "Luis". Next was pressed; only Start Session is left — press it on screen when the group is ready.'),
+  ]);
+  const v = view(play(lines), CTX);
+  assert.equal(v.tone, 'ok');
+  assert.match(v.title, /^Ready/);
+  assert.match(v.detail, /Press Start Session there/);
+  assert.doesNotMatch(v.detail, /Press Next/);
+  // The fallback (Next could not be pressed) still tells them to press it.
+  assert.match(view(play(ENCORE_TO_READY), CTX).detail, /Press Next there/);
+});
+
 test('manual sign-in shows "Please sign in" until the run moves past it', () => {
   let s = play(ENCORE_TO_READY.slice(0, 3));
   s = reduce(s, L("MANUAL SIGN-IN NEEDED — sign in in the open browser window; I'll continue automatically."));

@@ -84,7 +84,8 @@ const path = require('path');
 const readline = require('readline');
 const { chromium } = require('playwright');
 const subjects = require('./lib/subjects');
-const { advanceStudentLedToStep2 } = require('./lib/student-led');
+const { advanceStudentLedToStep2, advanceStudentLedToStep3 } = require('./lib/student-led');
+const sessionLock = require('./lib/session-lock');
 
 const PROJECT_DIR = __dirname;
 const CONFIG_PATH = path.join(PROJECT_DIR, 'config.json');
@@ -144,6 +145,7 @@ const state = {
   playlistOnceRun: new Set(), // playlist entries (by index) already run this session
   profileAuthAnnounced: false, // PROFILE AUTHENTICATED printed (once per run)
   profileDir: '',
+  lockHeld: false, // this process owns <profileDir>.lock (lib/session-lock.js)
 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -427,6 +429,7 @@ function loadConfig(flags) {
     fail(`studentLed.lessonSource must be one of ${Object.keys(LESSON_SOURCES).join(', ')} (got "${sl.lessonSource}").`);
   }
   sl.autoBegin = sl.autoBegin === true;
+  sl.pressNext = sl.pressNext !== false; // default ON: step 2 → 3, so only Start Session is left to press
   const rawSubject = flags.subject != null ? flags.subject : sl.subject;
   // "default" is not a subject: it leaves step 2 as enCORE sets it up.
   sl.subject =
@@ -2510,9 +2513,9 @@ async function leaveOnlySubjectChecked(tt, frame, sl, subjectLabel, dryRun, logg
 //
 // This automates what Carlos does by hand after Start Session: pick the one
 // learner, then uncheck every subject except the one being taught. It stops
-// on step 2 with the boxes verified (READY) — the human presses the forward control
-// and launches. studentLed.autoBegin:true additionally presses Next and the
-// step-3 launch button, best effort on an unverified screen. Between-question
+// on step 2 with the boxes verified, presses Next (studentLed.pressNext, on by
+// default), and READYs on step 3 — the human presses only Start Session.
+// studentLed.autoBegin:true additionally presses the step-3 launch button, best effort on an unverified screen. Between-question
 // navigation only: nothing here ever touches a lesson.
 //
 // `--subject default` (subjects.DEFAULT_SETTINGS) is for a learner who
@@ -2589,7 +2592,28 @@ async function studentLedSetup(tt, sl, dryRun, logger) {
   }
 
   if (!sl.autoBegin) {
-    logger.event(`READY — ${subjectLabel} for "${who}". Press Next on screen and launch when the group is ready.`);
+    // Press Next, so the one thing left for a human is Start Session. Fails
+    // soft into the old "press Next yourself" READY — never presses Start.
+    let advanced = null;
+    if (sl.pressNext) {
+      try {
+        advanced = await advanceStudentLedToStep3(frame, { log: (m) => logger.event(m) });
+      } catch (err) {
+        if (state.shuttingDown) return;
+        logger.event(`WARN could not press Next (${err.message.split('\n')[0]}) — press it on screen`);
+      }
+      if (advanced && !advanced.pressed) logger.event(`WARN Next not pressed — ${advanced.reason}; press it on screen`);
+    }
+    if (advanced && advanced.pressed) {
+      await dismissOnboarding(tt, logger);
+      logger.event(
+        advanced.step3 === 'confirmed'
+          ? `READY — ${subjectLabel} for "${who}". Next was pressed; only Start Session is left — press it on screen when the group is ready.`
+          : `READY — ${subjectLabel} for "${who}". Next was pressed but the next screen wasn't recognized — check it, then press Start Session.`
+      );
+    } else {
+      logger.event(`READY — ${subjectLabel} for "${who}". Press Next on screen and launch when the group is ready.`);
+    }
     logger.event('Idling — the session is in your hands (Ctrl+C here or close the browser when done)');
     await new Promise(() => {}); // hold the screen; Ctrl+C / window close end the run
     return;
@@ -2955,6 +2979,110 @@ function printDryRunTable(results, logger) {
   );
 }
 
+/* ------------------- one session per browser profile ------------------ */
+
+// Thrown when another session owns the profile (or the user chose to keep
+// it). Logged as a plain line, exit code 3 — not a crash, no screenshot.
+class SessionBlockedError extends Error {}
+
+function releaseSessionLock() {
+  if (!state.lockHeld) return;
+  state.lockHeld = false;
+  sessionLock.release(state.profileDir);
+}
+
+const MODE_LABELS = {
+  'teacher-led': 'Teacher-led',
+  'student-led': 'Student-Led',
+  rotation: 'The rotation',
+  login: 'Login setup',
+  recon: 'Recon',
+};
+function sessionLabel(info) {
+  if (info.subject) return subjects.studentLedLabel(info.subject);
+  return MODE_LABELS[info.mode] || 'Another session';
+}
+function clockTime(iso) {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? null : d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+// One keypress, no Enter. Anything but Y — including Ctrl+C and a closed
+// stream — means "no".
+function askYesNo() {
+  return new Promise((resolve) => {
+    const stdin = process.stdin;
+    const finish = (yes) => {
+      stdin.removeListener('data', onData);
+      stdin.removeListener('end', onEnd);
+      try {
+        stdin.setRawMode(false);
+      } catch {}
+      stdin.pause();
+      resolve(yes);
+    };
+    const onData = (d) => finish(/^y/i.test(String(d)));
+    const onEnd = () => finish(false);
+    try {
+      stdin.setRawMode(true);
+    } catch {}
+    stdin.on('data', onData);
+    stdin.on('end', onEnd);
+    stdin.resume();
+  });
+}
+
+// Take the profile lock BEFORE Chrome launches. A second launch on an
+// in-use profile opens a blank window inside the running session.
+async function takeSessionLock(profileDir, info, logger) {
+  const mine = sessionLabel(info);
+  let r = sessionLock.acquire(profileDir, info);
+  if (!r.ok) {
+    const holder = r.holder;
+    const theirs = sessionLabel(holder);
+    const since = holder.startedAt ? clockTime(holder.startedAt) : null;
+    const sinceTxt = since ? ` (started ${since})` : '';
+    const interactive = process.stdin.isTTY && process.env.TT_UI !== '1' && !holder.unknown;
+    if (!interactive) {
+      throw new SessionBlockedError(`BLOCKED ${theirs} is already running${sinceTxt}.`);
+    }
+    console.log('');
+    console.log(`${theirs} is still running${sinceTxt}.`);
+    console.log(`  Y = end ${theirs} and start ${mine}`);
+    console.log(`  N = keep ${theirs} going`);
+    if (!(await askYesNo())) {
+      throw new SessionBlockedError(`BLOCKED ${theirs} is still running — left it alone.`);
+    }
+    logger.event(`SWITCH asking ${theirs} to close (PID ${holder.pid}) so ${mine} can start`);
+    sessionLock.requestStop(profileDir, holder);
+    const freed = await sessionLock.waitForRelease(profileDir, 30_000);
+    if (!freed) {
+      sessionLock.clearStopRequest(profileDir);
+      throw new SessionBlockedError(`BLOCKED ${theirs} didn't close. Close its window, then click ${mine} again.`);
+    }
+    r = sessionLock.acquire(profileDir, info);
+    if (!r.ok) throw new SessionBlockedError(`BLOCKED ${sessionLabel(r.holder)} is already running.`);
+  }
+  state.lockHeld = true;
+  process.on('exit', releaseSessionLock); // last-ditch, synchronous
+  if (r.clearedStale) logger.event(`WARN cleared a stale session lock (${r.clearedStale})`);
+
+  // The previous browser can still be closing after a switch; launching into
+  // a closing profile is the same blank-window trap.
+  if (!(await sessionLock.waitForChromeRelease(profileDir, 15_000))) {
+    throw new Error('The TeachTown browser is still open. Close it and try again.');
+  }
+
+  // Another subject's switch request: same clean shutdown as STOP.
+  const watcher = setInterval(() => {
+    if (state.shuttingDown || !sessionLock.stopRequestedFor(profileDir)) return;
+    sessionLock.clearStopRequest(profileDir);
+    logger.event('SWITCH: another subject asked to take over; cleaning up');
+    shutdown(0);
+  }, 1000);
+  if (watcher.unref) watcher.unref();
+}
+
 async function shutdown(code) {
   if (state.shuttingDown) process.exit(code);
   state.shuttingDown = true;
@@ -2985,6 +3113,7 @@ async function shutdown(code) {
   } catch {}
   log?.event('Clean exit.');
   log?.close();
+  releaseSessionLock();
   process.exit(code);
 }
 
@@ -3032,6 +3161,7 @@ async function shutdown(code) {
   process.on('SIGINT', () => shutdown(130));
   process.on('SIGTERM', () => shutdown(143));
   process.on('SIGBREAK', () => shutdown(130)); // Windows Ctrl+Break; never fires elsewhere
+  process.on('SIGHUP', () => shutdown(129)); // closing the console window (Windows gives ~10 s to clean up)
 
   // UI mode: the STOP button sends "stop" over stdin — the SAME clean
   // shutdown as Ctrl+C. A signal can't do this portably: on Windows,
@@ -3114,11 +3244,30 @@ async function shutdown(code) {
     // same district profile at once — the second one's own friendly
     // "profile is already in use" message (thrown below) never made it to
     // the log or the console the human was watching.
+    await takeSessionLock(
+      profileDir,
+      {
+        subject: flags.studentLed ? config.studentLed.subject : null,
+        mode: anyRecon
+          ? 'recon'
+          : flags.loginOnly
+            ? 'login'
+            : teacherLedOnly
+              ? 'teacher-led'
+              : flags.studentLed
+                ? 'student-led'
+                : 'rotation',
+        learner: flags.studentLed ? config.studentLed.learnerPseudonym : null,
+        source: process.env.TT_UI === '1' ? 'ui' : 'shortcut',
+      },
+      logger
+    );
     const context = await launchBrowser(profileDir);
     state.context = context;
     context.on('close', () => {
       if (!state.shuttingDown && !state.finished) {
         logger.event('Browser window was closed — exiting.');
+        releaseSessionLock();
         process.exit(0);
       }
     });
@@ -3230,7 +3379,10 @@ async function shutdown(code) {
     if (state.shuttingDown) {
       return; // Ctrl+C owns the exit — an 'interrupted' throw is not a failure
     }
-    if (err instanceof ReconStopError) {
+    if (err instanceof SessionBlockedError) {
+      logger.event(err.message);
+      process.exitCode = 3; // already running / user chose to keep it — not a crash
+    } else if (err instanceof ReconStopError) {
       logger.event('SSO RECON STOP — a human needs to look at this:');
       for (const line of err.message.split('\n')) logger.event(line);
       process.exitCode = 2;
@@ -3255,6 +3407,7 @@ async function shutdown(code) {
         await state.context?.close();
       } catch {}
       logger.close();
+      releaseSessionLock();
     }
   }
 })();

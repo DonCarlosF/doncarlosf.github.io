@@ -138,6 +138,20 @@
     <h1 class="who" id="who" hidden></h1>
     <div class="note" id="note" role="status" hidden></div>
     <div class="note" id="setup" data-tone="warn" hidden></div>
+    <!-- A session started from a Desktop shortcut owns the browser. -->
+    <div class="note" id="elsewhere" data-tone="warn" hidden>
+      <div class="confirm">
+        <p id="elsewhereText"></p>
+        <button class="btn" id="elsewhereStop"></button>
+      </div>
+    </div>
+    <div class="note" id="switchAsk" data-tone="warn" hidden>
+      <div class="confirm">
+        <p id="switchText"></p>
+        <button class="btn danger" id="switchYes">Yes</button>
+        <button class="btn" id="switchNo">Not yet</button>
+      </div>
+    </div>
 
     <h2 class="section">enCORE Student-Led</h2>
     <p class="hint" id="encoreHint">Tap a subject. Only that subject gets checked.</p>
@@ -215,6 +229,8 @@ let busyClick = false; // a start request is in flight, or accepted but not yet 
 let awaitTimer = null;
 let dismissed = null; // runId whose failure/note the para cleared
 let startError = null;
+let elsewhere = null; // live session this helper didn't start (server status.elsewhere)
+let switchAsk = null; // { body, other } — waiting for "End X and start Y?"
 
 const store = {
   get() { try { return localStorage.getItem('para.learner'); } catch { return null; } },
@@ -255,14 +271,28 @@ async function start(body) {
   startError = null;
   dismissed = null;
   render();
+  if (!body.switch) switchAsk = null; // a switch keeps its prompt up ("Ending Science…") until the server answers
   let accepted = false;
   try {
     const r = await fetch('/api/run', { method: 'POST', body: JSON.stringify(body) });
     if (r.ok) accepted = true;
-    else startError = (await r.json().catch(() => ({}))).error || 'Could not start.';
+    else {
+      const e = await r.json().catch(() => ({}));
+      // Another session owns the browser: ask before ending it. This also
+      // covers a confirmed switch that found a DIFFERENT session than the one
+      // the para saw — re-ask about the one that's actually there.
+      if (r.status === 409 && e.elsewhere) {
+        const asked = Object.assign({}, body);
+        delete asked.switch;
+        delete asked.switchPid;
+        switchAsk = { body: asked, other: e.elsewhere };
+        dismissed = st.runId; // the prompt lives on the buttons screen; leave a failed-run screen
+      } else startError = e.error || 'Could not start.';
+    }
   } catch {
     startError = 'Could not reach the TeachTown helper.';
   }
+  if (accepted && body.switch) switchAsk = null;
   // Accepted: stay locked until the stream reports the run (or 5 s pass),
   // so a second tap can't land in between.
   if (accepted) awaitTimer = setTimeout(unlock, 5000);
@@ -285,6 +315,36 @@ async function stop() {
   $('#confirm').hidden = true;
   try { await fetch('/api/stop', { method: 'POST' }); } catch {}
 }
+
+// "Science", "Math", a routine's name — what a start body would run.
+function bodyLabel(body) {
+  if (body.action === 'social-routine') return (ctx().routines[body.learner] || {}).target || 'Social Skills';
+  if (body.subject === 'default') return 'Student-Led';
+  return ctx().subjects[body.subject] || body.subject || 'this';
+}
+const clock = (iso) => {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+};
+const sinceText = (o) => (o.startedAt && clock(o.startedAt) ? ` (started ${clock(o.startedAt)})` : '');
+
+$('#switchYes').addEventListener('click', () => {
+  if (!switchAsk) return;
+  // Name the session the para confirmed, so the server never ends a different one.
+  const body = Object.assign({}, switchAsk.body, { switch: true, switchPid: switchAsk.other.pid });
+  start(body);
+});
+$('#switchNo').addEventListener('click', () => { switchAsk = null; render(); });
+// "End X" was asked for this pid; the button stays off for a few seconds, and
+// only for THAT session — a different session taking over gets a live button.
+let stopAsked = null; // { pid, until }
+$('#elsewhereStop').addEventListener('click', async () => {
+  if (!elsewhere) return;
+  stopAsked = { pid: elsewhere.pid, until: Date.now() + 10000 };
+  setTimeout(render, 10100);
+  render();
+  await stop();
+});
 
 $('#routineBtn').addEventListener('click', startRoutine);
 $('#defaultBtn').addEventListener('click', startDefault);
@@ -319,7 +379,8 @@ function renderLearners() {
       const b = document.createElement('button');
       b.setAttribute('role', 'tab');
       b.textContent = l.pseudonym;
-      b.addEventListener('click', () => { selected = l.pseudonym; store.set(selected); dismissed = st.runId; startError = null; render(); });
+      // A switch prompt belongs to the learner it was asked for — never carry it to another tab.
+      b.addEventListener('click', () => { selected = l.pseudonym; store.set(selected); dismissed = st.runId; startError = null; switchAsk = null; render(); });
       nav.appendChild(b);
     });
     nav.dataset.keys = info.learners.map((l) => l.pseudonym).join('\n');
@@ -341,6 +402,29 @@ function renderPick(v) {
   const note = startError ? { tone: 'error', text: startError } : dismissed === st.runId ? null : v.note;
   $('#note').hidden = !note;
   if (note) { $('#note').dataset.tone = note.tone; $('#note').textContent = note.text; }
+
+  // Switch prompt (after a tap found another session) wins over the plain banner.
+  const ask = switchAsk;
+  $('#switchAsk').hidden = !ask;
+  if (ask) {
+    const theirs = ask.other.label;
+    $('#switchText').textContent = busyClick
+      ? `Ending ${theirs}…`
+      : `${theirs} is running${sinceText(ask.other)}. End ${theirs} and start ${bodyLabel(ask.body)}?`;
+    $('#switchYes').disabled = busyClick;
+    $('#switchNo').disabled = busyClick;
+  }
+  const other = !ask && elsewhere;
+  $('#elsewhere').hidden = !other;
+  if (other) {
+    $('#elsewhereText').textContent =
+      `${other.label}${other.learner ? ` for ${other.learner}` : ''} is running${sinceText(other)}` +
+      (other.source === 'shortcut' ? ' from a Desktop shortcut.' : '.');
+    $('#elsewhereStop').textContent = `End ${other.label}`;
+    $('#elsewhereStop').disabled = !!stopAsked && stopAsked.pid === other.pid && Date.now() < stopAsked.until;
+  } else {
+    $('#elsewhereStop').disabled = false;
+  }
 
   const off = !!setup || busyClick;
   const grid = $('#subjects');
@@ -469,6 +553,11 @@ function connect() {
     const wasRunning = st.running;
     st = ParaStatus.reduce(st, d);
     if (d.type === 'status') {
+      elsewhere = d.elsewhere || null;
+      if (switchAsk && !busyClick) {
+        if (!elsewhere) switchAsk = null; // it ended on its own
+        else if (elsewhere.pid !== switchAsk.other.pid) switchAsk.other = elsewhere; // a different session took over — ask about that one
+      }
       if (st.running && busyClick) unlock();
       if (st.running && st.learner && learnerInfo(st.learner)) selected = st.learner;
       if (wasRunning && !st.running) loadInfo(); // settings may have changed meanwhile

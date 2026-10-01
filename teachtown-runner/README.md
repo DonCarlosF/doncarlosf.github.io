@@ -11,10 +11,9 @@ opens a deliberately small page at http://127.0.0.1:4317/para. On Windows,
 if Chrome or Edge is installed, it opens as a standalone app-mode window
 (no tabs, no address bar) instead of a normal browser tab, using its own
 gitignored profile (`.profiles/app-window/`) so it never fights an
-already-open Chrome/Edge window. One caveat: Chrome's app mode always shows
-the URL in the window's title bar/taskbar entry rather than the page's own
-title — that's a Chrome security behavior (anti-spoofing), not something a
-launch flag can override. The full dashboard (`npm run ui`, no `--para`)
+already-open Chrome/Edge window. Once the page loads, the window and
+taskbar entry are titled by the page itself ("Luis · TeachTown"); the URL
+only shows for the moment before it loads. The full dashboard (`npm run ui`, no `--para`)
 gets the same treatment at a wider size. Neither browser found → falls back
 to opening the URL in the default browser, as before.
 
@@ -22,12 +21,13 @@ to opening the URL in the default browser, as before.
   Settings → Learners). One learner = no tabs, just the name.
 - Four big buttons: **Social Studies, ELA, Math, Science**. Each starts an
   enCORE Student-Led session for that learner with only that subject
-  checked, and stops at READY — the para presses Next on the enCORE screen.
+  checked, presses Next for you, and stops at READY — the para only presses
+  **Start Session** on the enCORE screen.
 - A learner who doesn't work by subject can instead get **one** Student-Led
   button (Settings → Learners → *One Student-Led button*): it picks the
   learner, leaves the lesson screen exactly as enCORE sets it up (no
   subject box, no lesson source clicked — `--subject default`), and stops
-  at READY like the others.
+  at READY like the others (Next pressed, Start Session left to you).
 - A learner with a **Social Skills app routine** gets one more button, e.g.
   *Tell the Truth — Movie 5 times, then Do the Activity*: logs the learner
   in to Social Skills, plays the movie N times in a row, then launches Do
@@ -115,13 +115,18 @@ What a button does, in order:
    `SUBJECTS after: ELA [ ]  Math [x]  Science [ ]  Social Studies [ ]`.
    Social Skills, when that box is on the screen, is listed on its own
    and is not the same as Social Studies.
-4. Stops at `READY — Math for "Luis"`. **You** press Next and launch. If
+4. Presses **Next** (`studentLed.pressNext`, on by default) and stops at
+   `READY — Math for "Luis". Next was pressed; only Start Session is left`.
+   **You** press Start Session — the runner never does, because that begins
+   a real logged session. If Next can't be pressed (not found, disabled),
+   it logs a `WARN` and falls back to the old READY: you press Next
+   yourself. Set `pressNext: false` to always stop on step 2. If
    verification fails it says `SUBJECT CHECK FAILED`, presses nothing
    further, and leaves the screen for you to fix by hand.
 
 Nothing here touches a lesson or a question — between-screen navigation
 only, same as every other mode. The lesson checklist under the subjects is
-never clicked. `studentLed.autoBegin: true` additionally presses Next and
+never clicked. `studentLed.autoBegin: true` additionally presses
 the step-3 launch button (that screen is unverified — best effort, and it
 starts a REAL logged session).
 
@@ -169,6 +174,23 @@ the first learner —
 its own console window (Ctrl+C or closing the window ends the run the
 usual clean way). They check for Node, `node_modules`, and `config.json`
 first and say what to do if one is missing.
+
+**One session at a time.** Every run takes a lock next to the browser
+profile (`.profiles\<district>.lock`, gitignored) before Chrome opens.
+Clicking a second subject while one is running asks first:
+
+```
+Science is still running (started 11:02 AM).
+  Y = end Science and start Math
+  N = keep Science going
+```
+
+Y ends Science the same clean way as STOP (its window closes by itself),
+then Math starts. N, any other key, or closing the window leaves Science
+alone (exit code 3). The para page does the same thing with a Yes / Not
+yet question, and its banner can end a session a shortcut started. A lock
+left by a killed run (dead PID, or older than 12 hours) is cleared
+automatically with a `WARN cleared a stale session lock` line in the log.
 
 Install on the district PC (Node 18+ and Google Chrome already installed;
 `npm install --omit=dev`, `npm run init-config`, `npm start -- --login` done once as

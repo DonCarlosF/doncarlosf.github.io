@@ -56,9 +56,14 @@ echo.
 node runner.js --student-led --subject %SUBJECT% %2 %3
 set "RC=%ERRORLEVEL%"
 
-if not "%RC%"=="0" (
-  echo.
-  echo The runner exited with code %RC%. Details are in the logs\ folder.
-  pause
-)
+rem Exit 3 = another subject is already running, or you chose to keep it.
+rem The runner already said so on screen; keep the window open to read it.
+rem goto, not an if-block: no parens for cmd.exe to trip on -- see d685c39.
+if "%RC%"=="0" goto done
+echo.
+if "%RC%"=="3" goto hold
+echo The runner exited with code %RC%. Details are in the logs\ folder.
+:hold
+pause
+:done
 endlocal & exit /b %RC%

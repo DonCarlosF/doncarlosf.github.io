@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mock enCORE — Student-Led step 2 → 3</title>
+<!--
+  Stand-in for step 2 ("Select lessons for …") with a Next button, and for
+  step 3 ("Prepare Session") with a Start Session button. Step 3 was never
+  entered by the July recon, so its real copy is a best guess; the runner must
+  press Next and STOP — window.__startClicks must stay 0.
+
+  ?next=disabled   Next never becomes enabled
+  ?next=missing    no Next button at all
+  ?next=slow       Next is disabled for ~700 ms, then enabled
+  ?step3=stuck     clicking Next changes nothing (step 3 never shows)
+  ?step3=slow      step 3 shows ~600 ms after Next
+  ?stepper=prepare the header says "Prepare Session" on EVERY step (it must
+                   not be mistaken for step 3 on its own)
+-->
+<style> body { font: 16px system-ui, sans-serif; margin: 24px; } </style>
+</head>
+<body>
+<h1>Select Session Mode</h1>
+<div id="stepper" hidden>Select Student &rsaquo; Select Lessons &rsaquo; Prepare Session</div>
+<section id="step2">
+  <h2>Select lessons for Luis's Student-Led Session</h2>
+  <p>Recommended Lessons</p>
+  <button type="button" id="next">Next</button>
+</section>
+<section id="step3" hidden>
+  <h2>Prepare Session</h2>
+  <button type="button" id="start">Start Session</button>
+</section>
+<script>
+  const q = new URLSearchParams(location.search);
+  window.__nextClicks = 0;
+  window.__startClicks = 0;
+  window.__step = 2;
+  if (q.get('stepper') === 'prepare') document.getElementById('stepper').hidden = false;
+  const next = document.getElementById('next');
+  if (q.get('next') === 'missing') next.remove();
+  if (q.get('next') === 'disabled') next.disabled = true;
+  if (q.get('next') === 'slow') {
+    next.disabled = true;
+    setTimeout(() => { next.disabled = false; }, 700);
+  }
+  next.addEventListener('click', () => {
+    window.__nextClicks++;
+    if (q.get('step3') === 'stuck') return;
+    const go = () => {
+      document.getElementById('step2').hidden = true;
+      document.getElementById('step3').hidden = false;
+      window.__step = 3;
+    };
+    if (q.get('step3') === 'slow') setTimeout(go, 600); else go();
+  });
+  document.getElementById('start').addEventListener('click', () => { window.__startClicks++; });
+</script>
+</body>
+</html>
