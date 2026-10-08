@@ -1,3 +1,4 @@
+import { Fraunces } from "next/font/google";
 import { HeroSlider } from "@/components/blocks/HeroSlider";
 import { EventBanner } from "@/components/blocks/EventBanner";
 import { ServiceTimesBar } from "@/components/blocks/ServiceTimesBar";
@@ -12,6 +13,10 @@ import { Testimonials } from "@/components/blocks/Testimonials";
 import { getSiteSettings, getHomePage, getLatestSermon, getUpcomingEvents, getTestimonials, dreamCenter } from "@/lib/content";
 import { localOr } from "@/lib/content/local-images";
 
+// The hero accent is the only italic display text on the site, so the italic
+// face is loaded here — preloaded on Home only, not on the other 28 routes.
+const frauncesItalic = Fraunces({ subsets: ["latin"], style: ["italic"], variable: "--font-fraunces-italic", display: "swap" });
+
 export default async function HomePage() {
   const [settings, home, sermon, events, testimonials] = await Promise.all([
     getSiteSettings(),
@@ -23,7 +28,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroSlider slides={home.heroSlides} />
+      <HeroSlider slides={home.heroSlides} className={frauncesItalic.variable} />
       <EventBanner banner={home.eventBanner} fallbackEvent={events[0]} />
       <ServiceTimesBar settings={settings} />
       <WelcomeIntro heading={home.welcomeHeading} body={home.welcomeBody} />

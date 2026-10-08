@@ -1,5 +1,5 @@
 import { defineField, defineType } from "sanity";
-import { UsersIcon } from "@sanity/icons";
+import { UsersIcon } from "@sanity/icons/Users";
 
 export const group = defineType({
   name: "group",

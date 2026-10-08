@@ -3,12 +3,8 @@
 import { useState } from "react";
 import { Flame, Play } from "lucide-react";
 import { SmartImage } from "@/components/ui/Media";
+import { youtubeId } from "@/lib/utils/youtube";
 import type { Clip } from "@/lib/content/types";
-
-function youtubeId(url?: string): string | null {
-  const m = url?.match(/(?:youtu\.be\/|shorts\/|v=|embed\/)([\w-]{11})/);
-  return m?.[1] ?? null;
-}
 
 /** First platform post URL to link out to when inline play isn't available. */
 function firstPostUrl(c: Clip): string | undefined {
@@ -67,6 +63,7 @@ export function ClipRail({ clips }: { clips: Clip[] }) {
               image={clip.thumbnail || { alt: clip.hook, placeholder: true }}
               ratio="aspect-[9/16]"
               rounded="rounded-xl"
+              sizes="144px"
               imageClassName="transition-transform duration-500 group-hover:scale-105"
             />
             {typeof clip.viralityScore === "number" && (

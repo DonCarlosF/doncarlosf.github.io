@@ -11,11 +11,14 @@ import { formatDate } from "@/lib/utils/format";
 export const metadata: Metadata = {
   title: "Search",
   description: "Search sermons and articles from Kingdom Builders Christian Fellowship.",
+  // Internal search results are an unbounded query space — keep them out of the index.
+  robots: { index: false, follow: true },
 };
 
-export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  const { q = "" } = await searchParams;
-  const term = q.trim();
+export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {
+  const { q } = await searchParams;
+  // A repeated ?q= arrives as an array; take the first and bound the length.
+  const term = (Array.isArray(q) ? q[0] : q ?? "").trim().slice(0, 100);
   const results = term ? await search(term) : { sermons: [], posts: [] };
   const total = results.sermons.length + results.posts.length;
 

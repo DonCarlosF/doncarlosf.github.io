@@ -45,6 +45,7 @@ export function GroupsExplorer({ groups }: { groups: Group[] }) {
               image={g.image || { alt: g.name, placeholder: true }}
               ratio="aspect-[16/10]"
               rounded="rounded-none"
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
               imageClassName="transition-transform duration-500 group-hover:scale-105"
             />
             <div className="flex flex-1 flex-col p-6">
@@ -56,8 +57,18 @@ export function GroupsExplorer({ groups }: { groups: Group[] }) {
               <h2 className="font-display text-lg font-semibold">{g.name}</h2>
               {g.description && <p className="mt-2 flex-1 text-sm text-muted">{g.description}</p>}
               <dl className="mt-3 space-y-1 text-sm text-muted">
-                {g.schedule && <div className="flex items-center gap-2"><Clock size={14} aria-hidden /> {g.schedule}</div>}
-                {g.location && <div className="flex items-center gap-2"><MapPin size={14} aria-hidden /> {g.location}</div>}
+                {g.schedule && (
+                  <div>
+                    <dt className="sr-only">Schedule</dt>
+                    <dd className="flex items-center gap-2"><Clock size={14} aria-hidden /> {g.schedule}</dd>
+                  </div>
+                )}
+                {g.location && (
+                  <div>
+                    <dt className="sr-only">Location</dt>
+                    <dd className="flex items-center gap-2"><MapPin size={14} aria-hidden /> {g.location}</dd>
+                  </div>
+                )}
               </dl>
               <div className="mt-5">
                 <Button href={g.joinUrl || "/contact"} variant="outline" size="sm">Join this group</Button>

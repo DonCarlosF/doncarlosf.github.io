@@ -1,5 +1,6 @@
 import { defineField, defineType } from "sanity";
-import { UserIcon, UsersIcon } from "@sanity/icons";
+import { UserIcon } from "@sanity/icons/User";
+import { UsersIcon } from "@sanity/icons/Users";
 
 export const speaker = defineType({
   name: "speaker",

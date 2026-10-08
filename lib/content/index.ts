@@ -2,8 +2,11 @@
  * Unified content API. Every page/component imports from here and never cares
  * whether data came from Sanity or the local seed.
  *
- *   Sanity configured?  -> live CMS content (ISR, on-demand revalidation)
+ *   Sanity configured?  -> live CMS content (ISR + tag-based on-demand revalidation)
  *   Otherwise           -> local seed (known KBCF facts + clearly-flagged samples)
+ *
+ * Once Sanity is connected it is the single source of truth: an empty collection
+ * renders empty, it never resurrects seeded samples.
  */
 import "server-only";
 import { sanityClient } from "./client";
@@ -15,69 +18,77 @@ import type {
   HomeContent, AboutContent, OutreachProgram,
 } from "./types";
 
-const REVALIDATE = 60;
+/** ISR window for Sanity queries; publishes reach the site sooner via /api/revalidate. */
+const REVALIDATE = 300;
+/** Cache tag on every Sanity query; /api/revalidate expires it on publish. */
+export const SANITY_TAG = "sanity";
 
-async function sfetch<T>(query: string, params: Record<string, unknown> = {}): Promise<T | null> {
-  if (!sanityClient) return null;
+/** undefined = no Sanity (or the query failed) → use the seed; null / [] = Sanity's real answer. */
+async function sfetch<T>(query: string, params: Record<string, unknown> = {}): Promise<T | null | undefined> {
+  if (!sanityClient) return undefined;
   try {
-    return await sanityClient.fetch<T>(query, params, { next: { revalidate: REVALIDATE } });
-  } catch {
-    return null;
+    return await sanityClient.fetch<T>(query, params, { next: { revalidate: REVALIDATE, tags: [SANITY_TAG] } });
+  } catch (err) {
+    console.error(`[content] Sanity query failed (${query.slice(0, 60).replace(/\s+/g, " ")}…); using seed fallback:`, err);
+    // Set CONTENT_STRICT=1 once the CMS is live so a broken query fails the build/regeneration
+    // instead of quietly shipping sample content (ISR keeps serving the last good page).
+    if (process.env.CONTENT_STRICT === "1") throw err;
+    return undefined;
   }
 }
 
-function nonEmpty<T>(v: T[] | null | undefined): v is T[] {
-  return Array.isArray(v) && v.length > 0;
+/** Seed only when Sanity is absent; once connected, Sanity's answer (even empty) wins. */
+function or<T>(cms: T | null | undefined, seedValue: T, empty: T): T {
+  return cms === undefined ? seedValue : (cms ?? empty);
 }
 
 export async function getSiteSettings(): Promise<SiteSettings> {
-  return (await sfetch<SiteSettings>(q.siteSettingsQuery)) ?? seed.siteSettings;
+  const data = await sfetch<Partial<SiteSettings>>(q.siteSettingsQuery);
+  if (!data) return seed.siteSettings;
+  // Per-field fallback: a half-filled Site Settings document must never blank
+  // or crash the layout (Footer, JSON-LD and the service bar dereference these).
+  const clean = Object.fromEntries(Object.entries(data).filter(([, v]) => v != null));
+  return {
+    ...seed.siteSettings,
+    ...clean,
+    address: { ...seed.siteSettings.address, ...(data.address ?? {}) },
+  } as SiteSettings;
 }
 
 export async function getSermons(): Promise<Sermon[]> {
-  const data = await sfetch<Sermon[]>(q.sermonsQuery);
-  return nonEmpty(data) ? data : seed.sermons;
+  return or(await sfetch<Sermon[]>(q.sermonsQuery), seed.sermons, []);
 }
 
 export async function getLatestSermon(): Promise<Sermon | null> {
-  const data = await sfetch<Sermon>(q.latestSermonQuery);
-  return data ?? seed.sermons[0] ?? null;
+  return or(await sfetch<Sermon | null>(q.latestSermonQuery), seed.sermons[0] ?? null, null);
 }
 
 export async function getSermon(slug: string): Promise<Sermon | null> {
-  const data = await sfetch<Sermon>(q.sermonBySlugQuery, { slug });
-  return data ?? seed.sermons.find((s) => s.slug === slug) ?? null;
+  return or(await sfetch<Sermon | null>(q.sermonBySlugQuery, { slug }), seed.sermons.find((s) => s.slug === slug) ?? null, null);
 }
 
 export async function getClips(): Promise<Clip[]> {
-  const data = await sfetch<Clip[]>(q.clipsQuery);
-  if (nonEmpty(data)) return data;
-  return seed.sermons.flatMap((s) => s.clips ?? []);
+  return or(await sfetch<Clip[]>(q.clipsQuery), seed.sermons.flatMap((s) => s.clips ?? []), []);
 }
 
 export async function getSeriesList(): Promise<Series[]> {
-  const data = await sfetch<Series[]>(q.seriesListQuery);
-  return nonEmpty(data) ? data : seed.seriesList;
+  return or(await sfetch<Series[]>(q.seriesListQuery), seed.seriesList, []);
 }
 
 export async function getSeries(slug: string): Promise<{ series: Series; sermons: Sermon[] } | null> {
-  if (sanityClient) {
-    const series = await sfetch<Series>(q.seriesBySlugQuery, { slug });
-    if (series) {
-      const sermons = (await sfetch<Sermon[]>(q.sermonsBySeriesQuery, { slug })) ?? [];
-      return { series, sermons };
-    }
-  }
-  const series = seed.seriesList.find((s) => s.slug === slug);
-  if (!series) return null;
-  const sermons = seed.sermons.filter((s) => s.series?._id === series._id);
-  return { series, sermons };
+  const [series, sermons] = await Promise.all([
+    sfetch<Series | null>(q.seriesBySlugQuery, { slug }),
+    sfetch<Sermon[]>(q.sermonsBySeriesQuery, { slug }),
+  ]);
+  if (series !== undefined) return series ? { series, sermons: sermons ?? [] } : null;
+  const seeded = seed.seriesList.find((s) => s.slug === slug);
+  if (!seeded) return null;
+  return { series: seeded, sermons: seed.sermons.filter((s) => s.series?._id === seeded._id) };
 }
 
-/** All events — CMS-native (KBCF does not use Planning Center). */
+/** All events — CMS-native (KBCF does not use a third-party events platform). */
 export async function getEvents(): Promise<ChurchEvent[]> {
-  const cms = (await sfetch<ChurchEvent[]>(q.eventsQuery)) ?? [];
-  return nonEmpty(cms) ? cms : seed.events;
+  return or(await sfetch<ChurchEvent[]>(q.eventsQuery), seed.events, []);
 }
 
 /** Upcoming events (sorted soonest-first), including ones happening today. */
@@ -100,18 +111,20 @@ export async function getEvent(slug: string): Promise<ChurchEvent | null> {
 }
 
 export async function getGroups(): Promise<Group[]> {
-  const cms = (await sfetch<Group[]>(q.groupsQuery)) ?? [];
-  return nonEmpty(cms) ? cms : seed.groups;
+  return or(await sfetch<Group[]>(q.groupsQuery), seed.groups, []);
 }
 
-/** Well-known local photo names for the seeded leaders; other leaders fall back
- *  to a slug of their name (e.g. "Dr. Karen Jennings" -> dr-karen-jennings.jpg). */
-const LEADER_LOCAL_IMG: Record<string, string> = { "ldr-lj": "pastor-lj", "ldr-karen": "pastor-karen" };
+/** Well-known local photo names for the seeded leaders (TS seed ids and the
+ *  ids scripts/seed-sanity.mjs writes); other leaders fall back to a slug of
+ *  their name (e.g. "Dr. Karen Jennings" -> dr-karen-jennings.jpg). */
+const LEADER_LOCAL_IMG: Record<string, string> = {
+  "ldr-lj": "pastor-lj", "ldr-karen": "pastor-karen",
+  "leader.lj": "pastor-lj", "leader.karen": "pastor-karen",
+};
 const nameSlug = (n: string) => n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 export async function getLeaders(): Promise<Leader[]> {
-  const data = await sfetch<Leader[]>(q.leadersQuery);
-  const leaders = nonEmpty(data) ? data : seed.leaders;
+  const leaders = or(await sfetch<Leader[]>(q.leadersQuery), seed.leaders, []);
   return leaders.map((l) =>
     l.image?.src
       ? l
@@ -120,23 +133,20 @@ export async function getLeaders(): Promise<Leader[]> {
 }
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
-  const data = await sfetch<BlogPost[]>(q.blogPostsQuery);
-  return nonEmpty(data) ? data : seed.blogPosts;
+  return or(await sfetch<BlogPost[]>(q.blogPostsQuery), seed.blogPosts, []);
 }
 
 export async function getBlogPost(slug: string): Promise<BlogPost | null> {
-  const data = await sfetch<BlogPost>(q.blogPostBySlugQuery, { slug });
-  return data ?? seed.blogPosts.find((p) => p.slug === slug) ?? null;
+  return or(await sfetch<BlogPost | null>(q.blogPostBySlugQuery, { slug }), seed.blogPosts.find((p) => p.slug === slug) ?? null, null);
 }
 
 export async function getTestimonials(): Promise<Testimonial[]> {
-  const data = await sfetch<Testimonial[]>(q.testimonialsQuery);
-  return nonEmpty(data) ? data : seed.testimonials;
+  return or(await sfetch<Testimonial[]>(q.testimonialsQuery), seed.testimonials, []);
 }
 
 /** Merge a CMS doc over seed defaults, dropping null/undefined/empty-array
  *  fields — so a half-filled Studio document never blanks or crashes a page. */
-function withSeedDefaults<T extends object>(fallback: T, data: Partial<T> | null): T {
+function withSeedDefaults<T extends object>(fallback: T, data: Partial<T> | null | undefined): T {
   if (!data) return { ...fallback };
   const clean = Object.fromEntries(
     Object.entries(data).filter(([, v]) => v != null && !(Array.isArray(v) && v.length === 0))
@@ -161,8 +171,7 @@ export async function getAboutPage(): Promise<AboutContent> {
 export const dreamCenter = seed.dreamCenter;
 
 export async function getOutreachPrograms(): Promise<OutreachProgram[]> {
-  const data = await sfetch<OutreachProgram[]>(q.outreachProgramsQuery);
-  return nonEmpty(data) ? data : seed.outreachPrograms;
+  return or(await sfetch<OutreachProgram[]>(q.outreachProgramsQuery), seed.outreachPrograms, []);
 }
 
 /** Lightweight search across sermons + blog (title/description/excerpt). */

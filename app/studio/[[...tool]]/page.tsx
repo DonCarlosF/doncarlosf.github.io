@@ -1,13 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { metadata as studioMetadata, viewport as studioViewport } from "next-sanity/studio";
 import Studio from "@/components/studio/Studio";
 import { isSanityConfigured } from "@/sanity/env";
 
 export const dynamic = "force-static";
 
-export const metadata: Metadata = {
-  title: "Content Studio",
-  robots: { index: false, follow: false },
-};
+// next-sanity's defaults: noindex + same-origin referrer (Studio auth relies on it)
+// and viewportFit=cover so the editor isn't clipped by phone notches.
+export const metadata: Metadata = { ...studioMetadata, title: "Content Studio" };
+export const viewport: Viewport = studioViewport;
 
 export default function StudioPage() {
   if (!isSanityConfigured) {

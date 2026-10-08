@@ -1,9 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { cn } from "@/lib/utils/cn";
 
-/** Fade/slide-in on scroll. Disabled automatically under prefers-reduced-motion. */
+/**
+ * Fade/slide-in on scroll.
+ *
+ * Content is never hidden before hydration: an element only enters the pending
+ * state if it is still below the viewport when the client takes over, so
+ * nothing already visible blinks and no-JS users always see everything.
+ * Reduced-motion users get no animation at all.
+ */
 export function Reveal({
   children, className, delay = 0, as: Tag = "div",
 }: {
@@ -13,19 +20,21 @@ export function Reveal({
   as?: keyof React.JSX.IntrinsicElements;
 }) {
   const ref = useRef<HTMLElement>(null);
-  const [shown, setShown] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (el.getBoundingClientRect().top <= window.innerHeight) return;
+
+    // Toggled on the DOM directly: React never sets this class, so re-renders leave it alone.
+    el.classList.add("is-pending");
     const io = new IntersectionObserver(
       (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            setShown(true);
-            io.disconnect();
-          }
-        });
+        if (entries.some((e) => e.isIntersecting)) {
+          el.classList.remove("is-pending");
+          io.disconnect();
+        }
       },
       { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
     );
@@ -36,11 +45,7 @@ export function Reveal({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const Comp = Tag as any;
   return (
-    <Comp
-      ref={ref}
-      className={cn("reveal", shown && "is-in", className)}
-      style={{ transitionDelay: `${delay}ms` }}
-    >
+    <Comp ref={ref} className={cn("reveal", className)} style={{ transitionDelay: `${delay}ms` }}>
       {children}
     </Comp>
   );

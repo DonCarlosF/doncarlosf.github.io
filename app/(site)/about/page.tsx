@@ -38,6 +38,7 @@ export default async function AboutPage() {
                   image={l.image ?? { alt: l.name, placeholder: true }}
                   ratio="aspect-square"
                   rounded="rounded-card"
+                  sizes="(min-width: 640px) 176px, 100vw"
                   imageClassName="transition-transform duration-500 group-hover:scale-105"
                 />
               </div>

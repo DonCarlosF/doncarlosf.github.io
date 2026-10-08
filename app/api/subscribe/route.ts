@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { guard, readJson } from "@/lib/api/guard";
 
-const schema = z.object({ email: z.string().email().max(200) });
+const schema = z.object({ email: z.email().max(200) });
 
 /**
  * Mailing-list signup. Intentionally NOT wired to a provider yet — no email is
@@ -9,14 +10,13 @@ const schema = z.object({ email: z.string().email().max(200) });
  * opt-in copy is approved. We validate and acknowledge interest only.
  */
 export async function POST(req: Request) {
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ ok: false, message: "Invalid request." }, { status: 400 });
-  }
+  const blocked = guard(req);
+  if (blocked) return blocked;
 
-  const parsed = schema.safeParse(body);
+  const body = await readJson(req);
+  if ("response" in body) return body.response;
+
+  const parsed = schema.safeParse(body.data);
   if (!parsed.success) {
     return NextResponse.json({ ok: false, message: "Please enter a valid email." }, { status: 422 });
   }

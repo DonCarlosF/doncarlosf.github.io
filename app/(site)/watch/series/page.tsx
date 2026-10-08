@@ -28,7 +28,10 @@ export default async function SeriesListPage() {
           <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
             {series.map((s) => (
               <Link key={s._id} href={`/watch/series/${s.slug}`} className="group block">
-                <SmartImage image={s.image || { alt: s.title, placeholder: true }} />
+                <SmartImage
+                  image={s.image || { alt: s.title, placeholder: true }}
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                />
                 <h2 className="mt-3 font-display text-xl font-semibold group-hover:text-primary">{s.title}</h2>
                 {s.description && <p className="mt-1 text-sm text-muted">{s.description}</p>}
               </Link>

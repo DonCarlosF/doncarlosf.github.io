@@ -7,9 +7,9 @@ const imgProj = `{ "src": asset->url, "alt": coalesce(alt, "") }`;
 
 export const siteSettingsQuery = `*[_type == "siteSettings"][0]{
   churchName, tagline, mission, address, phone, email,
-  serviceTimes[]{ day, label, time, phone, passcode },
+  "serviceTimes": coalesce(serviceTimes[]{ day, label, time, phone, passcode }, []),
   boxcastId, givingProvider, givingUrl,
-  social[]{ platform, url },
+  "social": coalesce(social[]{ platform, url }, []),
   "mapEmbedQuery": coalesce(mapEmbedQuery, address.street + ", " + address.city + ", " + address.state + " " + address.zip)
 }`;
 
@@ -56,8 +56,9 @@ export const leadersQuery = `*[_type == "leader"] | order(order asc){
 
 const postProj = `{
   "_id": _id, title, "slug": slug.current, date, excerpt, category,
-  "author": author->{ name, "image": image${imgProj} },
-  "coverImage": coverImage${imgProj}, body
+  "author": author{ name, "image": image${imgProj} },
+  "coverImage": coverImage${imgProj},
+  "body": body[]{ ..., _type == "accessibleImage" => { "src": asset->url, "alt": coalesce(alt, "") } }
 }`;
 
 export const blogPostsQuery = `*[_type == "blogPost"] | order(date desc) ${postProj}`;

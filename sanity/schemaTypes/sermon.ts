@@ -1,5 +1,7 @@
 import { defineField, defineType } from "sanity";
-import { PlayIcon, DocumentVideoIcon, BlockContentIcon } from "@sanity/icons";
+import { PlayIcon } from "@sanity/icons/Play";
+import { DocumentVideoIcon } from "@sanity/icons/DocumentVideo";
+import { BlockContentIcon } from "@sanity/icons/BlockContent";
 
 export const series = defineType({
   name: "series",
