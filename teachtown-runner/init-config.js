@@ -104,7 +104,8 @@ const ask = (q) => {
   console.log('');
   console.log(`Student-Led sessions run for one learner, called "${pseudonym}" everywhere`);
   console.log('except this file. Enter that learner\'s display name exactly as enCORE');
-  console.log('shows it (leave empty to fill it in later via `npm run ui` → Settings).');
+  console.log('(and the Social Skills app\'s View Students list) shows it — leave empty');
+  console.log('to fill it in later via `npm run ui` → Settings.');
   sl.learners[pseudonym] = await ask(`Display name for "${pseudonym}": `);
   rl.close();
 

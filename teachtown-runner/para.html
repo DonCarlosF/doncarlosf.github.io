@@ -320,6 +320,7 @@ async function stop() {
 function bodyLabel(body) {
   if (body.action === 'social-routine') return (ctx().routines[body.learner] || {}).target || 'Social Skills';
   if (body.subject === 'default') return 'Student-Led';
+  if (body.subject === 'social-skills') return 'Social Skills';
   return ctx().subjects[body.subject] || body.subject || 'this';
 }
 const clock = (iso) => {
@@ -465,13 +466,16 @@ function renderPick(v) {
 }
 
 function renderRun(v) {
-  const key = v.kind === 'routine' ? 'routine' : v.subject;
+  // The Social Skills app button wears the Social Skills (routine) colors.
+  const key = v.kind === 'routine' || v.kind === 'socialapp' ? 'routine' : v.subject;
   const tint = key ? color(key) : 'var(--text)';
   $('#run').style.setProperty('--c', tint);
   const label =
     v.kind === 'routine'
       ? (ctx().routines[v.learner] || {}).target || 'Social Skills'
-      : v.subject === 'default'
+      : v.kind === 'socialapp'
+        ? 'Social Skills'
+        : v.subject === 'default'
         ? 'Student-Led'
         : ctx().subjects[v.subject] || '';
   $('#badge').hidden = v.screen === 'busy';

@@ -289,3 +289,52 @@ test('with a real browser: a blocked second run adds no page to the first', { sk
   await new Promise((r2) => setTimeout(r2, 3000)); // a handed-off launch shows up within a second or two
   assert.equal(context.pages().length, before, 'no blank window appeared in the running session');
 });
+
+test('in-place switch: request names a pid, is taken once, and only by that pid', () => {
+  const dir = path.join(tmpDir(), 'profile');
+  const r = lock.acquire(dir, { subject: 'ela', mode: 'student-led', learner: 'Luis', source: 'shortcut' });
+  assert.equal(r.ok, true);
+  lock.requestSwitch(dir, { pid: process.pid }, { subject: 'math', learner: 'Luis' });
+  assert.equal(lock.takeSwitchRequest(dir, process.pid + 1), null, 'another pid never takes it');
+  assert.deepEqual(lock.takeSwitchRequest(dir), { subject: 'math', learner: 'Luis' });
+  assert.equal(lock.takeSwitchRequest(dir), null, 'taken once');
+  lock.release(dir);
+});
+
+test('in-place switch: ack is the request file disappearing; timeout when nobody answers', async () => {
+  const dir = path.join(tmpDir(), 'profile');
+  lock.acquire(dir, { subject: 'ela', mode: 'student-led', learner: 'Luis', source: 'shortcut' });
+  lock.requestSwitch(dir, { pid: process.pid }, { subject: 'math', learner: 'Luis' });
+  setTimeout(() => lock.takeSwitchRequest(dir), 150);
+  assert.equal(await lock.waitForSwitchAck(dir, 3000, 50), true);
+  lock.requestSwitch(dir, { pid: process.pid }, { subject: 'math', learner: 'Luis' });
+  assert.equal(await lock.waitForSwitchAck(dir, 300, 50), false);
+  lock.clearSwitchRequest(dir);
+  lock.release(dir);
+});
+
+test('in-place switch: updateHolder rewrites only our own lock', () => {
+  const dir = path.join(tmpDir(), 'profile');
+  lock.acquire(dir, { subject: 'ela', mode: 'student-led', learner: 'Luis', source: 'shortcut' });
+  assert.equal(lock.updateHolder(dir, { subject: 'math' }), true);
+  assert.equal(lock.inspect(dir).subject, 'math');
+  assert.equal(lock.updateHolder(dir, { subject: 'science' }, process.pid + 1), false);
+  assert.equal(lock.inspect(dir).subject, 'math');
+  lock.release(dir);
+});
+
+test('in-place switch: a refused request is not consumed and the requester stops waiting at once', async () => {
+  const dir = path.join(tmpDir(), 'profile');
+  lock.acquire(dir, { subject: 'ela', mode: 'student-led', learner: 'Luis', source: 'shortcut' });
+  lock.requestSwitch(dir, { pid: process.pid }, { subject: 'math', learner: 'Nobody' });
+  assert.deepEqual(lock.peekSwitchRequest(dir), { subject: 'math', learner: 'Nobody' }, 'peek does not consume');
+  assert.deepEqual(lock.peekSwitchRequest(dir), { subject: 'math', learner: 'Nobody' });
+  assert.equal(lock.refuseSwitchRequest(dir), true);
+  assert.equal(lock.peekSwitchRequest(dir), null, 'a refused request reads as nothing');
+  assert.equal(lock.takeSwitchRequest(dir), null, 'and cannot be taken (no ack)');
+  const t0 = Date.now();
+  assert.equal(await lock.waitForSwitchAck(dir, 5000, 50), false);
+  assert.ok(Date.now() - t0 < 1500, 'refusal ends the wait immediately');
+  lock.clearSwitchRequest(dir);
+  lock.release(dir);
+});

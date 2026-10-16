@@ -118,7 +118,7 @@
     <input type="checkbox" id="homeDry">
     <span>
       <strong>Dry run</strong>
-      <small>Practice only. Checks the boxes, then backs out. A real lesson does not start.</small>
+      <small>Practice only. Sets things up, then backs out. A real lesson does not start.</small>
     </span>
   </label>
 
@@ -144,14 +144,14 @@
   </div>
 
   <h2>Social Skills for <span class="learner">Luis</span></h2>
-  <p class="note">A different activity from Social Studies. Use this when the lesson screen has a box that says Social Skills. It will not check Social Studies.</p>
+  <p class="note">The Social Skills app, not enCORE and not Social Studies. Opens Social Skills, logs <span class="learner">Luis</span> in, and waits on their activity list. You pick the movie or activity on the screen. Dry run logs in and back out without starting anything.</p>
   <div class="grid subjects">
     <button class="btn subject skills" data-run="studentled-subject" data-subject="social-skills">
       Social Skills
-      <small>Not Social Studies. Only the Social Skills box stays checked.</small>
+      <small>Opens the Social Skills app. Not Social Studies.</small>
     </button>
   </div>
-  <p class="note" id="slNote">Picks <span class="learner">Luis</span>, leaves only the subject you picked checked, presses Next, and waits. You press Start Session on the screen. Turn on Dry run to look at the boxes and back out without starting a lesson.</p>
+  <p class="note" id="slNote">School subjects: picks <span class="learner">Luis</span>, leaves only the subject you picked checked, presses Next, and waits. You press Start Session on the screen. Turn on Dry run to look at the boxes and back out without starting a lesson.</p>
   <p class="note" id="slMissing" style="display:none;">Buttons are off until <span class="learner">Luis</span>'s display name is entered under Settings. That name stays in config.json on this computer only.</p>
   <p class="note firsthint" id="firstRun">First time here: open Settings and type the display name for <span class="learner">Luis</span>. It stays in config.json on this computer. You sign in yourself in the browser window. This app never stores a password.</p>
   <p class="note">Every learner, with their Social Skills app routine, is on the <a href="/para" target="_blank" rel="noopener" style="color:var(--text);">para page</a>.</p>
@@ -353,6 +353,7 @@ function addLine(text) {
   if ((m = text.match(/\] START (.+)$/))) $('#stStep').textContent = m[1];
   if (/\] NEXT$/.test(text)) $('#stStep').textContent = '—';
   if ((m = text.match(/\] Selected learner "([^"]+)"/))) $('#stStudent').textContent = m[1];
+  if ((m = text.match(/\] Logged in as "([^"]+)" in Social Skills/))) $('#stStudent').textContent = m[1];
   if ((m = text.match(/\] SUBJECTS (before|after):\s+(.+)$/))) $('#stStep').textContent = `subjects ${m[1]}: ${m[2]}`;
   if (/\] SUBJECT CHECK FAILED/.test(text)) $('#stStep').textContent = 'SUBJECT CHECK FAILED — fix on screen';
   if (/\] READY — /.test(text)) $('#stStep').textContent = 'READY — finish on screen';

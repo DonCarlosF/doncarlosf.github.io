@@ -41,7 +41,7 @@ $subjects = @(
   @{ Name = 'Math';           File = 'Luis-Math.cmd';           About = 'School subject for Luis. Only Math stays checked, then it waits for you.' },
   @{ Name = 'Science';        File = 'Luis-Science.cmd';        About = 'School subject for Luis. Only Science stays checked, then it waits for you.' },
   @{ Name = 'Social Studies'; File = 'Luis-Social-Studies.cmd'; About = 'School subject for Luis. Only Social Studies stays checked, then it waits for you. This is not Social Skills.' },
-  @{ Name = 'Social Skills';  File = 'Luis-Social-Skills.cmd';  About = 'Social Skills for Luis. This is not Social Studies.' }
+  @{ Name = 'Social Skills';  File = 'Luis-Social-Skills.cmd';  About = 'Opens the Social Skills app (not enCORE) and logs Luis in, then waits. This is not Social Studies.' }
 )
 foreach ($s in $subjects) { New-Shortcut ('Luis - ' + $s.Name) $s.File $s.About }
 
@@ -53,4 +53,6 @@ Write-Host '"TeachTown helper" window runs it - leave that window open while you
 Write-Host ''
 Write-Host 'The five "Luis - <Subject>" shortcuts each open a console window, set up'
 Write-Host 'that one subject, and wait for you to press Next on the TeachTown screen.'
+Write-Host 'Luis - Social Skills opens the Social Skills app instead (not enCORE),'
+Write-Host 'logs Luis in, and waits on the activity list.'
 Write-Host 'Social Studies and Social Skills are different shortcuts.'

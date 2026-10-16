@@ -42,8 +42,11 @@
  *                                   subject checked and stop at READY.
  *                                   social-studies (Social Studies) is an
  *                                   enCORE school subject. social-skills
- *                                   (Social Skills) is a different activity
- *                                   and is not an alias for Social Studies.
+ *                                   (Social Skills) is NOT enCORE: it opens
+ *                                   the Social Skills app, does "Login as.."
+ *                                   for the learner, and stops at READY on
+ *                                   their My Activities (dry run: logs them
+ *                                   back out). Not an alias for Social Studies.
  *                                   --subject default picks the learner and
  *                                   leaves step 2 exactly as enCORE sets it
  *                                   up (for a learner who doesn't work by
@@ -62,6 +65,11 @@
  *                                   student and log whether "IEP Goals" is
  *                                   selectable and what it lists. Backs out —
  *                                   never enters step 3, never launches.
+ *      npm start -- --recon-social-skills
+ *                                   why won't the Social Skills app load? Logs
+ *                                   page/frame paths and counts of fixed marker
+ *                                   words — never page text or student names —
+ *                                   and saves one screenshot to recon/ for you.
  *      npm start -- --report NAME   Phase-3 scaffold: open enCORE Reporting
  *                                   (for NAME if given), screenshot + extract
  *                                   text to recon/. Read-only.
@@ -85,6 +93,7 @@ const readline = require('readline');
 const { chromium } = require('playwright');
 const subjects = require('./lib/subjects');
 const { advanceStudentLedToStep2, advanceStudentLedToStep3 } = require('./lib/student-led');
+const socialSkillsApp = require('./lib/social-skills-app');
 const sessionLock = require('./lib/session-lock');
 
 const PROJECT_DIR = __dirname;
@@ -146,9 +155,21 @@ const state = {
   profileAuthAnnounced: false, // PROFILE AUTHENTICATED printed (once per run)
   profileDir: '',
   lockHeld: false, // this process owns <profileDir>.lock (lib/session-lock.js)
+  pendingRetarget: null, // { subject, learner } a later shortcut click asked this window to switch to
+  onRetarget: null, // resolver of the idle hold, set while the run waits at READY
 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Idle at READY, handing the screen to the human. Never settles on its own;
+// it settles only when a later shortcut click asks this same window to switch
+// to another subject (Ctrl+C / closing the browser still end the run).
+function holdForRetarget() {
+  return new Promise((resolve) => {
+    if (state.pendingRetarget) return resolve();
+    state.onRetarget = resolve;
+  });
+}
 
 /* ----------------------------- logging ----------------------------- */
 
@@ -326,7 +347,7 @@ function loadConfig(flags) {
 
   // The rotation students list is only required when the rotation will run.
   const rotationRun =
-    !flags.teacherLedOnly && !flags.studentLed && !flags.reconRoster && !flags.reconGoals && flags.report == null && !flags.loginOnly;
+    !flags.teacherLedOnly && !flags.studentLed && !flags.reconRoster && !flags.reconGoals && !flags.reconSocialSkills && flags.report == null && !flags.loginOnly;
   if (rotationRun) {
     if (!Array.isArray(cfg.students) || cfg.students.length === 0 ||
         cfg.students.some((s) => typeof s !== 'string' || !s.trim())) {
@@ -450,7 +471,8 @@ function loadConfig(flags) {
     if (!sl.studentName) {
       fail(
         `studentLed.learners["${sl.learnerPseudonym}"] is empty in config.json.\n` +
-          `  Enter the learner's display name EXACTLY as enCORE shows it — there, or in\n` +
+          `  Enter the learner's display name EXACTLY as enCORE (and, for Social Skills,\n` +
+          `  View Students) shows it — there, or in\n` +
           '  `npm run ui` → Settings → Student-Led learner. config.json is gitignored;\n' +
           '  the name never leaves this machine.'
       );
@@ -553,9 +575,11 @@ function armEnterFallback(onEnter) {
     try {
       rl.close();
     } catch {}
-    // In UI mode the STOP command also arrives over stdin — pausing the
-    // stream here would deafen that listener for the rest of the run.
-    if (process.env.TT_UI !== '1') process.stdin.pause();
+    // In UI mode the STOP command also arrives over stdin. rl.close() pauses
+    // the stream, which would deafen that listener for the rest of the run,
+    // so resume it there.
+    if (process.env.TT_UI === '1') process.stdin.resume();
+    else process.stdin.pause();
     if (process.stdin.unref) process.stdin.unref();
   };
 }
@@ -1423,6 +1447,134 @@ async function resetSocialSkills(tt, logger) {
   await gotoSocialSkills(tt);
 }
 
+/* --------- Social Skills app, rebuilt UI (seen live 2026-10-15) --------- */
+// #/apps/ssms is now an Angular app in ONE iframe on the WorkGroup AppHost
+// (the same host enCORE uses), not the old two-frame "View Students" app:
+//   teacher Home: students are expansion panels; an opened panel has a
+//                 "Login as Student" button.
+//   student view: .../independent/ssms-landing, activity cards with
+//                 "Watch movie" / "Do Activity"; the student menu button
+//                 (top) holds "Logout", which signs out of TeachTown.
+// The group rotation and --recon-roster still use the old flow above.
+
+function socialSkillsLocators(tt) {
+  const frame = tt.frameLocator(ENCORE_IFRAME);
+  return {
+    frame,
+    title: frame.locator('.app-name').filter({ hasText: /social skills/i }).first(),
+    firstPanel: frame.locator('tt-student-list mat-expansion-panel-header').first(),
+    studentView: frame.locator('tt-ssms-independent-landing-view').first(),
+    studentMenu: frame.locator('button.student-menu-button').first(),
+  };
+}
+
+// Teacher Home of the Social Skills app, with its student list rendered.
+// `reload` forces a fresh document (the per-attempt recovery).
+async function openSocialSkillsHome(tt, logger, { reload = false, reauth = null } = {}) {
+  const L = socialSkillsLocators(tt);
+  // The student Logout ends the whole TeachTown session, and a window closed
+  // or a failed login can leave a student view up. Both come first.
+  if (await visibleSoon(L.studentMenu, 1_000)) {
+    logger.event('Social Skills was left inside a student view — logging it out first.');
+    await logOutOfStudentView(tt).catch(() => false);
+  }
+  if (/login\.aspx/i.test(tt.url()) && reauth) {
+    logger.event('Signed out of TeachTown — signing in again.');
+    await reauth();
+  }
+  const ready = async (ms) => (await visibleSoon(L.firstPanel, ms)) && (await visibleSoon(L.title, 5_000));
+  if (state.ttNavBase) {
+    if (reload || !/#\/apps\/ssms/i.test(tt.url())) {
+      await tt.goto(state.ttNavBase + '#/apps/ssms', { timeout: NAV_TIMEOUT }).catch(() => {});
+      if (reload) await tt.reload({ timeout: NAV_TIMEOUT }).catch(() => {});
+    }
+    if (await ready(30_000)) return;
+    logger.event('Direct #/apps/ssms did not show the Social Skills student list — trying the hub card.');
+    await tt.goto(state.ttNavBase + '#/home', { timeout: NAV_TIMEOUT }).catch(() => {});
+  }
+  const card = tt.locator('h3').filter({ hasText: /^\s*social skills\s*$/i }).filter({ visible: true }).first();
+  if (await visibleSoon(card, 15_000)) await card.click({ timeout: 5_000 }).catch(() => {});
+  if (await ready(30_000)) return;
+  const onApp = await L.firstPanel.isVisible().catch(() => false);
+  throw new Error(
+    onApp
+      ? `the page opened a student list, but it is not the Social Skills app — last page: ${safeUrl(tt.url())}`
+      : `Social Skills never showed its student list — last page: ${safeUrl(tt.url())}`
+  );
+}
+
+// Teacher Home → the learner's panel → "Login as Student". True once the
+// student view is up; false when no student in the list matches `name`.
+// `label` (the pseudonym) is the only name that ever reaches a message.
+async function loginAsSocialSkillsStudent(tt, name, logger, label) {
+  const L = socialSkillsLocators(tt);
+  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const norm = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  // Only the teacher's student list — never another expansion panel on Home.
+  const panels = L.frame.locator('tt-student-list mat-expansion-panel');
+  const exactRe = new RegExp(`^\\s*${esc(name.trim()).replace(/\s+/g, '\\s+')}\\s*$`, 'i');
+  const exactSet = panels.filter({
+    has: L.frame.locator('mat-expansion-panel-header .text-ellipsis').filter({ hasText: exactRe }),
+  });
+  const containsSet = panels.filter({
+    has: L.frame.locator('mat-expansion-panel-header').filter({ hasText: new RegExp(esc(name.trim()), 'i') }),
+  });
+  // The list can paint its first rows before the rest: wait a few seconds
+  // for a match before calling the learner missing.
+  let candidates = null;
+  const until = Date.now() + 10_000;
+  for (;;) {
+    const ne = await exactSet.count();
+    if (ne > 0) {
+      candidates = exactSet;
+      if (ne > 1) throw new Error(`more than one student in Social Skills has the display name configured for "${label}"`);
+      break;
+    }
+    const nc = await containsSet.count();
+    if (nc === 1) {
+      candidates = containsSet;
+      logger.event(`WARN no student's name line equals the one configured for "${label}" — using the only name that contains it`);
+      break;
+    }
+    if (nc > 1) {
+      throw new Error(`more than one student in Social Skills matches the display name configured for "${label}" — make it the full name`);
+    }
+    if (Date.now() >= until) return false;
+    await sleep(500);
+  }
+  const panel = candidates.first();
+  const header = panel.locator('mat-expansion-panel-header').first();
+  const loginBtn = panel.locator('button.clickable').filter({ hasText: /login as student/i }).first();
+  if (!(await visibleSoon(loginBtn, 500))) {
+    await header.click({ timeout: 5_000 });
+  }
+  if (!(await visibleSoon(loginBtn, 8_000))) {
+    throw new Error(`"Login as Student" did not appear for "${label}"`);
+  }
+  logger.event(`Selected learner "${label}" in Social Skills`);
+  await loginBtn.click({ timeout: 5_000 });
+  if (!(await visibleSoon(L.studentView, 30_000))) {
+    throw new Error(`the student view did not open for "${label}" after "Login as Student"`);
+  }
+  // Guard against a neighboring row's button: the student menu names who we
+  // are. Unreadable or mismatching means we are in the wrong view — leave it
+  // right away rather than idle on another child's account.
+  const shown = norm(await L.studentMenu.textContent({ timeout: 5_000 }).catch(() => ''));
+  const tokens = norm(name).split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+  const ok = shown && tokens.length && tokens.every((t) => shown.includes(t));
+  if (!ok) {
+    await logOutOfStudentView(tt).catch(() => false);
+    const err = new Error(
+      shown
+        ? `logged into a different student's view than "${label}" — logged back out`
+        : `could not confirm whose student view opened for "${label}" — logged back out`
+    );
+    err.code = 'WRONG_STUDENT';
+    throw err;
+  }
+  return true;
+}
+
 /* -------------------------- student flow --------------------------- */
 
 function menuItem(inner, re) {
@@ -1434,7 +1586,7 @@ function menuItem(inner, re) {
   return inner.getByText(re).filter({ visible: true }).last();
 }
 
-async function findCaretNear(nameEl, name) {
+async function findCaretNear(nameEl, label) {
   // The caret (▾) sits at the top right of the student's name. Walk outward
   // from the name element and take the first plausible toggle we can see.
   let scope = nameEl;
@@ -1446,13 +1598,15 @@ async function findCaretNear(nameEl, name) {
     scope = scope.locator('xpath=..');
   }
   throw new Error(
-    `no dropdown caret found near "${name}" — capture the real selector with \`npx playwright codegen\` and add it to CARET_SELECTORS`
+    `no dropdown caret found near "${label}" — capture the real selector with \`npx playwright codegen\` and add it to CARET_SELECTORS`
   );
 }
 
 // After "Login as..", make sure we actually landed in the right student's
-// view (guards against clicking a neighboring row's caret).
-async function verifyStudentHeader(tt, name) {
+// view (guards against clicking a neighboring row's caret). `label` set =
+// a pseudonym-only run (the Social Skills button): messages use it and never
+// name the student we landed on. The rotation passes none and keeps names.
+async function verifyStudentHeader(tt, name, label = null) {
   const frame = getInnerFrame(tt);
   if (!frame) return;
   const txt = await frame.evaluate(() => document.body.innerText).catch(() => '');
@@ -1461,7 +1615,11 @@ async function verifyStudentHeader(tt, name) {
   const header = m[1].trim().toLowerCase();
   const tokens = name.toLowerCase().split(/[^a-z0-9]+/).filter((t) => t.length >= 3);
   if (tokens.length && !tokens.some((t) => header.includes(t))) {
-    throw new Error(`logged into "${m[1].trim()}" but expected "${name}"`);
+    throw new Error(
+      label == null
+        ? `logged into "${m[1].trim()}" but expected "${name}"`
+        : `logged into a different student's view than "${label}"`
+    );
   }
 }
 
@@ -1491,6 +1649,41 @@ async function dismissLoginToast(inner) {
     .catch(() => {});
 }
 
+// Leave a student view through its own Log out, like a person would. Only
+// while "My Activities" shows — never a facilitator-level Log out. True only
+// when the student view is actually gone afterwards.
+async function logOutOfStudentView(tt) {
+  if (!tt || tt.isClosed()) return false;
+  // The rebuilt Social Skills app: the student menu's Logout, which ends the
+  // TeachTown session (lands on Login.aspx). Checked first; it is the only
+  // student view that exists there.
+  const ss = socialSkillsLocators(tt);
+  // Gated on the Social Skills header too, so a lookalike menu elsewhere in
+  // the shared app host is never logged out of.
+  if ((await visibleSoon(ss.studentMenu, 1_500)) && (await ss.title.isVisible().catch(() => false))) {
+    const expanded = (await ss.studentMenu.getAttribute('aria-expanded').catch(() => null)) === 'true';
+    if (!expanded) await ss.studentMenu.click({ timeout: 3_000 }).catch(() => {});
+    const item = ss.frame
+      .locator('.cdk-overlay-container [role=menuitem], .cdk-overlay-container .mat-mdc-menu-item, .cdk-overlay-container button')
+      .filter({ hasText: /log ?out/i })
+      .first();
+    if (!(await visibleSoon(item, 2_000))) {
+      await tt.keyboard.press('Escape').catch(() => {});
+      return false;
+    }
+    await item.click({ timeout: 3_000 }).catch(() => {});
+    return tt.waitForURL(/Login\.aspx|#\/home/i, { timeout: 10_000 }).then(() => true, () => false);
+  }
+  const inner = innerLocator(tt);
+  const myActivities = inner.getByText('My Activities').first();
+  if (!(await visibleSoon(myActivities, 1_500))) return false;
+  const logout = inner.getByText(/log ?out/i).first();
+  if (!(await visibleSoon(logout, 1_500))) return false;
+  await logout.click({ timeout: 3_000 }).catch(() => {});
+  const home = await tt.waitForURL(/#\/home/, { timeout: 8_000 }).then(() => true, () => false);
+  return home || !(await myActivities.isVisible().catch(() => false));
+}
+
 // If a failed/misfired login left us inside a student view, retrying the
 // row → caret dance is pointless — reset to the teacher list first.
 async function recoverIfStranded(tt, logger) {
@@ -1516,7 +1709,11 @@ async function recoverIfStranded(tt, logger) {
 // overturned that — the failures correlate with stale module state after
 // heavy in-app navigation, which the fresh-load reset in resetSocialSkills
 // addresses. Trusted clicks remain the safe default regardless.
-async function loginAsStudent(tt, name, logger) {
+//
+// `label` (a pseudonym) is how log lines and errors name the student in a
+// pseudonym-only run (see verifyStudentHeader); the rotation passes none.
+async function loginAsStudent(tt, name, logger, label = null) {
+  const tag = label == null ? name : label;
   const inner = innerLocator(tt);
   await inner.getByText('View Students').first().waitFor({ state: 'visible', timeout: NAV_TIMEOUT });
 
@@ -1525,7 +1722,7 @@ async function loginAsStudent(tt, name, logger) {
   // misroute healthy-but-slow loads to the legacy fallback).
   if (!(await visibleSoon(inner.locator(STUDENT_ROW).first(), 10_000))) {
     logger.event(`WARN student rows (${STUDENT_ROW}) not found — using text-based fallback`);
-    return loginAsStudentLegacy(tt, name, logger);
+    return loginAsStudentLegacy(tt, name, logger, label);
   }
 
   // Row text is exactly the student's name: prefer an exact match (tolerating
@@ -1585,26 +1782,27 @@ async function loginAsStudent(tt, name, logger) {
         throw new Error('app rejected "Login as.." (Login unsuccessful toast)');
       }
       if (outcome === 'timeout') throw new Error('student view ("My Activities") did not appear');
-      await verifyStudentHeader(tt, name);
+      await verifyStudentHeader(tt, name, label);
       return true;
     } catch (err) {
       lastErr = err;
       if (attempt < 3) {
-        logger.event(`WARN ${name} — login-as attempt ${attempt} failed, retrying (${err.message.split('\n')[0]})`);
+        logger.event(`WARN ${tag} — login-as attempt ${attempt} failed, retrying (${err.message.split('\n')[0]})`);
       }
       await tt.keyboard.press('Escape').catch(() => {});
       await recoverIfStranded(tt, logger); // e.g. wrong-student login — retry needs the teacher list
       await sleep(700);
     }
   }
-  throw new Error(`row → caret → "Login as.." failed after 3 attempts for "${name}": ${lastErr?.message}`);
+  throw new Error(`row → caret → "Login as.." failed after 3 attempts for "${tag}": ${lastErr?.message}`);
 }
 
 // Pre-recon fallback: text-based row/caret discovery. Only used if
 // STUDENT_ROW stops matching after a TeachTown update. Mirrors the verified
 // sequence as closely as the unknown DOM allows: click the name (row) first,
 // then the caret, then the menu item — and watch for the failure toast.
-async function loginAsStudentLegacy(tt, name, logger) {
+async function loginAsStudentLegacy(tt, name, logger, label = null) {
+  const tag = label == null ? name : label;
   const inner = innerLocator(tt);
 
   const nameEl = await findFirstVisible(
@@ -1629,7 +1827,7 @@ async function loginAsStudentLegacy(tt, name, logger) {
         // Select the row first (click the name), matching the verified flow.
         await nameEl.click({ timeout: 5_000 }).catch(() => {});
         await sleep(500);
-        const caret = await findCaretNear(nameEl, name);
+        const caret = await findCaretNear(nameEl, tag);
         await caret.click({ timeout: 5_000 });
         // Click the menu item immediately — these jQuery menus close easily.
         await menuItem(inner, /log ?in as/i).click({ timeout: 4_000 });
@@ -1648,19 +1846,19 @@ async function loginAsStudentLegacy(tt, name, logger) {
         throw new Error('app rejected "Login as.." (Login unsuccessful toast)');
       }
       if (outcome === 'timeout') throw new Error('student view ("My Activities") did not appear');
-      await verifyStudentHeader(tt, name);
+      await verifyStudentHeader(tt, name, label);
       return true;
     } catch (err) {
       lastErr = err;
       if (attempt < 3) {
-        logger.event(`WARN ${name} — login-as attempt ${attempt} failed, retrying (${err.message.split('\n')[0]})`);
+        logger.event(`WARN ${tag} — login-as attempt ${attempt} failed, retrying (${err.message.split('\n')[0]})`);
       }
       await tt.keyboard.press('Escape').catch(() => {});
       await recoverIfStranded(tt, logger);
       await sleep(700);
     }
   }
-  throw new Error(`caret → "Login as.." failed after 3 attempts for "${name}": ${lastErr?.message}`);
+  throw new Error(`caret → "Login as.." failed after 3 attempts for "${tag}": ${lastErr?.message}`);
 }
 
 // Parse the student's activity list straight from the app (no shadow
@@ -2615,7 +2813,7 @@ async function studentLedSetup(tt, sl, dryRun, logger) {
       logger.event(`READY — ${subjectLabel} for "${who}". Press Next on screen and launch when the group is ready.`);
     }
     logger.event('Idling — the session is in your hands (Ctrl+C here or close the browser when done)');
-    await new Promise(() => {}); // hold the screen; Ctrl+C / window close end the run
+    await holdForRetarget(); // hold the screen; Ctrl+C / window close end the run
     return;
   }
 
@@ -2641,11 +2839,14 @@ async function studentLedSetup(tt, sl, dryRun, logger) {
     logger.event('READY — Next was pressed; finish on screen (Prepare Session did not appear as expected)');
   }
   logger.event('Idling — the session is in your hands (Ctrl+C here or close the browser when done)');
-  await new Promise(() => {});
+  await holdForRetarget();
 }
 
 async function runStudentLed(tt, config, dryRun, logger) {
   const sl = config.studentLed;
+  if (socialSkillsApp.usesSocialSkillsApp(sl.subject)) {
+    throw new Error('Social Skills is its own app, not an enCORE subject — it must run through runSocialSkillsApp.');
+  }
   logger.event(`STUDENT-LED — entering enCORE (${subjects.studentLedLabel(sl.subject)} for "${sl.learnerPseudonym}")`);
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
@@ -2662,6 +2863,52 @@ async function runStudentLed(tt, config, dryRun, logger) {
       await screenshot(tt, `studentled-attempt${attempt}`);
       if (attempt >= 2) throw err;
       logger.event('Recovering: hub → re-enter enCORE');
+    }
+  }
+}
+
+// The Social Skills button: the Social Skills APP, never enCORE — see
+// lib/social-skills-app.js. Live: idles at READY on the learner's My
+// Activities; dry run: logs them back out and returns.
+async function runSocialSkillsApp(tt, config, dryRun, logger) {
+  const sl = config.studentLed;
+  const who = sl.learnerPseudonym;
+  // loginAsStudent was written for the rotation, whose logs carry names. This
+  // run is pseudonym-only like the rest of Student-Led, so its lines are
+  // scrubbed on the way out.
+  const scrubbed = { event: (m) => logger.event(socialSkillsApp.scrubName(m, sl.studentName, who)) };
+  // The student Logout ends the TeachTown session; the profile's browser-filled
+  // sign-in form (same chain every run starts with) brings it back.
+  const reauth = async () => {
+    if (config.loginMode !== 'direct') {
+      throw new Error('the TeachTown session ended and this district signs in through Clever — click the shortcut again');
+    }
+    await ensureTeachTownDirect(tt, config, scrubbed);
+  };
+  const steps = {
+    openApp: () => openSocialSkillsHome(tt, scrubbed, { reauth }),
+    loginAs: (name) => loginAsSocialSkillsStudent(tt, name, scrubbed, who),
+    logOut: () => logOutOfStudentView(tt),
+    hold: () => holdForRetarget(), // Ctrl+C / window close end the run
+  };
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      await socialSkillsApp.socialSkillsAppSetup(steps, {
+        name: sl.studentName,
+        who,
+        dryRun,
+        log: (m) => logger.event(m),
+      });
+      return;
+    } catch (err) {
+      if (state.shuttingDown) return;
+      // A retry would read the same list / pick the same wrong row.
+      if (err.code === 'LEARNER_NOT_FOUND' || err.code === 'WRONG_STUDENT') throw err;
+      logger.event(`WARN social skills — ${err.message.split('\n')[0]}`);
+      await screenshot(tt, `socialskills-attempt${attempt}`);
+      if (attempt >= 2) throw err;
+      logger.event('Recovering: reloading the Social Skills student list');
+      await openSocialSkillsHome(tt, scrubbed, { reload: true, reauth }).catch(() => {});
     }
   }
 }
@@ -2857,6 +3104,450 @@ async function reconRoster(tt, config, logger) {
   logger.event(`RECON report written: ${file}`);
 }
 
+// A URL that is safe to write to a log or an error: origin + path + the hash
+// route only. Query strings, ';'-parameters and any '=' tail (tokens, return
+// URLs, login hints) are cut.
+function safeUrl(u) {
+  const cut = (s) => String(s).split(/[?;&=]/)[0];
+  try {
+    const x = new URL(u);
+    return x.origin + x.pathname + (x.hash ? cut(x.hash) : '');
+  } catch {
+    return cut(u);
+  }
+}
+
+// Outline of the Social Skills app's frame for recon/. Names are masked HERE,
+// in the browser, before anything is returned: every text inside the student
+// list components is replaced by its length, and any other text containing a
+// word that appears in those lists is masked too. The file holds structure and
+// UI labels only. Also opens (never selects from) the first row's menu to list
+// its item labels, then closes it.
+async function outlineSocialSkillsApp(tt, logger, name) {
+  const frame = tt.frames().find((f) => /WorkGroup\/Client\/AppHost\/app/i.test(f.url()));
+  if (!frame) {
+    logger.event('RECON-SS outline: no WorkGroup app frame on the page.');
+    return;
+  }
+  const NAME_ROOTS = ['tt-student-list', 'tt-student-lesson-progress-list', 'tt-lesson-progress-list'];
+  const mkRedactor = `
+    const NAME_ROOTS = ${JSON.stringify(NAME_ROOTS)};
+    const nameTokens = new Set();
+    for (const sel of NAME_ROOTS) {
+      for (const root of document.querySelectorAll(sel)) {
+        for (const e of root.querySelectorAll('*')) {
+          if (e.children.length) continue;
+          for (const w of (e.textContent || '').toLowerCase().split(/[^\\p{L}\\p{N}]+/u)) if (w.length >= 2) nameTokens.add(w);
+        }
+      }
+    }
+    const inNames = (el) => NAME_ROOTS.some((s) => el.closest(s));
+    const red = (t, el) => {
+      t = String(t || '').replace(/\\s+/g, ' ').trim();
+      if (!t) return '';
+      if (el && inNames(el)) return '<' + t.length + '>';
+      if (!nameTokens.size) return '<' + t.length + '>'; // no names known: fail closed
+      for (const w of t.toLowerCase().split(/[^\\p{L}\\p{N}]+/u)) if (nameTokens.has(w)) return '<' + t.length + '>';
+      return t.slice(0, 60);
+    };
+  `;
+  const outline = await frame
+    .evaluate(`(() => {
+      ${mkRedactor}
+      const lines = [];
+      const SKIP = new Set(['SCRIPT', 'STYLE', 'SVG', 'PATH', 'NOSCRIPT', 'LINK', 'META']);
+      const walk = (el, depth) => {
+        if (lines.length >= 700 || depth > 18 || SKIP.has(el.tagName)) return;
+        const tag = el.tagName.toLowerCase();
+        const own = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join(' ');
+        const interesting =
+          tag.includes('-') || /^(a|button|input|select|textarea|h1|h2|h3|h4|li|label|nav|header|main)$/.test(tag) ||
+          el.hasAttribute('role') || el.hasAttribute('aria-label') || el.hasAttribute('tabindex') || own.trim();
+        if (interesting) {
+          const cls = [...el.classList].filter((c) => !/^ng-|^cdk-|^mat-mdc-(?!menu|tab|list)/.test(c)).slice(0, 4).join('.');
+          const bits = [
+            '  '.repeat(Math.min(depth, 14)) + tag + (el.id ? '#' + el.id : '') + (cls ? '.' + cls : ''),
+            el.getAttribute('role') ? 'role=' + el.getAttribute('role') : '',
+            el.getAttribute('aria-label') ? 'aria-label="' + red(el.getAttribute('aria-label'), el) + '"' : '',
+            el.getAttribute('aria-haspopup') ? 'haspopup=' + el.getAttribute('aria-haspopup') : '',
+            el.getAttribute('type') ? 'type=' + el.getAttribute('type') : '',
+            el.disabled ? 'disabled' : '',
+            red(own, el) ? '"' + red(own, el) + '"' : '',
+          ].filter(Boolean);
+          lines.push(bits.join(' '));
+        }
+        for (const c of el.children) walk(c, depth + 1);
+      };
+      walk(document.body, 0);
+      return { lines, nameTokens: nameTokens.size };
+    })()`)
+    .catch((e) => ({ lines: [], error: String(e.message).split('\n')[0] }));
+  const file = path.join(RECON_DIR, `social-skills-outline-${Date.now()}.txt`);
+  try {
+    fs.mkdirSync(RECON_DIR, { recursive: true });
+    fs.writeFileSync(file, outline.lines.join('\n') + '\n');
+  } catch {}
+  logger.event(
+    `RECON-SS outline: ${outline.lines.length} line(s), ${outline.nameTokens || 0} name word(s) masked${outline.error ? ', error: ' + outline.error : ''} — ${file}`
+  );
+
+  await probeSocialSkillsPanel(tt, frame, name, logger);
+}
+
+// Click "Login as Student" in the already-expanded panel and record, names
+// masked, what the app does: URL/frames/new tabs and an outline of the student
+// view. Then look for the student view's own Log out (never the account-level
+// Logout in the navigation shell) and use it. Returns lines for the report.
+async function probeSocialSkillsLogin(tt, frame, idx, name) {
+  const strip = safeUrl;
+  const out = ['--- LOGIN AS STUDENT ---'];
+  const tokens = [
+    ...(await frame.evaluate(`(() => [...(window.__ttNameTokens || [])])()`).catch(() => [])),
+    ...String(name || '').toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length >= 2),
+  ];
+  const HELP = `
+    const nameTokens = new Set(${JSON.stringify(tokens)});
+    const red = (t) => {
+      t = String(t || '').replace(/\\s+/g, ' ').trim();
+      if (!t) return '';
+      if (!nameTokens.size) return '<' + t.length + '>'; // no names known: fail closed
+      for (const w of t.toLowerCase().split(/[^\\p{L}\\p{N}]+/u)) if (nameTokens.has(w)) return '<' + t.length + '>';
+      return t.slice(0, 60);
+    };
+    const outlineOf = (root, cap) => {
+      const lines = [];
+      const SKIP = new Set(['SCRIPT', 'STYLE', 'SVG', 'PATH', 'NOSCRIPT']);
+      const walk = (el, depth) => {
+        if (lines.length >= cap || depth > 16 || SKIP.has(el.tagName)) return;
+        const tag = el.tagName.toLowerCase();
+        const own = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join(' ');
+        const interesting = tag.includes('-') || /^(a|button|input|select|textarea|h1|h2|h3|h4|h5|li|label|nav|img|video|canvas)$/.test(tag) ||
+          el.hasAttribute('role') || el.hasAttribute('aria-label') || el.hasAttribute('tabindex') || el.hasAttribute('onclick') || own.trim();
+        if (interesting) {
+          const cls = [...el.classList].filter((c) => !/^ng-|^cdk-|^mdc-|^mat-mdc-(?!menu)/.test(c)).slice(0, 3).join('.');
+          lines.push([
+            '  '.repeat(Math.min(depth, 12)) + tag + (el.id ? '#' + red(el.id) : '') + (cls ? '.' + cls : ''),
+            el.getAttribute('role') ? 'role=' + el.getAttribute('role') : '',
+            el.getAttribute('aria-label') ? 'aria-label="' + red(el.getAttribute('aria-label')) + '"' : '',
+            el.getAttribute('title') ? 'title="' + red(el.getAttribute('title')) + '"' : '',
+            red(own) ? '"' + red(own) + '"' : '',
+          ].filter(Boolean).join(' '));
+        }
+        for (const c of el.children) walk(c, depth + 1);
+      };
+      walk(root, 0);
+      return lines;
+    };
+  `;
+  const appFrames = () => {
+    const res = [];
+    for (const p of state.context.pages()) {
+      if (p.isClosed()) continue;
+      for (const f of p.frames()) {
+        if (p === tt && f === p.mainFrame()) continue; // the navigation shell
+        if (!f.url() || f.url() === 'about:blank') continue;
+        res.push({ page: p, frame: f });
+      }
+    }
+    return res;
+  };
+  try {
+    if (idx >= 0) {
+      const btn = frame
+        .locator('mat-expansion-panel')
+        .nth(idx)
+        .locator('button.clickable', { hasText: 'Login as Student' })
+        .first();
+      if (!(await btn.count())) {
+        out.push('no "Login as Student" button in the expanded panel');
+        return out;
+      }
+      await btn.click({ timeout: 4_000 });
+      await sleep(6_000);
+    } else {
+      out.push('(started already inside the student view)');
+    }
+    out.push(`top=${strip(tt.url())} frames=${JSON.stringify(appFrames().map(({ frame: f }) => strip(f.url())))}`);
+    // Log out of the STUDENT view only, through the student menu in the app
+    // frame — never the account-level Logout in the navigation shell.
+    let clicked = false;
+    for (const { frame: f } of appFrames()) {
+      const menuBtn = f.locator('button.student-menu-button').first();
+      if (!(await menuBtn.isVisible().catch(() => false))) continue;
+      await menuBtn.click({ timeout: 4_000 }).catch(() => {});
+      await sleep(800);
+      const items = await f
+        .evaluate(`(() => { ${HELP}; return [...document.querySelectorAll('.cdk-overlay-container [role=menuitem], .cdk-overlay-container .mat-mdc-menu-item, .cdk-overlay-container button')].map((e) => red(e.textContent)).filter(Boolean).slice(0, 15); })()`)
+        .catch(() => []);
+      out.push(`STUDENT MENU ITEMS (names masked): ${JSON.stringify(items)}`);
+      const lo = f
+        .locator('.cdk-overlay-container [role=menuitem], .cdk-overlay-container .mat-mdc-menu-item, .cdk-overlay-container button')
+        .filter({ hasText: /log ?out|sign ?out/i })
+        .first();
+      if (await lo.isVisible().catch(() => false)) {
+        await lo.click({ timeout: 4_000 }).catch(() => {});
+        clicked = true;
+        out.push('LOG OUT clicked in the student menu');
+      } else {
+        await tt.keyboard.press('Escape').catch(() => {});
+      }
+      break;
+    }
+    if (!clicked) out.push('LOG OUT: not found in the student menu');
+    await sleep(4_000);
+    const fr = appFrames().map(({ page, frame: f }) => `${page === tt ? 'tab0' : 'newtab'}:${strip(f.url())}`);
+    out.push(`after logout: tabs=${state.context.pages().length} top=${strip(tt.url())} frames=${JSON.stringify(fr)}`);
+  } catch (err) {
+    out.push(`LOGIN PROBE ERROR: ${String(err.message).split('\n')[0]}`);
+  }
+  return out;
+}
+
+// The new Social Skills Home lists students as expansion panels. Expand only
+// the configured learner's panel (read-only toggle), outline it, and list the
+// items of the page's actions menu and of the panel's own menu. Name words are
+// taken from the COLLAPSED lists first and masked everywhere; the display name
+// itself is only ever used to pick the panel, never logged.
+async function probeSocialSkillsPanel(tt, frame, name, logger) {
+  const PAGE = `
+    const nameTokens = window.__ttNameTokens || (window.__ttNameTokens = (() => {
+      const s = new Set();
+      for (const root of document.querySelectorAll('tt-student-list, tt-student-lesson-progress-list, tt-lesson-progress-list')) {
+        for (const e of root.querySelectorAll('*')) {
+          if (e.children.length) continue;
+          for (const w of (e.textContent || '').toLowerCase().split(/[^\\p{L}\\p{N}]+/u)) if (w.length >= 2) s.add(w);
+        }
+      }
+      return s;
+    })());
+    const red = (t) => {
+      t = String(t || '').replace(/\\s+/g, ' ').trim();
+      if (!t) return '';
+      if (!nameTokens.size) return '<' + t.length + '>'; // no names known: fail closed
+      for (const w of t.toLowerCase().split(/[^\\p{L}\\p{N}]+/u)) if (nameTokens.has(w)) return '<' + t.length + '>';
+      return t.slice(0, 60);
+    };
+    const outlineOf = (root, cap) => {
+      const lines = [];
+      const SKIP = new Set(['SCRIPT', 'STYLE', 'SVG', 'PATH', 'NOSCRIPT']);
+      const walk = (el, depth) => {
+        if (lines.length >= cap || depth > 16 || SKIP.has(el.tagName)) return;
+        const tag = el.tagName.toLowerCase();
+        const own = [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join(' ');
+        const interesting = tag.includes('-') || /^(a|button|input|select|textarea|h1|h2|h3|h4|h5|li|label|ul|nav)$/.test(tag) ||
+          el.hasAttribute('role') || el.hasAttribute('aria-label') || el.hasAttribute('tabindex') || own.trim();
+        if (interesting) {
+          const cls = [...el.classList].filter((c) => !/^ng-|^cdk-|^mdc-|^mat-mdc-(?!menu)/.test(c)).slice(0, 4).join('.');
+          lines.push([
+            '  '.repeat(Math.min(depth, 12)) + tag + (el.id ? '#' + red(el.id) : '') + (cls ? '.' + cls : ''),
+            el.getAttribute('role') ? 'role=' + el.getAttribute('role') : '',
+            el.getAttribute('aria-label') ? 'aria-label="' + red(el.getAttribute('aria-label')) + '"' : '',
+            el.getAttribute('aria-haspopup') ? 'haspopup=' + el.getAttribute('aria-haspopup') : '',
+            el.getAttribute('aria-expanded') ? 'expanded=' + el.getAttribute('aria-expanded') : '',
+            el.getAttribute('type') ? 'type=' + el.getAttribute('type') : '',
+            el.disabled ? 'disabled' : '',
+            red(own) ? '"' + red(own) + '"' : '',
+          ].filter(Boolean).join(' '));
+        }
+        for (const c of el.children) walk(c, depth + 1);
+      };
+      walk(root, 0);
+      return lines;
+    };
+    const menuItems = () => [...document.querySelectorAll('[role=menuitem], .mat-mdc-menu-item, [role=menu] button')]
+      .map((e) => red(e.textContent)).filter(Boolean).slice(0, 20);
+  `;
+  const out = [];
+  try {
+    // A previous probe may have left the browser inside the student view:
+    // log out of it first, through the same path the probe uses.
+    if (/independent\/ssms-landing/i.test(frame.url())) {
+      out.push(...(await probeSocialSkillsLogin(tt, frame, -1, name)));
+      const file0 = path.join(RECON_DIR, `social-skills-panel-${Date.now()}.txt`);
+      try {
+        fs.writeFileSync(file0, out.join('\n') + '\n');
+      } catch {}
+      logger.event(`RECON-SS started inside the student view; logout attempt — ${file0}`);
+      return;
+    }
+    // Tokens first, while every panel is collapsed.
+    await frame.evaluate(`(() => { ${PAGE}; return nameTokens.size; })()`);
+
+    const kebab = frame.locator('#actions-menu-button');
+    if (await kebab.count()) {
+      await kebab.click({ timeout: 3_000 });
+      await sleep(700);
+      const items = await frame.evaluate(`(() => { ${PAGE}; return menuItems(); })()`).catch(() => []);
+      out.push(`ACTIONS MENU ITEMS: ${JSON.stringify(items)}`);
+      await tt.keyboard.press('Escape').catch(() => {});
+      await sleep(400);
+    }
+
+    const idx = await frame.evaluate(`(() => {
+      ${PAGE}
+      const n = ${JSON.stringify(String(name || '').toLowerCase())};
+      const hs = [...document.querySelectorAll('tt-student-list mat-expansion-panel-header')];
+      if (!hs.length) return -2;
+      if (!n) return -3;
+      const m = hs.map((h, i) => ((h.textContent || '').toLowerCase().includes(n) ? i : -1)).filter((i) => i >= 0);
+      return m.length === 1 ? m[0] : m.length ? -4 : -1;
+    })()`);
+    out.push(
+      `PANELS: header index for the configured learner = ${idx} ` +
+        '(-1 none matched, -2 no panels, -3 no name configured, -4 ambiguous — nothing is clicked unless exactly one matches)'
+    );
+    if (idx >= 0) {
+      await frame.locator('mat-expansion-panel-header').nth(idx).click({ timeout: 4_000 });
+      await sleep(1_500);
+      const lines = await frame
+        .evaluate(`(() => { ${PAGE}; return outlineOf(document.querySelectorAll('mat-expansion-panel')[${idx}], 200); })()`)
+        .catch(() => []);
+      out.push('EXPANDED PANEL OUTLINE:', ...lines);
+      const trig = frame.locator('mat-expansion-panel').nth(idx).locator('button[aria-haspopup]').first();
+      if (await trig.count()) {
+        await trig.click({ timeout: 3_000 }).catch(() => {});
+        await sleep(700);
+        const items = await frame.evaluate(`(() => { ${PAGE}; return menuItems(); })()`).catch(() => []);
+        out.push(`PANEL MENU ITEMS: ${JSON.stringify(items)}`);
+        await tt.keyboard.press('Escape').catch(() => {});
+      } else {
+        out.push('PANEL MENU: no button[aria-haspopup] inside the expanded panel');
+      }
+      out.push(...(await probeSocialSkillsLogin(tt, frame, idx, name)));
+    }
+  } catch (err) {
+    out.push(`PROBE ERROR: ${String(err.message).split('\n')[0]}`);
+  }
+  const file = path.join(RECON_DIR, `social-skills-panel-${Date.now()}.txt`);
+  try {
+    fs.writeFileSync(file, out.join('\n') + '\n');
+  } catch {}
+  logger.event(`RECON-SS panel probe: ${out.length} line(s) — ${file}`);
+}
+
+// --recon-social-skills: why does the Social Skills app not come up?
+// STRUCTURE ONLY. Every value logged is a URL path (query/token stripped), a
+// count, a tag name, or a fixed marker word's hit count. No page text is ever
+// read into the log, so no student name can land in it. The one screenshot
+// goes to recon/ (gitignored) for a human to look at.
+async function reconSocialSkills(tt, logger, name) {
+  const strip = safeUrl;
+  const MARKERS = [
+    'View Students', 'My Activities', 'Log in', 'Login', 'Sign in', 'Password', 'Clever',
+    'expired', 'not authorized', 'access denied', 'subscription', 'license', 'Loading', 'Error',
+  ];
+  const popups = [];
+  state.context.on('page', (p) => popups.push(p));
+
+  const frameFacts = (f) =>
+    f
+      .evaluate((markers) => {
+        const text = ((document.body && document.body.innerText) || '').toLowerCase();
+        const hits = {};
+        for (const m of markers) {
+          const n = text.split(m.toLowerCase()).length - 1;
+          if (n) hits[m] = n;
+        }
+        const pathOf = (u) => {
+          try {
+            return new URL(u, location.href).pathname.replace(/[0-9a-f]{8}-[0-9a-f-]{27}|\d{3,}/gi, '#');
+          } catch {
+            return '';
+          }
+        };
+        const uniq = (a, n) => [...new Set(a.filter(Boolean))].slice(0, n);
+        return {
+          textLength: text.length,
+          inputs: document.querySelectorAll('input').length,
+          passwordInputs: document.querySelectorAll('input[type=password]').length,
+          iframes: document.querySelectorAll('iframe').length,
+          hits,
+          scripts: uniq([...document.scripts].map((s) => pathOf(s.src)), 12),
+          components: uniq([...document.querySelectorAll('*')].map((e) => e.tagName.toLowerCase()).filter((t) => t.includes('-')), 20),
+          requests: uniq(
+            performance
+              .getEntriesByType('resource')
+              .map((r) => pathOf(r.name))
+              .filter((p) => !/\.(png|jpe?g|gif|svg|woff2?|ttf|css|ico|js|webm)$|guide-content|\/data\/|ptm\.gif|pendo/i.test(p)),
+            25
+          ),
+        };
+      }, MARKERS)
+      .catch((e) => ({ error: String(e.message).split('\n')[0].slice(0, 80) }));
+
+  let last = '';
+  const snapshot = async (label) => {
+    const frames = [];
+    for (const f of tt.frames()) frames.push({ url: strip(f.url()), ...(await frameFacts(f)) });
+    const pops = popups.filter((p) => !p.isClosed()).map((p) => strip(p.url()));
+    const out = JSON.stringify({ page: strip(tt.url()), frames, popups: pops });
+    if (out !== last) {
+      last = out;
+      logger.event(`RECON-SS ${label}: ${out}`);
+    }
+  };
+
+  logger.event('RECON-SS structure only — no page text, no student names.');
+  await snapshot('hub');
+
+  const cards = await tt
+    .evaluate(() => {
+      const out = [];
+      for (const el of document.querySelectorAll('a,button,[role=link],[role=button],h1,h2,h3,h4,span,div')) {
+        if (el.children.length) continue;
+        const t = (el.textContent || '').trim();
+        if (!t || t.length > 40 || !/social\s*skills/i.test(t)) continue;
+        const r = el.getBoundingClientRect();
+        const a = el.closest('a');
+        out.push({
+          tag: el.tagName.toLowerCase(),
+          text: t,
+          visible: r.width > 0 && r.height > 0,
+          href: a ? a.getAttribute('href') || '' : '',
+          target: a ? a.getAttribute('target') || '' : '',
+        });
+      }
+      return out.slice(0, 12);
+    })
+    .catch(() => []);
+  logger.event(
+    `RECON-SS hub cards matching "Social Skills": ${cards.length} — ` +
+      JSON.stringify(cards.map((c) => ({ ...c, href: strip(c.href) })))
+  );
+
+  const nav = async (label, doNav, polls = 8) => {
+    logger.event(`RECON-SS ${label}`);
+    await doNav();
+    for (let i = 1; i <= polls; i++) {
+      await sleep(4_000);
+      await snapshot(`${label} +${i * 4}s`);
+    }
+  };
+
+  if (state.ttNavBase) {
+    await nav('direct goto #/apps/ssms', () => tt.goto(state.ttNavBase + '#/apps/ssms', { timeout: NAV_TIMEOUT }).catch(() => {}));
+    await reconShot(tt, 'social-skills-direct');
+    await outlineSocialSkillsApp(tt, logger, name);
+    await tt.goto(state.ttNavBase + '#/home', { timeout: NAV_TIMEOUT }).catch(() => {});
+    await sleep(2_000);
+  }
+  const card = tt
+    .getByRole('link', { name: /social skills/i })
+    .or(tt.getByRole('button', { name: /social skills/i }))
+    .or(tt.getByText(/social skills/i))
+    .filter({ visible: true })
+    .first();
+  if (await visibleSoon(card, 10_000)) {
+    await nav('hub card click', () => card.click({ timeout: 5_000 }).catch(() => {}));
+    await reconShot(tt, 'social-skills-card');
+  } else {
+    logger.event('RECON-SS no visible "Social Skills" card on the hub.');
+  }
+  logger.event(
+    'RECON-SS COMPLETE — the screenshots in recon/ are NOT masked (they show the roster): for you only, do not share them.'
+  );
+}
+
 // IEP-goals bridge check: walk Student-Led setup to step 2 for ONE student,
 // log whether "IEP Goals" is selectable and what it lists, then back out.
 // Never enters step 3 ("Prepare Session" — unexplored), never launches.
@@ -2985,6 +3676,10 @@ function printDryRunTable(results, logger) {
 // it). Logged as a plain line, exit code 3 — not a crash, no screenshot.
 class SessionBlockedError extends Error {}
 
+// This click was handed to the already-open window, which is switching
+// itself. Nothing is wrong and nothing is left to do: exit 0, no pause.
+class SessionHandedOffError extends Error {}
+
 function releaseSessionLock() {
   if (!state.lockHeld) return;
   state.lockHeld = false;
@@ -3007,22 +3702,25 @@ function clockTime(iso) {
   return Number.isNaN(d.getTime()) ? null : d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
-// One keypress, no Enter. Anything but Y — including Ctrl+C and a closed
-// stream — means "no".
-function askYesNo() {
+// One keypress, no Enter. Resolves to the lowercase key when it is one of
+// `keys`; anything else — including Ctrl+C and a closed stream — is null.
+function askChoice(keys) {
   return new Promise((resolve) => {
     const stdin = process.stdin;
-    const finish = (yes) => {
+    const finish = (key) => {
       stdin.removeListener('data', onData);
       stdin.removeListener('end', onEnd);
       try {
         stdin.setRawMode(false);
       } catch {}
       stdin.pause();
-      resolve(yes);
+      resolve(key);
     };
-    const onData = (d) => finish(/^y/i.test(String(d)));
-    const onEnd = () => finish(false);
+    const onData = (d) => {
+      const k = String(d).slice(0, 1).toLowerCase();
+      finish(keys.includes(k) ? k : null);
+    };
+    const onEnd = () => finish(null);
     try {
       stdin.setRawMode(true);
     } catch {}
@@ -3034,7 +3732,7 @@ function askYesNo() {
 
 // Take the profile lock BEFORE Chrome launches. A second launch on an
 // in-use profile opens a blank window inside the running session.
-async function takeSessionLock(profileDir, info, logger) {
+async function takeSessionLock(profileDir, info, logger, opts = {}) {
   const mine = sessionLabel(info);
   let r = sessionLock.acquire(profileDir, info);
   if (!r.ok) {
@@ -3046,12 +3744,41 @@ async function takeSessionLock(profileDir, info, logger) {
     if (!interactive) {
       throw new SessionBlockedError(`BLOCKED ${theirs} is already running${sinceTxt}.`);
     }
+    // Both are Student-Led-style sessions started from a shortcut: the open
+    // window can switch itself, staying up and signed in.
+    const canSwitchInPlace =
+      opts.canHandOff && holder.mode === 'student-led' && holder.subject && holder.source === 'shortcut';
     console.log('');
-    console.log(`${theirs} is still running${sinceTxt}.`);
-    console.log(`  Y = end ${theirs} and start ${mine}`);
-    console.log(`  N = keep ${theirs} going`);
-    if (!(await askYesNo())) {
+    if (canSwitchInPlace) {
+      console.log(`${theirs} is open in the TeachTown window${sinceTxt}.`);
+      console.log(
+        holder.subject === 'social-skills'
+          ? `  Y = switch that window to ${mine}  (stays open; it signs out of TeachTown and back in by itself)`
+          : `  Y = switch that window to ${mine}  (stays open and signed in)`
+      );
+      console.log(`  E = close ${theirs} completely, then start ${mine} fresh`);
+      console.log(`  N = leave ${theirs} alone`);
+      console.log(`Only switch once ${theirs}'s lesson is finished.`);
+    } else {
+      console.log(`${theirs} is still running${sinceTxt}.`);
+      console.log(`  Y = end ${theirs} and start ${mine}`);
+      console.log(`  N = keep ${theirs} going`);
+    }
+    const choice = await askChoice(canSwitchInPlace ? 'yen' : 'yn');
+    if (!choice || choice === 'n') {
       throw new SessionBlockedError(`BLOCKED ${theirs} is still running — left it alone.`);
+    }
+    if (canSwitchInPlace && choice === 'y') {
+      sessionLock.requestSwitch(profileDir, holder, { subject: info.subject, learner: info.learner });
+      logger.event(`SWITCH asking the open window (PID ${holder.pid}) to change from ${theirs} to ${mine}`);
+      if (await sessionLock.waitForSwitchAck(profileDir, 15_000)) {
+        throw new SessionHandedOffError(`SWITCH ${mine} was handed to the open window — carry on there.`);
+      }
+      sessionLock.clearSwitchRequest(profileDir);
+      console.log(`The open window did not answer. Press Y to close ${theirs} and start ${mine} fresh, or N to stop.`);
+      if ((await askChoice('yn')) !== 'y') {
+        throw new SessionBlockedError(`BLOCKED ${theirs} is still running — left it alone.`);
+      }
     }
     logger.event(`SWITCH asking ${theirs} to close (PID ${holder.pid}) so ${mine} can start`);
     sessionLock.requestStop(profileDir, holder);
@@ -3073,12 +3800,39 @@ async function takeSessionLock(profileDir, info, logger) {
     throw new Error('The TeachTown browser is still open. Close it and try again.');
   }
 
-  // Another subject's switch request: same clean shutdown as STOP.
   const watcher = setInterval(() => {
-    if (state.shuttingDown || !sessionLock.stopRequestedFor(profileDir)) return;
-    sessionLock.clearStopRequest(profileDir);
-    logger.event('SWITCH: another subject asked to take over; cleaning up');
-    shutdown(0);
+    if (state.shuttingDown) return;
+    // Another subject's switch request: same clean shutdown as STOP.
+    if (sessionLock.stopRequestedFor(profileDir)) {
+      sessionLock.clearStopRequest(profileDir);
+      logger.event('SWITCH: another subject asked to take over; cleaning up');
+      shutdown(0);
+      return;
+    }
+    // A later shortcut click asks THIS window to change subject in place.
+    if (state.pendingRetarget) return;
+    // Validate BEFORE acknowledging: taking the request is the ack, and the
+    // requester exits as soon as it sees it. A refusal makes it offer the
+    // close-and-restart choice instead of reporting a hand-off that never happened.
+    const req = sessionLock.peekSwitchRequest(profileDir);
+    if (!req) return;
+    const sl = state.config && state.config.studentLed;
+    const subject =
+      req.subject === subjects.DEFAULT_SETTINGS ? subjects.DEFAULT_SETTINGS : subjects.normalizeSubjectKey(req.subject);
+    const name = sl && sl.learners && typeof sl.learners[req.learner] === 'string' ? sl.learners[req.learner].trim() : '';
+    if (!sl || !subject || !name) {
+      sessionLock.refuseSwitchRequest(profileDir);
+      logger.event('WARN SWITCH refused — the requested subject or learner is not set up in this window');
+      return;
+    }
+    if (!sessionLock.takeSwitchRequest(profileDir)) return;
+    logger.event(`SWITCH: staying in this window, changing to ${subjects.studentLedLabel(subject)} for "${req.learner}"`);
+    state.pendingRetarget = { subject, learner: req.learner, studentName: name };
+    if (state.onRetarget) {
+      const go = state.onRetarget;
+      state.onRetarget = null;
+      go();
+    }
   }, 1000);
   if (watcher.unref) watcher.unref();
 }
@@ -3095,18 +3849,8 @@ async function shutdown(code) {
     if (state.popup && !state.popup.isClosed()) await state.popup.close();
   } catch {}
   try {
-    if (state.ttPage && !state.ttPage.isClosed()) {
-      const inner = innerLocator(state.ttPage);
-      // Log out only if we're impersonating a student right now.
-      if (await visibleSoon(inner.getByText('My Activities').first(), 1_500)) {
-        const logout = inner.getByText(/log ?out/i).first();
-        if (await visibleSoon(logout, 1_500)) {
-          await logout.click({ timeout: 3_000 }).catch(() => {});
-          await state.ttPage.waitForURL(/#\/home/, { timeout: 8_000 }).catch(() => {});
-          log?.event('Logged the student out before exiting.');
-        }
-      }
-    }
+    // Log out only if we're impersonating a student right now.
+    if (await logOutOfStudentView(state.ttPage)) log?.event('Logged the student out before exiting.');
   } catch {}
   try {
     await state.context?.close();
@@ -3139,9 +3883,10 @@ async function shutdown(code) {
     subject: subjectArg(),
     reconRoster: argv.includes('--recon-roster'),
     reconGoals: argv.includes('--recon-goals'),
+    reconSocialSkills: argv.includes('--recon-social-skills'),
     report: argv.includes('--report') ? reportArg() : null,
   };
-  const anyRecon = flags.reconRoster || flags.reconGoals || flags.report != null;
+  const anyRecon = flags.reconRoster || flags.reconGoals || flags.reconSocialSkills || flags.report != null;
   const dryRun = flags.dryRun;
   const teacherLedOnly = flags.teacherLedOnly;
   if (flags.studentLed && teacherLedOnly) fail('--student-led and --teacher-led are separate modes — pass one.');
@@ -3193,10 +3938,13 @@ async function shutdown(code) {
         ? `district=${config.district || '(legacy)'}, flags=${[
             flags.reconRoster && '--recon-roster',
             flags.reconGoals && '--recon-goals',
+            flags.reconSocialSkills && '--recon-social-skills',
             flags.report != null && '--report',
           ].filter(Boolean).join(' ')}`
         : flags.loginOnly
           ? `district=${config.district || '(legacy)'}, flags=--login`
+          : flags.studentLed && socialSkillsApp.usesSocialSkillsApp(config.studentLed.subject)
+          ? `Social Skills app, learner "${config.studentLed.learnerPseudonym}", subject=${config.studentLed.subject}`
           : flags.studentLed
           ? `enCORE Student-Led, learner "${config.studentLed.learnerPseudonym}", subject=${config.studentLed.subject}, ` +
             `lessonSource=${config.studentLed.lessonSource}, autoBegin=${config.studentLed.autoBegin}`
@@ -3260,8 +4008,10 @@ async function shutdown(code) {
         learner: flags.studentLed ? config.studentLed.learnerPseudonym : null,
         source: process.env.TT_UI === '1' ? 'ui' : 'shortcut',
       },
-      logger
+      logger,
+      { canHandOff: flags.studentLed && !dryRun }
     );
+    state.config = config;
     const context = await launchBrowser(profileDir);
     state.context = context;
     context.on('close', () => {
@@ -3320,6 +4070,7 @@ async function shutdown(code) {
     if (anyRecon) {
       if (flags.reconRoster) await reconRoster(tt, config, logger);
       if (flags.reconGoals) await reconGoals(tt, config, logger);
+      if (flags.reconSocialSkills) await reconSocialSkills(tt, logger, config.studentLed && config.studentLed.studentName);
       if (flags.report != null) await reportScrape(tt, config, flags.report, logger);
       noteProfileAuthenticated(logger); // an enCORE-leg sign-in counts too
       logger.event('RECON COMPLETE');
@@ -3332,7 +4083,27 @@ async function shutdown(code) {
     }
 
     if (flags.studentLed) {
-      await runStudentLed(tt, config, dryRun, logger); // live: idles; dry run: verifies and returns
+      // Each pass idles at READY; a later shortcut click can retarget this
+      // same window (same browser, still signed in) and the loop runs the new
+      // subject. Dry runs and Ctrl+C never loop.
+      for (;;) {
+        // Social Skills is its own app, not an enCORE subject box.
+        if (socialSkillsApp.usesSocialSkillsApp(config.studentLed.subject)) {
+          await runSocialSkillsApp(tt, config, dryRun, logger); // live: idles at READY; dry run: logs out and returns
+        } else {
+          await runStudentLed(tt, config, dryRun, logger); // live: idles; dry run: verifies and returns
+        }
+        const next = state.pendingRetarget;
+        if (!next || dryRun || state.shuttingDown) break;
+        state.pendingRetarget = null;
+        const sl = config.studentLed;
+        sl.subject = next.subject;
+        sl.learnerPseudonym = next.learner;
+        sl.studentName = next.studentName;
+        sessionLock.updateHolder(state.profileDir, { subject: sl.subject, learner: sl.learnerPseudonym });
+        await logOutOfStudentView(tt).catch(() => false); // leaving a Social Skills student view first
+        logger.event(`SWITCHED — now ${subjects.studentLedLabel(sl.subject)} for "${sl.learnerPseudonym}" in the same window`);
+      }
       if (dryRun) {
         noteProfileAuthenticated(logger);
         logger.event('SESSION COMPLETE');
@@ -3379,7 +4150,10 @@ async function shutdown(code) {
     if (state.shuttingDown) {
       return; // Ctrl+C owns the exit — an 'interrupted' throw is not a failure
     }
-    if (err instanceof SessionBlockedError) {
+    if (err instanceof SessionHandedOffError) {
+      logger.event(err.message);
+      process.exitCode = 0; // nothing failed; the open window took over
+    } else if (err instanceof SessionBlockedError) {
       logger.event(err.message);
       process.exitCode = 3; // already running / user chose to keep it — not a crash
     } else if (err instanceof ReconStopError) {

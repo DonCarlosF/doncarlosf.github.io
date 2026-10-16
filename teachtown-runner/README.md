@@ -80,7 +80,8 @@ A *Para page ↗* link in the header opens the para page (see *Para page* above)
 ## Lessons for one learner ("Luis")
 
 There are five ways to start a lesson for Luis. Four of them are school
-subjects in enCORE Student-Led. The fifth is a different activity.
+subjects in enCORE Student-Led. The fifth, Social Skills, is TeachTown's
+separate Social Skills app.
 
 | Button | What it is | Command |
 | --- | --- | --- |
@@ -88,12 +89,21 @@ subjects in enCORE Student-Led. The fifth is a different activity.
 | Math | School subject | `--subject math` |
 | Science | School subject | `--subject science` |
 | Social Studies | School subject (history and the world) | `--subject social-studies` |
-| Social Skills | A different TeachTown activity. Not Social Studies. | `--subject social-skills` |
+| Social Skills | The Social Skills app — not enCORE, not Social Studies. | `--subject social-skills` |
 
 Social Studies and Social Skills are not two names for the same button. A
-box labeled Social Studies is never treated as Social Skills. If the lesson
-screen has no box that says Social Skills, the Social Skills button stops
-and clicks nothing.
+box labeled Social Studies is never treated as Social Skills.
+
+The **Social Skills** button never opens enCORE (SLZUSD's enCORE lesson
+screen has no Social Skills box). It opens the Social Skills app, does
+*Login as..* for Luis from View Students, and stops at
+`READY — Social Skills for "Luis". Pick the movie or activity on screen.`
+on Luis's My Activities list. Nothing is launched; you pick what to play.
+Ctrl+C (or STOP) logs Luis out and closes the browser. With `--dry-run` it
+logs in, logs Luis back out, and ends (`SOCIAL SKILLS DRY RUN COMPLETE`).
+The display name must match View Students in the Social Skills app.
+
+The steps below are the four enCORE school-subject buttons.
 
 The learner is called **Luis** everywhere this repo can see (code, flags,
 buttons, logs). The display name Luis stands for is typed once into the
@@ -113,8 +123,6 @@ What a button does, in order:
    the button's subject (checks that subject if the app had it off),
    re-reads to **verify**, and logs a line like
    `SUBJECTS after: ELA [ ]  Math [x]  Science [ ]  Social Studies [ ]`.
-   Social Skills, when that box is on the screen, is listed on its own
-   and is not the same as Social Studies.
 4. Presses **Next** (`studentLed.pressNext`, on by default) and stops at
    `READY — Math for "Luis". Next was pressed; only Start Session is left`.
    **You** press Start Session — the runner never does, because that begins
@@ -172,8 +180,10 @@ the first learner —
 `Luis-Social-Studies.cmd`, and `Luis-Social-Skills.cmd`. Each runs
 `node runner.js --student-led --subject <key>` from the project folder in
 its own console window (Ctrl+C or closing the window ends the run the
-usual clean way). They check for Node, `node_modules`, and `config.json`
-first and say what to do if one is missing.
+usual clean way). `Luis-Social-Skills.cmd` opens the Social Skills app,
+not enCORE (see *Lessons for one learner* above). They check for Node,
+`node_modules`, and `config.json` first and say what to do if one is
+missing.
 
 **One session at a time.** Every run takes a lock next to the browser
 profile (`.profiles\<district>.lock`, gitignored) before Chrome opens.

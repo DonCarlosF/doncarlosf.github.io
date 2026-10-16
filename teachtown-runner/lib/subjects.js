@@ -25,6 +25,10 @@
 
 // Keys are what the CLI / UI / Windows launchers pass (`--subject KEY`).
 // Order = the buttons: four enCORE school subjects, then Social Skills.
+// The Social Skills button opens the Social Skills APP, not enCORE
+// (lib/social-skills-app.js), so the runner never plans boxes for it; its
+// entry stays so labels, key parsing, and box classification keep the two
+// "Social" words apart.
 // `family` decides which missing boxes are worth a warning. Social Skills is
 // not expected on the enCORE row, so its absence is not a warning when the
 // run is ELA / Math / Science / Social Studies.

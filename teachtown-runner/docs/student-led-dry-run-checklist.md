@@ -1,8 +1,9 @@
 # Lesson buttons — dry-run checklist
 
-Use this before a class, once, on the real TeachTown screen. The runner
-walks to the lesson step, checks the boxes, then backs out. It does not
-start a lesson.
+Use this before a class, once, on the real TeachTown screen. For the four
+school subjects the runner walks to the lesson step, checks the boxes, then
+backs out. For Social Skills it logs Luis in to the Social Skills app, then
+logs Luis back out. None of it starts a lesson.
 
 There are five buttons. Four are school subjects. Social Skills is separate.
 
@@ -12,7 +13,7 @@ There are five buttons. Four are school subjects. Social Skills is separate.
 | Math | Yes |
 | Science | Yes |
 | Social Studies | Yes. History and the world. |
-| Social Skills | No. A different activity. Not another name for Social Studies. |
+| Social Skills | No. It opens the Social Skills app, not enCORE. Not another name for Social Studies. |
 
 Budget: one short run per button after sign-in.
 
@@ -25,8 +26,9 @@ into a commit or an issue.
 ## Before you start
 
 - [ ] `config.json` has the display name: `studentLed.learners.Luis` is the
-      name **exactly** as enCORE's student list shows it
-      (`npm start -- --recon-roster` prints that list into `recon/`).
+      name **exactly** as enCORE's student list shows it — and, for the
+      Social Skills button, as the Social Skills app's View Students shows it
+      (`npm start -- --recon-roster` prints both lists into `recon/`).
 - [ ] `npm test` passes (the browser ones may print a skip notice if
       `npx playwright install chromium` was never run — that's fine).
 - [ ] `npm start -- --login` has been done on this machine (zero-touch
@@ -101,14 +103,27 @@ Run this only after the four school subjects above look right.
 | UI | Dry Run ON → heading *Social Skills for Luis* → *Social Skills* |
 | Windows shortcut | `windows\Luis-Social-Skills.cmd --dry-run` |
 
-- [ ] If the lesson screen has a box that says **Social Skills**,
-      `SUBJECTS after:` shows only that box as `[x]`, and Social Studies
-      is `[ ]`.
-- [ ] If the lesson screen has **Social Studies** and no Social Skills box,
-      the run stops with `no "Social Skills" checkbox` and does not click
-      Social Studies. That is correct. Use the Social Studies button for
-      that box. The group Social Skills activity is the *Social Skills —
-      group* section on Home (Run Playlist), not this button.
+This button never opens enCORE. It goes to the Social Skills app.
+
+- [ ] `SESSION START (dry run) (student-led) — Social Skills app, learner "Luis", subject=social-skills`
+- [ ] `SOCIAL SKILLS — opening the Social Skills app for "Luis"` — and on
+      screen, the Social Skills **View Students** list (not enCORE).
+- [ ] `Logged in as "Luis" in Social Skills (My Activities)` — Luis's own
+      activity list is on screen.
+- [ ] `Logged "Luis" back out.` then
+      `SOCIAL SKILLS DRY RUN COMPLETE — "Luis" reached My Activities; nothing was launched.`
+      then `SESSION COMPLETE`.
+- [ ] No line anywhere shows the display name — only "Luis".
+- [ ] A live run (no `--dry-run`) stops at
+      `READY — Social Skills for "Luis". Pick the movie or activity on screen.`
+      Ctrl+C logs Luis out and closes the browser.
+
+| Line | Meaning | Fix |
+| --- | --- | --- |
+| `Social Skills: the display name configured for "Luis" is not in the View Students list` | The name in `config.json` doesn't match the Social Skills app's list. | Copy it from the *Social Skills / View Students* section of `recon/roster-report-*.txt` (`--recon-roster`). |
+
+The group Social Skills rotation is **Run Playlist** under *Also on this
+computer* on the dashboard, not this button.
 
 ## After the school subjects pass
 
@@ -120,8 +135,10 @@ Run this only after the four school subjects above look right.
       one yourself on step 3.
 - [ ] Install the Desktop shortcuts (`windows\Install Desktop Shortcuts.cmd`,
       which installs all six in one pass) and click one of the five Luis
-      ones — same `READY` line expected. **Luis - Social Studies** and
-      **Luis - Social Skills** are two shortcuts.
+      ones — a school subject gives the same `READY` line;
+      **Luis - Social Skills** stops at
+      `READY — Social Skills for "Luis". Pick the movie or activity on screen.`
+      **Luis - Social Studies** and **Luis - Social Skills** are two shortcuts.
 - [ ] Para page: double-click **TeachTown Buttons** (installed by the same
       script), pick the learner, tap one subject —
       the page walks Open enCORE → Find → Only <Subject> → **Ready! Go to

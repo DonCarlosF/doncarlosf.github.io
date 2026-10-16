@@ -24,10 +24,14 @@
 
   // Any of these means the sign-in hand-off is over.
   const PAST_SIGNIN_RE =
-    /PROFILE AUTHENTICATED|home loaded|portal ready|STUDENT-LED — entering enCORE|enCORE session ready|\] Selected learner "|\] LOGIN (?!SETUP)|Sign-in form was already filled/;
+    /PROFILE AUTHENTICATED|home loaded|portal ready|STUDENT-LED — entering enCORE|enCORE session ready|\] Selected learner "|\] LOGIN (?!SETUP)|Sign-in form was already filled|SOCIAL SKILLS — opening|\] Logged in as "/;
 
-  function kindOf(action) {
-    if (action === 'studentled-subject') return 'encore';
+  // The Social Skills button's subject key. It opens the Social Skills APP,
+  // not enCORE (lib/social-skills-app.js), so it gets its own view.
+  const SOCIAL_SKILLS_APP = 'social-skills';
+
+  function kindOf(action, subject) {
+    if (action === 'studentled-subject') return subject === SOCIAL_SKILLS_APP ? 'socialapp' : 'encore';
     if (action === 'social-routine') return 'routine';
     return action ? 'other' : null; // dry runs ("… (dry run)") are the teacher's, not the para's
   }
@@ -51,6 +55,8 @@
         ready: false,
         nextPressed: false,
         fix: false,
+        appOpen: false,
+        appLogin: false,
         login: false,
         notFound: false,
         complete: false,
@@ -76,9 +82,9 @@
       // actionId names the button; action is the parent Home's human label
       // ("Math for Luis"). Older servers only sent action — same values then.
       s.action = ev.actionId || ev.action || null;
-      s.kind = kindOf(s.action);
       s.learner = ev.learner || s.learner;
       s.subject = ev.subject || s.subject;
+      s.kind = kindOf(s.action, s.subject);
       s.running = !!ev.running;
       s.exitCode = ev.exitCode === undefined ? null : ev.exitCode;
       return s;
@@ -101,6 +107,10 @@
     if (/\] (READY —|BEGIN clicked —)/.test(t)) s.seen.ready = true;
     if (/\] READY — .*Next was pressed/.test(t)) s.seen.nextPressed = true; // only Start Session is left
     if (/\] SUBJECT CHECK FAILED/.test(t)) s.seen.fix = true;
+
+    // Social Skills button (the app, not enCORE) milestones
+    if (/\] SOCIAL SKILLS — opening the Social Skills app/.test(t)) s.seen.appOpen = true;
+    if (/\] Logged in as ".*" in Social Skills/.test(t)) s.seen.appLogin = true;
 
     // Social Skills routine milestones
     if (/\] LOGIN (?!SETUP)/.test(t)) s.seen.login = true;
@@ -141,7 +151,7 @@
       if (/SIGN-IN WINDOW EXPIRED/.test(f)) {
         return { title: 'Nobody signed in', detail: 'It waited 5 minutes for the sign-in. Tap Try again when you are ready to sign in.' };
       }
-      if (/not in the student list/.test(f)) return notInList(who);
+      if (/not in the (student|View Students) list/.test(f)) return notInList(who);
       return GENERIC_FAIL;
     }
     if (state.seen.notFound) return notInList(who);
@@ -210,6 +220,42 @@
     const failure = failureOf(state, who);
     if (failure) return Object.assign(base, { screen: 'failed', tone: 'error', stop: null, retry: true }, failure);
     if (seen.ready || seen.fix) return pick('ok', `${asIs ? 'Student-Led' : subj} session for ${who} closed.`);
+    return pick('info', 'Stopped — nothing was started.');
+  }
+
+  // The Social Skills button (dashboard, Mac menu, Desktop shortcut): open the
+  // Social Skills app, log the learner in, READY on their activity list. It
+  // never launches anything; the person picks on screen.
+  function socialAppView(state, who) {
+    const seen = state.seen;
+    const steps = ['Open Social Skills', `Log in ${who}`, 'Your turn'];
+    const step = seen.ready || seen.appLogin ? 3 : seen.appOpen ? 2 : 1;
+    const base = { screen: 'progress', kind: 'socialapp', learner: who, subject: state.subject, steps, step, retry: false };
+    const close = { label: `Session over — log ${who} out`, confirm: `Log ${who} out of Social Skills and close the browser?` };
+    const cancel = { label: 'Cancel', confirm: null };
+
+    if (state.running) {
+      if (seen.stop) return Object.assign(base, { tone: 'info', title: 'Closing Social Skills…', detail: `Logging ${who} out.`, stop: null });
+      if (seen.ready) {
+        return Object.assign(base, {
+          tone: 'ok',
+          title: 'Ready! Go to the Social Skills window.',
+          detail: `${who} is logged in. Pick the movie or activity there. When it's over, come back here and press the button below.`,
+          stop: close,
+        });
+      }
+      if (state.signin) return Object.assign(base, SIGNIN, { stop: cancel });
+      return Object.assign(base, {
+        tone: 'info',
+        title: step === 1 ? 'Opening Social Skills…' : `Logging ${who} in…`,
+        detail: "The browser window opens by itself. Please don't click in it until this says Ready.",
+        stop: cancel,
+      });
+    }
+
+    const failure = failureOf(state, who);
+    if (failure) return Object.assign(base, { screen: 'failed', tone: 'error', stop: null, retry: true }, failure);
+    if (seen.ready) return pick('ok', `Social Skills session for ${who} closed.`);
     return pick('info', 'Stopped — nothing was started.');
   }
 
@@ -305,7 +351,9 @@
       };
     }
     const who = state.learner || c.defaultLearner || 'the learner';
-    return state.kind === 'encore' ? encoreView(state, who, c) : routineView(state, who, c);
+    if (state.kind === 'encore') return encoreView(state, who, c);
+    if (state.kind === 'socialapp') return socialAppView(state, who);
+    return routineView(state, who, c);
   }
 
   return { initialState, reduce, view, kindOf };

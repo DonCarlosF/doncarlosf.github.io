@@ -79,6 +79,7 @@ function buildVersion() {
     'lib/para-config.js',
     'lib/para-status.js',
     'lib/session-lock.js',
+    'lib/social-skills-app.js',
   ]) {
     try {
       h.update(fs.readFileSync(path.join(DIR, f)));

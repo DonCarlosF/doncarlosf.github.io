@@ -125,6 +125,9 @@ function acquire(profileDir, info) {
     try {
       fs.unlinkSync(stopPathFor(profileDir));
     } catch {}
+    try {
+      fs.unlinkSync(switchPathFor(profileDir));
+    } catch {}
     return { ok: true, clearedStale };
   }
   const read = readLockFile(file);
@@ -164,7 +167,103 @@ function clearStopRequest(profileDir) {
   } catch {}
 }
 
+/* ---- "switch the running session in place" handshake ---- */
+
+// <profileDir>.lock.switch  JSON { pid, subject, learner } — a later shortcut
+// click asks the live session to retarget inside its open window, so the
+// browser stays up and signed in. The live runner removes the file when it
+// accepts the request; that removal is the acknowledgement.
+function switchPathFor(profileDir) {
+  return `${lockPathFor(profileDir)}.switch`;
+}
+
+function requestSwitch(profileDir, holder, target) {
+  fs.writeFileSync(
+    switchPathFor(profileDir),
+    JSON.stringify({ pid: holder.pid, subject: target.subject, learner: target.learner }) + '\n'
+  );
+}
+
+function readSwitchRequest(profileDir) {
+  try {
+    return JSON.parse(fs.readFileSync(switchPathFor(profileDir), 'utf8'));
+  } catch {
+    return null; // missing, or still being written — try again next tick
+  }
+}
+
+// Look without consuming: the live session validates a request before it
+// acknowledges it. Refused requests and other pids' requests read as null.
+function peekSwitchRequest(profileDir, pid = process.pid) {
+  const req = readSwitchRequest(profileDir);
+  if (!req || req.pid !== pid || req.refused) return null;
+  return { subject: String(req.subject || ''), learner: String(req.learner || '') };
+}
+
+// The live session can't honor the request: mark it so the requester stops
+// waiting at once and offers the close-and-restart choice instead.
+function refuseSwitchRequest(profileDir, pid = process.pid) {
+  const req = readSwitchRequest(profileDir);
+  if (!req || req.pid !== pid) return false;
+  try {
+    fs.writeFileSync(switchPathFor(profileDir), JSON.stringify({ ...req, refused: true }) + '\n');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Read-and-remove. Only a request naming this pid is ours; anything else is
+// left for acquire() to clear (a reused pid must never act on it).
+function takeSwitchRequest(profileDir, pid = process.pid) {
+  const file = switchPathFor(profileDir);
+  const req = readSwitchRequest(profileDir);
+  if (!req || req.pid !== pid || req.refused) return null;
+  try {
+    fs.unlinkSync(file);
+  } catch {
+    return null;
+  }
+  return { subject: String(req.subject || ''), learner: String(req.learner || '') };
+}
+
+function clearSwitchRequest(profileDir) {
+  try {
+    fs.unlinkSync(switchPathFor(profileDir));
+  } catch {}
+}
+
+// Our lock's subject/learner follow an in-place switch, so other launches
+// (and the UI) name the session correctly. Only ever our own lock.
+function updateHolder(profileDir, patch, pid = process.pid) {
+  const read = readLockFile(lockPathFor(profileDir));
+  if (!read.holder || read.holder.pid !== pid) return false;
+  try {
+    fs.writeFileSync(lockPathFor(profileDir), JSON.stringify({ ...read.holder, ...patch }) + '\n');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// True once the switch request has been accepted (file gone); false on
+// timeout or as soon as the live session refuses it.
+async function waitForSwitchAck(profileDir, timeoutMs, pollMs = 200) {
+  const file = switchPathFor(profileDir);
+  const refused = () => {
+    const req = readSwitchRequest(profileDir);
+    return !!(req && req.refused);
+  };
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (!fs.existsSync(file)) return true;
+    if (refused()) return false;
+    await sleep(pollMs);
+  }
+  return !fs.existsSync(file);
+}
 
 // Poll until nobody (live) holds the lock. True when free, false on timeout.
 async function waitForRelease(profileDir, timeoutMs, pollMs = 250) {
@@ -239,6 +338,14 @@ module.exports = {
   requestStop,
   stopRequestedFor,
   clearStopRequest,
+  switchPathFor,
+  requestSwitch,
+  peekSwitchRequest,
+  refuseSwitchRequest,
+  takeSwitchRequest,
+  clearSwitchRequest,
+  updateHolder,
+  waitForSwitchAck,
   waitForRelease,
   chromeProfileHeld,
   waitForChromeRelease,

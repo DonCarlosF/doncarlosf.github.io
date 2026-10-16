@@ -14,6 +14,9 @@ rem given subject checked, then stops at READY. You press Next / launch on
 rem screen. Sign-in happens in the browser window, never here; nothing is
 rem typed or stored by this script.
 rem
+rem social-skills is NOT enCORE: the runner opens the Social Skills app,
+rem logs the learner in, and stops at READY on their activity list.
+rem
 rem Keep this file ASCII-only and CRLF (see ../.gitattributes) -- cmd.exe
 rem misreads anything else.
 rem ---------------------------------------------------------------------
@@ -49,7 +52,7 @@ if not exist "config.json" (
 )
 
 title TeachTown - Student-Led - %SUBJECT%
-echo Starting enCORE Student-Led: subject=%SUBJECT% %2
+echo Starting TeachTown for the configured learner: subject=%SUBJECT% %2
 echo Close this window or press Ctrl+C when the session is over.
 echo.
 

@@ -32,8 +32,9 @@
 const { SUBJECTS } = require('./subjects');
 
 // The para page's buttons: the four enCORE school subjects, in this order.
-// The enCORE "Social Skills" checkbox (lib/subjects.js, its own family) is
-// not one of them — it is a different activity and stays on the dashboard.
+// Social Skills is not one of them: it is the separate Social Skills app
+// (lib/social-skills-app.js), not an enCORE box, and stays on the dashboard,
+// Mac menu and Desktop shortcut.
 const PARA_SUBJECT_ORDER = ['social-studies', 'ela', 'math', 'science'];
 const MAX_MOVIE_TIMES = 20;
 

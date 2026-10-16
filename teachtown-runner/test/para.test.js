@@ -391,3 +391,66 @@ test('ui.html and para.html inline scripts parse', () => {
     for (const code of scripts) assert.doesNotThrow(() => new Function(code), SyntaxError, page);
   }
 });
+
+/* ------------------- Social Skills button (the app) ------------------- */
+
+// The dashboard / Mac / shortcut Social Skills button opens the Social
+// Skills APP, not enCORE. A para watching /para must not be told to go to
+// an enCORE window.
+const SOCIAL_APP_TO_READY = [
+  { type: 'line', text: '[ui] started: studentled-subject' },
+  status({ action: 'Social Skills for Luis', actionId: 'studentled-subject', learner: 'Luis', subject: 'social-skills' }),
+  L('SESSION START (student-led) — Social Skills app, learner "Luis", subject=social-skills'),
+  L('TeachTown home loaded (#/home) — direct session active'),
+  L('SOCIAL SKILLS — opening the Social Skills app for "Luis"'),
+  L('Logged in as "Luis" in Social Skills (My Activities)'),
+  L('READY — Social Skills for "Luis". Pick the movie or activity on screen.'),
+  L('Idling — the session is in your hands (Ctrl+C here or close the browser when done)'),
+];
+
+test('Social Skills button run: its own three steps, never enCORE, Ready on the Social Skills window', () => {
+  const steps = [];
+  let s = initialState();
+  for (const ev of SOCIAL_APP_TO_READY) {
+    s = reduce(s, ev);
+    const v = view(s, CTX);
+    if (v.screen === 'progress') {
+      steps.push(v.step);
+      assert.equal(v.kind, 'socialapp');
+      assert.doesNotMatch(`${v.title} ${v.detail} ${v.steps.join(' ')} ${v.stop ? v.stop.label : ''}`, /enCORE/);
+    }
+  }
+  assert.deepEqual([...new Set(steps)], [1, 2, 3]);
+  const v = view(s, CTX);
+  assert.deepEqual(v.steps, ['Open Social Skills', 'Log in Luis', 'Your turn']);
+  assert.equal(v.tone, 'ok');
+  assert.equal(v.title, 'Ready! Go to the Social Skills window.');
+  assert.match(v.detail, /Pick the movie or activity/);
+  assert.match(v.stop.label, /log Luis out/);
+  assert.ok(v.stop.confirm, 'ending a live session asks first');
+});
+
+test('Social Skills button run: closed after READY is a quiet "closed" note, not a failure', () => {
+  const s = play([...SOCIAL_APP_TO_READY, status({ actionId: 'studentled-subject', learner: 'Luis', subject: 'social-skills', running: false, exitCode: 0 })]);
+  const v = view(s, CTX);
+  assert.equal(v.screen, 'pick');
+  assert.match(v.note.text, /Social Skills session for Luis closed/);
+});
+
+test('Social Skills button run: learner missing from View Students reads as "not in the student list"', () => {
+  const s = play([
+    status({ actionId: 'studentled-subject', learner: 'Luis', subject: 'social-skills' }),
+    L('SOCIAL SKILLS — opening the Social Skills app for "Luis"'),
+    L('FATAL Social Skills: the display name configured for "Luis" is not in the View Students list — check studentLed.learners in config.json against what View Students shows.'),
+    status({ actionId: 'studentled-subject', learner: 'Luis', subject: 'social-skills', running: false, exitCode: 1 }),
+  ]);
+  const v = view(s, CTX);
+  assert.equal(v.screen, 'failed');
+  assert.equal(v.title, "Luis wasn't in the student list");
+  assert.equal(v.retry, true);
+});
+
+test('Social Studies is still an enCORE run on the para page', () => {
+  const s = play([status({ actionId: 'studentled-subject', learner: 'Luis', subject: 'social-studies' })]);
+  assert.equal(view(s, CTX).kind, 'encore');
+});
