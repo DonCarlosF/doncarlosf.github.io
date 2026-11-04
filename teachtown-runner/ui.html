@@ -266,6 +266,9 @@
 'use strict';
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => Array.from(document.querySelectorAll(s));
+// Every POST says it is JSON: the server refuses anything else, because a
+// text/plain or form POST is what another website could send it.
+const JSON_HEADERS = { 'content-type': 'application/json' };
 let cfg = null;
 let districts = [];
 
@@ -295,7 +298,7 @@ if (window.ttDesktop && typeof window.ttDesktop.listen === 'function') {
 /* ------------------------------ launch ------------------------------ */
 async function run(action, extra) {
   const body = Object.assign({ action, dry: $('#dry').checked }, extra || {});
-  const r = await fetch('/api/run', { method: 'POST', body: JSON.stringify(body) });
+  const r = await fetch('/api/run', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(body) });
   if (!r.ok) {
     const e = await r.json().catch(() => ({}));
     alert(e.error || 'could not start the run');
@@ -319,7 +322,7 @@ $$('[data-run]').forEach((b) =>
     }
   })
 );
-$('#stopbtn').addEventListener('click', () => fetch('/api/stop', { method: 'POST' }));
+$('#stopbtn').addEventListener('click', () => fetch('/api/stop', { method: 'POST', headers: JSON_HEADERS }));
 
 /* ---------------------------- live stream ---------------------------- */
 const logEl = $('#log');
@@ -580,7 +583,7 @@ $('#saveBtn').addEventListener('click', async () => {
   sl.lessonSource = $('#slSource').value;
   // Rotation names must exist in the roster; prune roster entries the user removed from both.
   const msg = $('#savemsg');
-  const r = await fetch('/api/config', { method: 'POST', body: JSON.stringify(cfg) });
+  const r = await fetch('/api/config', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(cfg) });
   const d = await r.json().catch(() => ({}));
   if (r.ok) { msg.className = 'ok'; msg.textContent = 'Saved. Previous config kept as config.json.bak.'; renderHome(); }
   else { msg.className = 'err'; msg.textContent = 'NOT saved:\n· ' + (d.errors || ['unknown error']).join('\n· '); }

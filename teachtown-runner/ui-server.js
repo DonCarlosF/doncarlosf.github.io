@@ -7,6 +7,11 @@
  *  - Binds to 127.0.0.1 ONLY. This page shows student names and its buttons
  *    log into student accounts — on a school LAN, binding wider would serve
  *    that to the whole network. Loopback is a hard requirement with a test.
+ *  - Loopback is not enough by itself: a website open in a browser on this
+ *    machine can still send requests here. lib/http-guard.js refuses a wrong
+ *    Host (DNS rebinding), another site's Origin, and any POST that isn't
+ *    application/json, before any route runs. The HTML pages can't be shown
+ *    inside another site's frame.
  *  - Thin layer: every button spawns `node runner.js` with existing flags.
  *    Per-run tweaks (Custom Run, Set-up vs Live) travel in the
  *    TT_UI_OVERRIDES environment variable — never argv (process lists are
@@ -47,6 +52,7 @@ const { SUBJECT_KEYS, DEFAULT_SETTINGS, normalizeSubjectKey } = require('./lib/s
 const { describeRun } = require('./lib/home-status');
 const para = require('./lib/para-config');
 const sessionLock = require('./lib/session-lock');
+const httpGuard = require('./lib/http-guard');
 const { studentLedLabel } = require('./lib/subjects');
 
 const DIR = __dirname;
@@ -80,6 +86,7 @@ function buildVersion() {
     'lib/para-status.js',
     'lib/session-lock.js',
     'lib/social-skills-app.js',
+    'lib/http-guard.js',
   ]) {
     try {
       h.update(fs.readFileSync(path.join(DIR, f)));
@@ -506,11 +513,17 @@ function readBody(req) {
 
 const server = http.createServer(async (req, res) => {
   try {
+    // Only this computer's own pages and programs (see lib/http-guard.js).
+    const refused = httpGuard.checkRequest(req, server.address().port);
+    if (refused) {
+      console.warn(httpGuard.describeRefusal(req, refused));
+      return json(res, refused.status, { error: refused.error });
+    }
     const url = req.url.split('?')[0];
     const page = { '/': 'ui.html', '/index.html': 'ui.html', '/para': 'para.html', '/para.html': 'para.html' }[url];
     if (req.method === 'GET' && page) {
       const html = fs.readFileSync(path.join(DIR, page));
-      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', ...httpGuard.PAGE_HEADERS });
       return res.end(html);
     }
     if (req.method === 'GET' && url === '/home-status.js') {

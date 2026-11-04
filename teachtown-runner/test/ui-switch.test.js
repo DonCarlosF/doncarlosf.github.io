@@ -8,65 +8,14 @@
  *
  * Runs a temp copy of the server (placeholder config, temp profileDir) with
  * TT_UI_RUNNER pointing at a stub — no real runner, browser, or config.json.
+ * The harness is shared with http-guard.test.js (test/ui-harness.js).
  */
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
-const os = require('os');
-const path = require('path');
-const http = require('http');
 const { spawn } = require('child_process');
 const lock = require('../lib/session-lock');
-
-const ROOT = path.join(__dirname, '..');
-
-function makeTempProject() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ttui-'));
-  for (const f of ['ui-server.js', 'ui.html', 'para.html', 'package.json', 'config.template.json']) {
-    fs.copyFileSync(path.join(ROOT, f), path.join(dir, f));
-  }
-  fs.cpSync(path.join(ROOT, 'lib'), path.join(dir, 'lib'), { recursive: true });
-  fs.cpSync(path.join(ROOT, 'config', 'districts'), path.join(dir, 'config', 'districts'), { recursive: true });
-  const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, 'config.template.json'), 'utf8'));
-  const profileDir = path.join(dir, 'profile-under-test');
-  cfg.profileDir = profileDir;
-  fs.writeFileSync(path.join(dir, 'config.json'), JSON.stringify(cfg, null, 2));
-  const marker = path.join(dir, 'stub-ran.txt');
-  const stub = path.join(dir, 'stub-runner.js');
-  fs.writeFileSync(stub, `require('fs').writeFileSync(${JSON.stringify(marker)}, process.argv.slice(2).join(' '));\n`);
-  return { dir, profileDir, marker, stub };
-}
-
-function request(port, method, url, body) {
-  return new Promise((resolve, reject) => {
-    const data = body ? JSON.stringify(body) : '';
-    const req = http.request({ host: '127.0.0.1', port, method, path: url, headers: { 'content-length': Buffer.byteLength(data) } }, (res) => {
-      let out = '';
-      res.on('data', (d) => (out += d));
-      res.on('end', () => resolve({ status: res.statusCode, body: out ? JSON.parse(out) : null }));
-    });
-    req.on('error', reject);
-    req.end(data);
-  });
-}
-
-async function startServer(t, dir, stub) {
-  const port = 45000 + Math.floor(Math.random() * 2000);
-  const env = { ...process.env, TT_UI_PORT: String(port), TT_UI_PORT_STRICT: '1', TT_UI_NO_OPEN: '1', TT_UI_RUNNER: stub };
-  const proc = spawn(process.execPath, [path.join(dir, 'ui-server.js')], { cwd: dir, env, stdio: 'pipe' });
-  t.after(() => proc.kill());
-  await new Promise((resolve, reject) => {
-    let out = '';
-    proc.stdout.on('data', (d) => {
-      out += d;
-      if (/Serving on/.test(out)) resolve();
-    });
-    proc.on('exit', (c) => reject(new Error(`ui-server exited ${c}: ${out}`)));
-  });
-  return port;
-}
-
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const { makeTempProject, request, startServer, sleep } = require('./ui-harness');
 
 test('para page vs a shortcut session: 409 + holder, then switch, then spawn', async (t) => {
   const { dir, profileDir, marker, stub } = makeTempProject();

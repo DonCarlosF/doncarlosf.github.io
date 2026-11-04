@@ -71,6 +71,11 @@ A *Para page ↗* link in the header opens the para page (see *Para page* above)
   in the terminal. Leave that terminal window open — closing it stops the UI.
 - The page is served on **this machine only** (loopback). It is never
   reachable from the school network, by design and by test.
+- Websites open in your browser can't use it either. It answers only
+  requests addressed to 127.0.0.1 or localhost that come from its own pages
+  (or from a program on this computer), its buttons only accept JSON, and its
+  pages can't be shown inside another site. If a page says *Refused: not sent
+  as JSON* right after an update, reload the page.
 - The footer shows the build version (a content hash — no git needed): two
   machines showing the same code hash are running the same code.
 - The UI writes only config.json and config.json.bak (both gitignored). It

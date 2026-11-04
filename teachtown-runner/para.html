@@ -207,6 +207,9 @@
 <script>
 'use strict';
 const $ = (s) => document.querySelector(s);
+// Every POST says it is JSON: the server refuses anything else, because a
+// text/plain or form POST is what another website could send it.
+const JSON_HEADERS = { 'content-type': 'application/json' };
 
 // 24×24 line icons, drawn with currentColor.
 const svg = (body) =>
@@ -274,7 +277,7 @@ async function start(body) {
   if (!body.switch) switchAsk = null; // a switch keeps its prompt up ("Ending Science…") until the server answers
   let accepted = false;
   try {
-    const r = await fetch('/api/run', { method: 'POST', body: JSON.stringify(body) });
+    const r = await fetch('/api/run', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(body) });
     if (r.ok) accepted = true;
     else {
       const e = await r.json().catch(() => ({}));
@@ -313,7 +316,7 @@ function retry() {
 }
 async function stop() {
   $('#confirm').hidden = true;
-  try { await fetch('/api/stop', { method: 'POST' }); } catch {}
+  try { await fetch('/api/stop', { method: 'POST', headers: JSON_HEADERS }); } catch {}
 }
 
 // "Science", "Math", a routine's name — what a start body would run.
